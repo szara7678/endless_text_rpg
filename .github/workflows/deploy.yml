@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+# GitHub Actions에 필요한 권한 설정
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
