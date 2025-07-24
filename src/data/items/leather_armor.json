@@ -1,0 +1,24 @@
+{
+  "id": "leather_armor",
+  "name": "가죽 갑옷",
+  "description": "부드러운 가죽으로 만든 기본 갑옷입니다.",
+  "type": "armor",
+  "subType": "chest",
+  "quality": "Common",
+  "level": 1,
+  "requiredLevel": 2,
+  "stats": {
+    "physicalAttack": 0,
+    "magicalAttack": 0,
+    "physicalDefense": 8,
+    "magicalDefense": 3,
+    "speed": 0
+  },
+  "effects": [],
+  "sellPrice": 8,
+  "maxEnhancement": 10,
+  "materials": {
+    "leather": 3,
+    "thread": 2
+  }
+} 

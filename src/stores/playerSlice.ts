@@ -9,14 +9,15 @@ export interface PlayerSlice {
   updatePlayerMp: (mp: number) => void
   addGold: (amount: number) => void
   addGem: (amount: number) => void
-  addAscensionPoints: (amount: number) => void
   setCurrentFloor: (floor: number) => void
   updateAscensionGauge: (amount: number) => void
   takeDamage: (damage: number) => void
   heal: (amount: number) => void
-  spendMp: (amount: number) => void
+  spendMp: (amount: number) => boolean
   restoreMp: (amount: number) => void
   ascend: () => void
+  spendGold: (amount: number) => void
+  gainGold: (amount: number) => void
 }
 
 // 초기 플레이어 상태 (기획안: 레벨 없음, currentFloor → highestFloor)
@@ -57,8 +58,6 @@ export const initialPlayerState: PlayerState = {
   
   // 환생 시스템
   rebirthLevel: 0,
-  actionPoints: 50,
-  maxActionPoints: 50,
   ascensionGauge: 0,
   
   // 기타
@@ -89,9 +88,14 @@ export const playerSlice: StateCreator<PlayerSlice> = (set, get) => ({
       player: { ...state.player, gem: state.player.gem + amount }
     })),
     
-  addAscensionPoints: (amount: number) => 
+  spendGold: (amount: number) => 
     set((state) => ({
-      player: { ...state.player, actionPoints: state.player.actionPoints + amount }
+      player: { ...state.player, gold: Math.max(0, state.player.gold - amount) }
+    })),
+    
+  gainGold: (amount: number) => 
+    set((state) => ({
+      player: { ...state.player, gold: state.player.gold + amount }
     })),
     
   setCurrentFloor: (floor: number) => 
@@ -157,22 +161,14 @@ export const playerSlice: StateCreator<PlayerSlice> = (set, get) => ({
     const { player } = get()
     // 기획안: 100층 이상에서만 환생 가능 (층수 체크는 UI에서 처리)
     if (player.ascensionGauge >= 100) {
-      // AP는 최고 층수 기준으로 계산
-      const apGained = Math.floor(player.highestFloor / 10)
       // 환생 처리 (기획안 4-D)
       set((state) => ({
         player: {
           ...initialPlayerState,
           rebirthLevel: state.player.rebirthLevel + 1,
-          actionPoints: state.player.actionPoints + apGained, // ascensionPoints → actionPoints
           totalPlayTime: state.player.totalPlayTime
         }
       }))
     }
-  },
-  
-  // AP 획득 (기획안: 환생 시스템)
-  gainActionPoints: (amount: number) => set((state) => ({
-    player: { ...state.player, actionPoints: state.player.actionPoints + amount }
-  }))
+  }
 }) 

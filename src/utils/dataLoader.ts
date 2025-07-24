@@ -99,12 +99,39 @@ export async function loadThemes(): Promise<any[]> {
   ]
 }
 
-// 아이템 정보 로딩 (기본 구현)
-export async function loadItems(): Promise<Record<string, any>> {
-  return {
-    flame_ore: { name: '화염 광석', type: 'material', level: 1 },
-    ember_crystal: { name: '잔불 수정', type: 'material', level: 1 },
-    health_potion: { name: '체력 물약', type: 'consumable', effect: 'heal_hp' }
+// 아이템 데이터 로딩
+export async function loadItem(itemId: string): Promise<any | null> {
+  try {
+    let itemData: any
+    
+    switch (itemId) {
+      case 'wooden_sword':
+        itemData = (await import('../data/items/wooden_sword.json')).default
+        break
+      case 'iron_sword':
+        itemData = (await import('../data/items/iron_sword.json')).default
+        break
+      case 'leather_armor':
+        itemData = (await import('../data/items/leather_armor.json')).default
+        break
+      case 'health_potion':
+        itemData = (await import('../data/items/health_potion.json')).default
+        break
+      case 'mana_potion':
+        itemData = (await import('../data/items/mana_potion.json')).default
+        break
+      case 'basic_attack':
+        itemData = (await import('../data/skills/basic_attack.json')).default
+        break
+      default:
+        console.warn(`알 수 없는 아이템: ${itemId}`)
+        return null
+    }
+    
+    return itemData
+  } catch (error) {
+    console.warn(`아이템 ${itemId} 로드 실패:`, error)
+    return null
   }
 }
 

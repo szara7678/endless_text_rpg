@@ -1,24 +1,26 @@
 {
   "id": "basic_attack",
   "name": "기본 공격",
-  "description": "기본적인 물리 공격을 합니다.",
+  "description": "가장 기본적인 물리 공격입니다.",
   "type": "active",
-  "element": "physical",
+  "element": "Physical",
+  "triggerChance": 100,
   "mpCost": 0,
+  "cooldown": 0,
   "effects": [
     {
       "type": "damage",
       "target": "enemy",
-      "element": "physical",
-      "value": 100,
-      "level": 1,
-      "triggerChance": 100
+      "element": "Physical",
+      "value": 100
     }
   ],
   "requiredPages": 0,
+  "maxLevel": 10,
   "trainingRules": [
     {
-      "event": "cast",
+      "condition": "use_count",
+      "value": 100,
       "xpGain": 1
     }
   ]

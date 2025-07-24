@@ -1,0 +1,24 @@
+{
+  "id": "iron_sword",
+  "name": "철 검",
+  "description": "튼튼한 철로 만든 검입니다. 신뢰할 수 있는 무기입니다.",
+  "type": "weapon",
+  "subType": "sword",
+  "quality": "Uncommon",
+  "level": 2,
+  "requiredLevel": 3,
+  "stats": {
+    "physicalAttack": 15,
+    "magicalAttack": 0,
+    "physicalDefense": 0,
+    "magicalDefense": 0,
+    "speed": 0
+  },
+  "effects": [],
+  "sellPrice": 15,
+  "maxEnhancement": 10,
+  "materials": {
+    "iron": 5,
+    "wood": 1
+  }
+} 

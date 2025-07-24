@@ -14,7 +14,7 @@ import { processItemDrops } from '../utils/dropSystem'
 interface GameStore {
   // 상태
   player: PlayerState
-  tower: TowerState  
+  tower: TowerState
   inventory: InventoryState
   skills: SkillState
   ui: UIState
@@ -165,8 +165,6 @@ export const useGameStore = create<GameStore>()(
               
               // 환생 시스템
               rebirthLevel: initialCharacter?.ascensionPoints || 0,
-              actionPoints: 50,
-              maxActionPoints: 50,
               ascensionGauge: initialCharacter?.ascensionGauge || 0,
               
               // 기타
@@ -350,8 +348,8 @@ export const useGameStore = create<GameStore>()(
           // 상태 업데이트
           set((state: any) => ({
             ...state,
-            player: {
-              ...state.player,
+          player: { 
+            ...state.player, 
               hp: result.playerHpAfter
             },
             tower: {
@@ -392,8 +390,8 @@ export const useGameStore = create<GameStore>()(
         const goldGained = monster.goldReward
         set((state: any) => ({
           ...state,
-          player: {
-            ...state.player,
+          player: { 
+            ...state.player, 
             gold: state.player.gold + goldGained
           }
         }))
@@ -442,8 +440,8 @@ export const useGameStore = create<GameStore>()(
         
         set((state: any) => ({
           ...state,
-          player: {
-            ...state.player,
+          player: { 
+            ...state.player, 
             hp: state.player.maxHp,
             mp: state.player.maxMp,
             highestFloor: newFloor,
@@ -557,7 +555,7 @@ export const useGameStore = create<GameStore>()(
         
         set((state: any) => ({
           ...state,
-          tower: {
+      tower: {
             ...state.tower,
             autoSpeed
           }

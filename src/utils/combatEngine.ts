@@ -4,10 +4,10 @@ import { loadMonster, loadSkill } from './dataLoader'
 
 // 자동 전투 한 턴 처리
 export async function processAutoCombatTurn(
-  player: PlayerState,
-  monster: Monster,
+    player: PlayerState,
+    monster: Monster,
   floor: number
-): Promise<CombatResult> {
+  ): Promise<CombatResult> {
   const result: CombatResult = {
     playerDamageDealt: 0,
     monsterDamageDealt: 0,
@@ -63,11 +63,11 @@ async function processPlayerAttack(
   
   // 기본 공격
   let damage = calculateDamage(player, monster, 'Physical', player.physicalAttack, true)
-  
-  // 크리티컬 체크
+          
+          // 크리티컬 체크
   const isCritical = checkCriticalHit(player)
   if (isCritical) {
-    damage = Math.floor(damage * 1.5)
+            damage = Math.floor(damage * 1.5)
     result.isCritical = true
   }
   

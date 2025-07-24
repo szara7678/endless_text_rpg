@@ -33,43 +33,41 @@ export interface PlayerState {
   mp: number
   maxMp: number
   
-  // 기본 스탯 (기획안: 레벨 없음, 환생 시스템)
-  highestFloor: number // 최고 도달 층수
+  // 기본 스탯
+  highestFloor: number
   
   // 재화
   gold: number
   gem: number
   
-  // 기본 전투 스탯 (장비/버프 적용 전)
+  // 기본 전투 스탯 (장비 적용 전)
   basePhysicalAttack: number
   baseMagicalAttack: number
   basePhysicalDefense: number
   baseMagicalDefense: number
   baseSpeed: number
   
-  // 최종 전투 스탯 (장비/버프 적용 후)
+  // 계산된 전투 스탯 (장비 효과 적용 후)
   physicalAttack: number
   magicalAttack: number
   physicalDefense: number
   magicalDefense: number
   speed: number
   
-  // 장비 (기본 슬롯들)
+  // 장비
   equipment: {
     weapon: EquipmentInstance | null
     armor: EquipmentInstance | null
     accessory: EquipmentInstance | null
   }
   
-  // 환생 시스템 (기획안 4-D)
-  rebirthLevel: number // 환생 단계
-  actionPoints: number // AP (현재 행동력) - 기존 ascensionPoints
-  maxActionPoints: number // 최대 AP
-  ascensionGauge: number // 환생 게이지 (0-100)
+  // 환생 시스템
+  rebirthLevel: number
+  ascensionGauge: number
   
-  // 기타 정보
-  lastDeathAt?: number // 마지막 사망 시간
-  totalPlayTime: number // 총 플레이 시간
+  // 기타
+  lastDeathAt?: number
+  totalPlayTime: number
 }
 
 // === 몬스터 ===
