@@ -1,0 +1,24 @@
+{
+  "materials": [],
+  "equipment": {
+    "weapon": {
+      "itemId": "wooden_sword",
+      "level": 1,
+      "quality": "Normal",
+      "enhancement": 0,
+      "traits": []
+    },
+    "chest": null,
+    "gloves": null,
+    "boots": null,
+    "ring1": null,
+    "ring2": null,
+    "amulet": null
+  },
+  "consumables": {
+    "health_potion": 3,
+    "mana_potion": 2
+  },
+  "maxSlots": 50,
+  "usedSlots": 5
+} 

@@ -1,0 +1,19 @@
+{
+  "hp": 100,
+  "maxHp": 100,
+  "mp": 50,
+  "maxMp": 50,
+  "physicalAttack": 20,
+  "magicalAttack": 15,
+  "physicalDefense": 10,
+  "magicalDefense": 8,
+  "critical": 5,
+  "speed": 12,
+  "gold": 100,
+  "gem": 0,
+  "ascensionPoints": 0,
+  "currentFloor": 1,
+  "highestFloor": 1,
+  "ascensionGauge": 0,
+  "totalPlayTime": 0
+} 

@@ -1,0 +1,232 @@
+﻿📜 “끝없는 텍스트 RPG” 통합 최종 기획안
+(UI·규칙·데이터 아키텍처까지 한 번에 정리)
+________________
+
+
+1. 핵심 플레이 루프
+markdown
+복사편집
+탑 등반 → 재료 파밍 → 생활 미니게임 → 장비 제작·강화
+        ↘                            ↗
+        스킬 습득·수련            환생 (AP)
+
+
+재료 Lv·생활 Lv·품질의 수치 성장과 스킬·패시브·특성의 질적 성장이 무한히 맞물리는 한-손 세로형 게임.
+________________
+
+
+2. UI / UX (세로·엄지 특화)
+구성
+	특징
+	상단 HUD
+	HP/MP, 층수, Gold·Gem, 환생 게이지(100 %→ 파란 [환생])
+	메인 뷰
+	실시간 탑 로그 - 라운드·드롭·스킬 이펙트
+	하단 3-탭
+	① 생활(제작·낚시·농사·채집·광산)
+② 캐릭터(장비·스킬·칭호·Relic)
+③ 상점(소모품·재료팩·버프·Page·부스터)
+	플로팅 FAB
+	중앙 하단 [Advance] – 자동 진행·속도 토글
+	패널 동작
+	탭 → 패널 90 % 슬라이드-업 / 드래그↓·뒤로제스처로 닫힘 (로그 유지)
+	________________
+
+
+3. 전투 & 스킬
+* 라운드 : 자동 1턴 → 로그 출력
+
+* 스킬 발동 : 매 턴 독립 확률 → 다중 발동 가능
+
+* 습득 : 몬스터/보스 Skill Page 3장 모아 Lv 1 해금
+
+* 수련치(XP) : 사용·상성 처치·미니게임 Perfect 등으로 축적 → xp≥xpNeeded + AP·Gold 지불 시 Lv UP (필요 XP ×1.8)
+
+* 강화(Lv 2-5) : 배율·발동률(액티브) / 효과량(패시브) 상승
+
+________________
+
+
+4. 탑 & 몬스터 로테이션
+   * 층 서브구조 :
+
+      * n0 휴식 → 환경 / 테마 전환
+
+      * n1-5 일반(8-12) ▶ n6-8 정예(3-5) ▶ n9 보스(1)
+
+         * 테마 6종 순환 : Flame / Frost / Toxic / Shadow / Thunder / Verdant
+
+         * 드롭 Lv = ⌊층/2⌋ + (졸개 0·정예 +3·보스 +7) ± 3
+
+         * 사망 패널티 : 현재 층 -3
+
+         * 상성 보너스 : player.skillTag === theme.weakTag → 추가 수련치 +20
+
+________________
+
+
+5. 재료·장비·제작
+항목
+	공식·규칙
+	재료 인스턴스
+	{type, lv}
+	생활 Lv
+	Smithing·Alchemy·Cooking·Fishing·Farming·Mining·Herbalism
+	Item Lv
+	⌊(재료점수 R + SmithLv×1.5) × Q / K⌋
+	품질 Q
+	Normal·Fine·Masterwork·Legendary → 강화 상한 +5/10/15/20, 특성 슬롯 0/1/2/3, 강도 배수 1.0/1.1/1.25/1.5
+	강화
+	+1당 스탯 +4 %, 품질 상한까지
+	특성
+	슬롯당 Base×ItemLv×배수(Q) / Legendary 유니크 1개
+	________________
+
+
+6. 생활 아케이드 & 상점
+콘텐츠
+	미니게임
+	전투 기여
+	제작
+	슬롯/주사위 품질 판정
+	핵심 장비
+	낚시
+	3-노트 리듬
+	요리·포션 재료
+	농사
+	실시간 성장
+	허브·촉매
+	채집/광산
+	매칭·지뢰찾기
+	금속·보석
+	상점
+	Gold/Gem 2통화, 재료팩·Page·버프·부스터
+	피로 완화·가속
+	________________
+
+
+7. 환생 (Ascension)
+트리거
+	리셋
+	보존
+	보상
+	100층 이상
+	층수·Gold·Normal 장비
+	생활 Lv·Legendary·Relic·칭호
+	AP + 유물
+	AP 사용 : 스킬 Lv 업 / 생활 Lv 버프 / 상점 슬롯 확장
+UI : 게이지 100 % → 파란 [환생] 활성 + 진동
+________________
+
+
+8. QoL & 플랫폼
+            * Legendary·스킬 UP → 햅틱
+
+            * 오프라인 보상 4 h CAP (50 % 수익)
+
+            * 저사양·텍스트-전용 모드, FAB 위치 커스텀
+
+            * PWA (GitHub Pages) ▶ TWA(Play 스토어) 배포
+
+________________
+
+
+9. 데이터 분리·관리 구조 (밸런서 친화)
+레이어
+	파일 예
+	포함 데이터
+	Theme Index
+	/data/themes/index.json
+	테마 순서·envEffect·weakTag·몬스터 id 목록
+	Monster Catalog
+	/data/monsters/<theme>/<id>.json
+	HP·ATK·traits·스킬·dropTableId
+	Drop Tables
+	/data/drops/<theme>/<tier>.json
+	{itemId, weight, lvOffsetMin/Max}
+	Skill Master
+	/data/skills/<id>.json
+	타입·발동식·효과식·trainingRules
+	Training Rules
+	(skills 내)
+	events:[{on:'cast',xp:+1},{on:'killWeak',xp:+20}]
+	Client Config
+	/data/balance/constants.json
+	강화계수·XP곡선·품질배수 등
+	런타임 흐름
+ 1️⃣ 층 진입 → theme·drops·monster JSON lazy-load → 캐시
+2️⃣ 전투 이벤트 발생 → Skill trainingRules 즉시 매칭 → XP 부여
+3️⃣ 밸런스 핫픽스 = JSON 교체, 클라이언트 재빌드 불필요
+
+
+📂 9-A. Zustand 슬라이스(중앙 Game Store)
+슬라이스
+	주요 필드
+	따로 두는 이유
+	playerSlice
+	hp / mp / maxHp · gold / gem · currentFloor · ascensionGauge · lastDeathAt
+	전투마다 값이 바뀌는 핵심·고빈도 데이터 → 다른 슬라이스와 독립시켜 리렌더 최소화
+	towerSlice
+	seed(층 시드), envType(불·얼음 …), currentMobs[], autoMode, log[](최근 100줄)
+	전투 시뮬레이터 전용 + 로그는 Web Worker와 연계해 무거운 처리 분리
+	inventorySlice
+	materials[{id,lv,qty}], equipment{slot,itemId}, consumables
+	아이템 수백 개가 있지만 변경 빈도 낮음 → shallow 비교만으로 렌더 억제
+	skillSlice
+	activeSkills[], passiveSkills[], pagesOwned{skillId:cnt}, cooldowns
+	전투·생활 패널 모두 참조하지만 변경 이벤트(습득·LvUP) 자체는 드물다
+	lifeSlice
+	smithLv / fishingLv / farmingLv …, lifeCooldowns, minigameState(콤보 등)
+	생활 모듈 내부에서만 집약 사용 → 전투 로직과 분리해 충돌 예방
+	uiSlice
+	`activePanel ('life'
+	'char'
+	분리 원칙
+① 변화 주기가 유사한 것끼리 묶어 불필요한 렌더링 억제
+② 책임 범위별 모듈화로 테스트·핫패치 용이
+③ “게임 데이터”와 “순수 UI 상태”를 분리해 저장/동기화 처리 단순화
+________________
+
+
+9-B. 저장·동기화 다층 구조 (변경 없음)
+scss
+복사편집
+Zustand(실시간)
+   ↓ 60s
+IndexedDB(오프라인 주 세이브)
+   ↓ 사용자가 [☁️ 동기화] 누를 때만
+Supabase(무료 백업)
+
+
+충돌 시 – 서버 VS 로컬 선택 → 병합 혹은 덮어쓰기.
+
+
+________________
+
+
+10. 저장 & 동기화
+scss
+복사편집
+Zustand Store (실시간)
+      ↓ 60 s
+IndexedDB (오프라인 주 세이브)
+      ↓ 사용자가 [☁️ 동기화] 탭
+Supabase (무료 DB 백업)
+
+
+충돌 시 — “서버 불러오기 / 내 데이터 유지” 다이얼로그 후 병합·덮어쓰기 선택.
+________________
+
+
+11. 핵심 매력
+               1. 한 손 세로형 UI – 어디서나 탭·스와이프만으로 진행
+
+               2. 3-축 성장식 – 재료 Lv + 생활 Lv + 품질 = 직관·깊이 모두 만족
+
+               3. Page 드롭 → 수련치 → AP 강화 – 파밍·환생 모두 보람
+
+               4. 생활 미니게임 – 짧은 손맛이 전투 파워로 직결
+
+               5. 데이터-드리븐 테마 & 밸런스 – JSON 추가만으로 무한 확장·이벤트 대응 용이
+
+이 통합 기획안을 그대로 구현하면, 운영·패치·확장이 쉬운 “간단하지만 끝없이 깊은” 세로형 PWA RPG를 완성할 수 있습니다.

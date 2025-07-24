@@ -1,0 +1,146 @@
+{
+  "themeOrder": ["Flame", "Frost", "Toxic", "Shadow", "Thunder", "Verdant"],
+  "themes": {
+    "Flame": {
+      "id": "Flame",
+      "name": "화염",
+      "description": "불타는 용암과 화염의 영역",
+      "color": "#ef4444",
+      "weakTo": "Frost",
+      "strongAgainst": "Verdant",
+      "envEffect": {
+        "name": "작열",
+        "description": "공격력이 10% 증가하지만 MP 재생이 감소",
+        "playerEffect": {
+          "attack": 10
+        },
+        "monsterEffect": {
+          "attack": 5
+        }
+      },
+      "monsters": {
+        "normal": ["flame_imp", "fire_sprite", "magma_slime", "ember_wolf"],
+        "elite": ["flame_guardian", "fire_elemental", "lava_golem"],
+        "boss": ["inferno_dragon"]
+      }
+    },
+    "Frost": {
+      "id": "Frost",
+      "name": "빙결",
+      "description": "얼어붙은 빙하와 눈보라의 영역",
+      "color": "#3b82f6",
+      "weakTo": "Thunder",
+      "strongAgainst": "Flame",
+      "envEffect": {
+        "name": "빙결",
+        "description": "방어력이 10% 증가하지만 속도가 감소",
+        "playerEffect": {
+          "defense": 10,
+          "speed": -5
+        },
+        "monsterEffect": {
+          "defense": 5,
+          "speed": -3
+        }
+      },
+      "monsters": {
+        "normal": ["frost_imp", "ice_sprite", "frozen_slime", "crystal_wolf"],
+        "elite": ["frost_guardian", "ice_elemental", "glacier_golem"],
+        "boss": ["blizzard_dragon"]
+      }
+    },
+    "Toxic": {
+      "id": "Toxic",
+      "name": "독성",
+      "description": "독기와 부패가 만연한 늪지대",
+      "color": "#10b981",
+      "weakTo": "Verdant",
+      "strongAgainst": "Thunder",
+      "envEffect": {
+        "name": "독기",
+        "description": "크리티컬률이 증가하지만 지속 독 데미지",
+        "playerEffect": {
+          "critical": 15
+        },
+        "monsterEffect": {
+          "critical": 8
+        }
+      },
+      "monsters": {
+        "normal": ["toxic_imp", "poison_sprite", "acid_slime", "venom_wolf"],
+        "elite": ["toxic_guardian", "poison_elemental", "plague_golem"],
+        "boss": ["miasma_dragon"]
+      }
+    },
+    "Shadow": {
+      "id": "Shadow",
+      "name": "암흑",
+      "description": "어둠과 그림자가 지배하는 공간",
+      "color": "#6b7280",
+      "weakTo": "Flame",
+      "strongAgainst": "Frost",
+      "envEffect": {
+        "name": "암흑",
+        "description": "속도가 20% 증가하지만 명중률 감소",
+        "playerEffect": {
+          "speed": 20
+        },
+        "monsterEffect": {
+          "speed": 10
+        }
+      },
+      "monsters": {
+        "normal": ["shadow_imp", "dark_sprite", "void_slime", "shade_wolf"],
+        "elite": ["shadow_guardian", "dark_elemental", "obsidian_golem"],
+        "boss": ["eclipse_dragon"]
+      }
+    },
+    "Thunder": {
+      "id": "Thunder",
+      "name": "번개",
+      "description": "천둥과 번개가 난무하는 폭풍의 영역",
+      "color": "#fbbf24",
+      "weakTo": "Toxic",
+      "strongAgainst": "Shadow",
+      "envEffect": {
+        "name": "뇌전",
+        "description": "크리티컬 데미지가 30% 증가",
+        "playerEffect": {
+          "critical": 10
+        },
+        "monsterEffect": {
+          "critical": 5
+        }
+      },
+      "monsters": {
+        "normal": ["thunder_imp", "lightning_sprite", "storm_slime", "bolt_wolf"],
+        "elite": ["thunder_guardian", "lightning_elemental", "storm_golem"],
+        "boss": ["tempest_dragon"]
+      }
+    },
+    "Verdant": {
+      "id": "Verdant",
+      "name": "자연",
+      "description": "생명력이 넘치는 원시 숲",
+      "color": "#059669",
+      "weakTo": "Shadow",
+      "strongAgainst": "Toxic",
+      "envEffect": {
+        "name": "재생",
+        "description": "HP와 MP 재생률이 50% 증가",
+        "playerEffect": {
+          "hp": 20,
+          "mp": 20
+        },
+        "monsterEffect": {
+          "hp": 15
+        }
+      },
+      "monsters": {
+        "normal": ["verdant_imp", "nature_sprite", "moss_slime", "thorn_wolf"],
+        "elite": ["verdant_guardian", "nature_elemental", "earth_golem"],
+        "boss": ["gaia_dragon"]
+      }
+    }
+  }
+} 

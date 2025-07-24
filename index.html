@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>무한 텍스트 RPG</title>
+    <meta name="description" content="끝없는 탑을 오르는 텍스트 기반 RPG 게임" />
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#1a1a1a" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    
+    <!-- 모바일 최적화 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="무한 텍스트 RPG" />
+    
+    <!-- Tailwind CSS 초기화 -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      html, body, #root {
+        height: 100%;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      
+      /* 다크 테마 기본 설정 */
+      body {
+        background: #0f0f0f;
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> 

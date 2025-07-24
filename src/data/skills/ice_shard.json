@@ -1,0 +1,31 @@
+{
+  "id": "ice_shard",
+  "name": "얼음 파편",
+  "description": "날카로운 얼음 조각을 날려 적에게 빙결 피해를 입힌다.",
+  "type": "Active",
+  "element": "Frost",
+  
+  "triggerChance": 35,
+  "mpCost": 8,
+  
+  "effects": [
+    {
+      "type": "damage",
+      "target": "enemy",
+      "element": "Frost",
+      "value": 22
+    }
+  ],
+  
+  "requiredPages": 3,
+  "trainingRules": [
+    {
+      "on": "cast",
+      "xp": 4
+    },
+    {
+      "on": "killWeak", 
+      "xp": 25
+    }
+  ]
+} 

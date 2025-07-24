@@ -1,0 +1,25 @@
+{
+  "id": "basic_attack",
+  "name": "기본 공격",
+  "description": "기본적인 물리 공격을 합니다.",
+  "type": "active",
+  "element": "physical",
+  "mpCost": 0,
+  "effects": [
+    {
+      "type": "damage",
+      "target": "enemy",
+      "element": "physical",
+      "value": 100,
+      "level": 1,
+      "triggerChance": 100
+    }
+  ],
+  "requiredPages": 0,
+  "trainingRules": [
+    {
+      "event": "cast",
+      "xpGain": 1
+    }
+  ]
+} 

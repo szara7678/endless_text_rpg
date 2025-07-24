@@ -1,0 +1,68 @@
+{
+  "id": "flame_aura",
+  "name": "화염 오라",
+  "description": "주변에 화염 오라를 두르며 공격력을 증가시킨다.",
+  "type": "Passive",
+  "theme": "Flame",
+  "maxLevel": 5,
+  "mpCost": 0,
+  "cooldown": 0,
+  "effects": [
+    {
+      "level": 1,
+      "buff": {
+        "type": "attack",
+        "value": 5,
+        "duration": -1
+      },
+      "triggerChance": 100
+    },
+    {
+      "level": 2,
+      "buff": {
+        "type": "attack",
+        "value": 8,
+        "duration": -1
+      },
+      "triggerChance": 100
+    },
+    {
+      "level": 3,
+      "buff": {
+        "type": "attack",
+        "value": 12,
+        "duration": -1
+      },
+      "triggerChance": 100
+    },
+    {
+      "level": 4,
+      "buff": {
+        "type": "attack",
+        "value": 16,
+        "duration": -1
+      },
+      "triggerChance": 100
+    },
+    {
+      "level": 5,
+      "buff": {
+        "type": "attack",
+        "value": 25,
+        "duration": -1
+      },
+      "triggerChance": 100
+    }
+  ],
+  "requiredPages": 3,
+  "trainingRules": [
+    {
+      "event": "kill",
+      "xpGain": 2
+    },
+    {
+      "event": "killWeak",
+      "xpGain": 10
+    }
+  ]
+} 

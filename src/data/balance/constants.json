@@ -1,0 +1,38 @@
+{
+  "xpCurveBase": 100,
+  "xpCurveMultiplier": 1.8,
+  "enhancementCostBase": 100,
+  "enhancementSuccessBase": 0.8,
+  "qualityMultipliers": {
+    "Normal": 1.0,
+    "Fine": 1.1,
+    "Masterwork": 1.25,
+    "Legendary": 1.5
+  },
+  "qualityEnhancementLimits": {
+    "Normal": 5,
+    "Fine": 10,
+    "Masterwork": 15,
+    "Legendary": 20
+  },
+  "qualityTraitSlots": {
+    "Normal": 0,
+    "Fine": 1,
+    "Masterwork": 2,
+    "Legendary": 3
+  },
+  "ascensionRequiredFloor": 100,
+  "ascensionPointBase": 10,
+  "floorDropLevelFormula": {
+    "base": "Math.floor(floor / 2)",
+    "normal": 0,
+    "elite": 3,
+    "boss": 7,
+    "variation": 3
+  },
+  "lifeSkillXpRequirements": {
+    "base": 100,
+    "multiplier": 1.5
+  },
+  "offlineRewardsCap": 14400
+} 

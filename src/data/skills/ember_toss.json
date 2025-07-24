@@ -1,0 +1,22 @@
+{
+  "id": "ember_toss",
+  "name": "잔불 투척",
+  "description": "작은 불덩어리를 던져 적에게 화염 피해를 입힌다.",
+  "type": "Active",
+  "element": "Flame",
+  
+  "triggerChance": 25,
+  "mpCost": 0,
+  
+  "effects": [
+    {
+      "type": "damage",
+      "target": "enemy",
+      "element": "Flame",
+      "value": 18
+    }
+  ],
+  
+  "requiredPages": 0,
+  "trainingRules": []
+} 

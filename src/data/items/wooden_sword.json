@@ -1,0 +1,11 @@
+{
+  "id": "wooden_sword",
+  "name": "나무 검",
+  "description": "기본적인 나무로 만든 검입니다.",
+  "type": "weapon",
+  "baseStats": {
+    "physicalAttack": 8,
+    "critical": 2
+  },
+  "traitSlots": 0
+} 

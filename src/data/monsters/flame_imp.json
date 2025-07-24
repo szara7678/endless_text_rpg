@@ -1,0 +1,26 @@
+{
+  "id": "flame_imp",
+  "name": "화염 임프",
+  "description": "작은 화염 정령. 탑의 초보 모험가들이 가장 먼저 마주치는 몬스터다.",
+  "theme": "Flame",
+  "tier": "normal",
+  
+  "hp": 80,
+  "maxHp": 80,
+  "level": 1,
+  "attack": 12,
+  "defense": 6,
+  "speed": 8,
+  
+  "goldReward": 15,
+  "xpReward": 0,
+  
+  "dropTableId": "flame_normal",
+  "skillPageDrops": ["fireball"],
+  
+  "traits": ["fire_resistant"],
+  "resistances": ["Flame"],
+  "weaknesses": ["Frost"],
+  
+  "skills": ["ember_toss"]
+} 

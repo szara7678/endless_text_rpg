@@ -1,0 +1,22 @@
+{
+  "id": "frost_bite",
+  "name": "서리 물기",
+  "description": "차가운 이빨로 물어뜯어 빙결 피해를 입힌다.",
+  "type": "Active",
+  "element": "Frost",
+  
+  "triggerChance": 30,
+  "mpCost": 0,
+  
+  "effects": [
+    {
+      "type": "damage",
+      "target": "enemy",
+      "element": "Frost",
+      "value": 20
+    }
+  ],
+  
+  "requiredPages": 0,
+  "trainingRules": []
+} 

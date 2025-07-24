@@ -1,0 +1,31 @@
+{
+  "id": "fireball",
+  "name": "화염구",
+  "description": "기본적인 화염 마법. 적에게 화염 피해를 입힌다.",
+  "type": "Active",
+  "element": "Flame",
+  
+  "triggerChance": 30,
+  "mpCost": 10,
+  
+  "effects": [
+    {
+      "type": "damage",
+      "target": "enemy",
+      "element": "Flame",
+      "value": 25
+    }
+  ],
+  
+  "requiredPages": 3,
+  "trainingRules": [
+    {
+      "on": "cast",
+      "xp": 5
+    },
+    {
+      "on": "killWeak", 
+      "xp": 20
+    }
+  ]
+} 

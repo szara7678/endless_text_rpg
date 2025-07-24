@@ -1,0 +1,15 @@
+{
+  "id": "inferno_dragon",
+  "name": "인페르노 드래곤",
+  "description": "화염을 다스리는 고대 용. 강력한 화염 브레스를 내뿜는다.",
+  "theme": "Flame",
+  "tier": "boss",
+  "hp": 2000,
+  "attack": 180,
+  "defense": 120,
+  "dropTableId": "flame_boss",
+  "skillPageDrops": ["dragon_breath", "inferno_field", "flame_mastery"],
+  "traits": ["ancient", "flame_lord", "flying"],
+  "resistances": ["Flame", "Shadow"],
+  "weaknesses": ["Frost"]
+} 

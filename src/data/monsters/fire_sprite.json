@@ -1,0 +1,15 @@
+{
+  "id": "fire_sprite",
+  "name": "화염 정령",
+  "description": "순수한 화염 에너지로 이뤄진 정령.",
+  "theme": "Flame",
+  "tier": "normal",
+  "hp": 60,
+  "attack": 35,
+  "defense": 5,
+  "dropTableId": "flame_normal",
+  "skillPageDrops": ["flame_bolt", "burning_aura"],
+  "traits": ["magical", "flame_body"],
+  "resistances": ["Flame"],
+  "weaknesses": ["Frost"]
+} 

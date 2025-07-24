@@ -1,0 +1,12 @@
+{
+  "activeSkills": [
+    {
+      "skillId": "basic_attack",
+      "level": 1,
+      "experience": 0,
+      "experienceNeeded": 100
+    }
+  ],
+  "passiveSkills": [],
+  "pagesOwned": {}
+} 

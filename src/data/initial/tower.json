@@ -1,0 +1,18 @@
+{
+  "currentFloor": 1,
+  "floorSeed": "floor_1_seed",
+  "envType": "Flame",
+  "currentMobs": [],
+  "currentMobIndex": 0,
+  "combatLog": [
+    {
+      "id": "1",
+      "timestamp": 0,
+      "type": "floor",
+      "message": "1층에 도착했습니다. 모험을 시작합니다!"
+    }
+  ],
+  "autoMode": false,
+  "autoSpeed": 1,
+  "isProcessing": false
+} 

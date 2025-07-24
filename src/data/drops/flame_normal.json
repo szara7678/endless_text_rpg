@@ -1,0 +1,27 @@
+{
+  "id": "flame_normal",
+  "name": "화염 일반 드롭",
+  "drops": [
+    {
+      "itemId": "flame_ore",
+      "type": "material",
+      "chance": 60,
+      "minQuantity": 1,
+      "maxQuantity": 3
+    },
+    {
+      "itemId": "ember_crystal",
+      "type": "material", 
+      "chance": 30,
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "itemId": "health_potion",
+      "type": "consumable",
+      "chance": 15,
+      "minQuantity": 1,
+      "maxQuantity": 1
+    }
+  ]
+} 

@@ -1,0 +1,137 @@
+/* Tailwind CSS 기본 스타일 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 기본 리셋 및 다크 테마 */
+@layer base {
+  * {
+    @apply box-border;
+  }
+  
+  html, body, #root {
+    @apply h-full overflow-hidden;
+  }
+  
+  body {
+    @apply bg-gray-900 text-white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* 컴포넌트 스타일 */
+@layer components {
+  /* 버튼 스타일 */
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  /* 카드 스타일 */
+  .card {
+    @apply bg-gray-800 rounded-lg border border-gray-700 p-4;
+  }
+  
+  /* 입력 필드 스타일 */
+  .input {
+    @apply bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+  
+  /* 패널 스타일 */
+  .panel {
+    @apply bg-gray-800 border border-gray-600 rounded-lg;
+  }
+  
+  /* 탭 스타일 */
+  .tab-active {
+    @apply bg-blue-600 text-white;
+  }
+  
+  .tab-inactive {
+    @apply bg-gray-700 text-gray-300 hover:bg-gray-600;
+  }
+}
+
+/* 유틸리티 클래스 */
+@layer utilities {
+  /* 스크롤바 숨기기 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* 텍스트 그라데이션 */
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent;
+  }
+  
+  /* 게임 UI 특화 */
+  .game-container {
+    @apply h-full flex flex-col bg-gray-900;
+  }
+  
+  .game-header {
+    @apply bg-gray-800 border-b border-gray-700 p-4;
+  }
+  
+  .game-content {
+    @apply flex-1 overflow-hidden;
+  }
+  
+  .game-footer {
+    @apply bg-gray-800 border-t border-gray-700 p-2;
+  }
+}
+
+/* 애니메이션 */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 모바일 최적화 */
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    @apply text-sm py-3 px-6;
+  }
+  
+  .card {
+    @apply p-3;
+  }
+} 
