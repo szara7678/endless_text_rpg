@@ -3,9 +3,33 @@ import { Monster, Skill } from '../types'
 // 몬스터 데이터 로딩
 export async function loadMonster(monsterId: string): Promise<Monster | null> {
   try {
-    const response = await fetch(`/src/data/monsters/${monsterId}.json`)
-    if (!response.ok) return null
-    return await response.json()
+    let monsterData: any
+    
+    switch (monsterId) {
+      case 'flame_imp':
+        monsterData = (await import('../data/monsters/flame_imp.json')).default
+        break
+      case 'frost_wolf':
+        monsterData = (await import('../data/monsters/frost_wolf.json')).default
+        break
+      case 'fire_sprite':
+        monsterData = (await import('../data/monsters/fire_sprite.json')).default
+        break
+      case 'ember_wolf':
+        monsterData = (await import('../data/monsters/ember_wolf.json')).default
+        break
+      case 'magma_slime':
+        monsterData = (await import('../data/monsters/magma_slime.json')).default
+        break
+      case 'inferno_dragon':
+        monsterData = (await import('../data/monsters/inferno_dragon.json')).default
+        break
+      default:
+        console.warn(`알 수 없는 몬스터: ${monsterId}`)
+        return null
+    }
+    
+    return monsterData as Monster
   } catch (error) {
     console.warn(`몬스터 ${monsterId} 로드 실패:`, error)
     return null
@@ -15,9 +39,27 @@ export async function loadMonster(monsterId: string): Promise<Monster | null> {
 // 스킬 데이터 로딩
 export async function loadSkill(skillId: string): Promise<Skill | null> {
   try {
-    const response = await fetch(`/src/data/skills/${skillId}.json`)
-    if (!response.ok) return null
-    return await response.json()
+    let skillData: any
+    
+    switch (skillId) {
+      case 'fireball':
+        skillData = (await import('../data/skills/fireball.json')).default
+        break
+      case 'ember_toss':
+        skillData = (await import('../data/skills/ember_toss.json')).default
+        break
+      case 'ice_shard':
+        skillData = (await import('../data/skills/ice_shard.json')).default
+        break
+      case 'frost_bite':
+        skillData = (await import('../data/skills/frost_bite.json')).default
+        break
+      default:
+        console.warn(`알 수 없는 스킬: ${skillId}`)
+        return null
+    }
+    
+    return skillData as Skill
   } catch (error) {
     console.warn(`스킬 ${skillId} 로드 실패:`, error)
     return null
@@ -27,9 +69,18 @@ export async function loadSkill(skillId: string): Promise<Skill | null> {
 // 드롭 테이블 로딩
 export async function loadDropTable(dropTableId: string): Promise<any | null> {
   try {
-    const response = await fetch(`/src/data/drops/${dropTableId}.json`)
-    if (!response.ok) return null
-    return await response.json()
+    let dropData: any
+    
+    switch (dropTableId) {
+      case 'flame_normal':
+        dropData = (await import('../data/drops/flame_normal.json')).default
+        break
+      default:
+        console.warn(`알 수 없는 드롭 테이블: ${dropTableId}`)
+        return null
+    }
+    
+    return dropData
   } catch (error) {
     console.warn(`드롭 테이블 ${dropTableId} 로드 실패:`, error)
     return null

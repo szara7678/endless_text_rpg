@@ -112,9 +112,10 @@ export const useGameStore = create<GameStore>()(
       // 게임 플로우 관리
       startNewGame: async () => {
         try {
-          console.log('🎮 새 게임 초기화 중...')
+          console.log('🎮 새 게임 초기화 시작...')
           
-          // 게임 상태 설정
+          // 1단계: 게임 상태 설정
+          console.log('📝 1단계: 게임 상태 초기화 중...')
           set((state: any) => ({
             ...state,
             player: {
@@ -133,14 +134,22 @@ export const useGameStore = create<GameStore>()(
               autoSpeed: 1,
               isInCombat: false
             },
-            gameState: 'playing'
+            gameState: 'loading'
           }))
+          console.log('✅ 1단계 완료: 초기 상태 설정됨')
           
-          // 첫 번째 몬스터 생성
+          // 2단계: 데이터 로더 가져오기
+          console.log('📦 2단계: 데이터 로더 가져오는 중...')
           const { loadMonster } = await import('../utils/dataLoader')
+          console.log('✅ 2단계 완료: 데이터 로더 가져옴')
+          
+          // 3단계: 첫 번째 몬스터 생성
+          console.log('👹 3단계: flame_imp 몬스터 로딩 중...')
           const monster = await loadMonster('flame_imp')
+          console.log('몬스터 데이터:', monster)
           
           if (monster) {
+            console.log('✅ 3단계 완료: 몬스터 로드 성공')
             set((state: any) => ({
               ...state,
               tower: {
@@ -161,16 +170,68 @@ export const useGameStore = create<GameStore>()(
                     message: `⚔️ ${monster.name}이(가) 나타났습니다!`
                   }
                 ]
-              }
+              },
+              gameState: 'playing'
+            }))
+            console.log('✅ 게임 상태를 playing으로 변경')
+          } else {
+            console.error('❌ 몬스터 로드 실패 - null 반환')
+            // 몬스터 로드 실패시에도 게임은 시작
+            set((state: any) => ({
+              ...state,
+              tower: {
+                ...state.tower,
+                combatLog: [
+                  {
+                    id: '1',
+                    timestamp: Date.now(),
+                    type: 'floor',
+                    message: '🗼 1층에 도착했습니다!'
+                  },
+                  {
+                    id: '2', 
+                    timestamp: Date.now() + 1,
+                    type: 'combat',
+                    message: '⚠️ 몬스터를 불러오는데 실패했습니다.'
+                  }
+                ]
+              },
+              gameState: 'playing'
             }))
           }
           
-          // 자동 저장 시작
+          // 4단계: 자동 저장 시작
+          console.log('💾 4단계: 자동 저장 시작...')
           get().startAutoSave()
+          console.log('✅ 4단계 완료: 자동 저장 시작됨')
           
-          console.log('✅ 새 게임 시작 완료!')
+          console.log('🎉 새 게임 시작 완료!')
         } catch (error) {
           console.error('❌ 새 게임 시작 실패:', error)
+          console.error('에러 상세:', error.message, error.stack)
+          
+          // 에러 발생시 강제로 게임 상태를 playing으로 변경
+          set((state: any) => ({
+            ...state,
+            tower: {
+              ...state.tower,
+              combatLog: [
+                {
+                  id: '1',
+                  timestamp: Date.now(),
+                  type: 'floor',
+                  message: '🗼 1층에 도착했습니다!'
+                },
+                {
+                  id: '2', 
+                  timestamp: Date.now() + 1,
+                  type: 'combat',
+                  message: '⚠️ 초기화 중 오류가 발생했지만 게임을 시작합니다.'
+                }
+              ]
+            },
+            gameState: 'playing'
+          }))
         }
       },
 
