@@ -13,5 +13,14 @@ export default defineConfig({
       }
     })
   ],
-  base: '/Endless_Text_RPG/'
+  // GitHub Pages 배포를 위한 base path 설정
+  base: process.env.NODE_ENV === 'production' ? '/endless_text_rpg/' : '/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    // 소스맵 생성하지 않아 배포 크기 줄이기
+    sourcemap: false,
+    // 청크 크기 제한 경고 비활성화
+    chunkSizeWarningLimit: 1600,
+  }
 }) 
