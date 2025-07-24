@@ -1,0 +1,13 @@
+{
+  "materialId": "vegetable",
+  "name": "야채",
+  "description": "싱싱한 야채입니다. 다양한 요리에 사용할 수 있습니다.",
+  "type": "ingredient",
+  "element": "verdant",
+  "rarity": "Common",
+  "baseLevel": 1,
+  "maxLevel": 3,
+  "sellPrice": 5,
+  "stackSize": 999,
+  "category": "cooking"
+} 

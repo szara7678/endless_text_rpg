@@ -1,145 +1,407 @@
-import React from 'react'
-import { X } from 'lucide-react'
+import React, { useState } from 'react'
+import { X, Sword, Shield, Star, Zap } from 'lucide-react'
+import { useGameStore } from '../../stores'
+import { calculateEnhancementCost } from '../../utils/equipmentSystem'
 
 interface ItemDetailModalProps {
   isOpen: boolean
-  onClose: () => void
   item: any
+  onClose: () => void
 }
 
-const qualityColors = {
-  Common: 'text-gray-300 border-gray-500',
-  Uncommon: 'text-green-300 border-green-500',
-  Rare: 'text-blue-300 border-blue-500',
-  Epic: 'text-purple-300 border-purple-500',
-  Legendary: 'text-yellow-300 border-yellow-500'
-}
+// 강화 모달 컴포넌트
+const EnhancementModal: React.FC<{
+  isOpen: boolean
+  onClose: () => void
+  equipment: any
+  equipmentType: 'weapon' | 'armor'
+}> = ({ isOpen, onClose, equipment, equipmentType }) => {
+  const { player, enhanceEquipment, addCombatLog } = useGameStore()
+  const [isEnhancing, setIsEnhancing] = useState(false)
+  const [enhancementCount, setEnhancementCount] = useState(0)
 
-const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, onClose, item }) => {
-  if (!isOpen || !item) return null
+  if (!isOpen || !equipment) return null
 
-  const qualityColor = qualityColors[item.quality as keyof typeof qualityColors] || qualityColors.Common
+  // equipmentSystem의 calculateEnhancementCost 사용
+  const getEnhancementCost = (currentLevel: number) => {
+    return calculateEnhancementCost({
+      ...equipment,
+      enhancement: currentLevel
+    })
+  }
+
+  const getEnhancementRate = (currentLevel: number) => {
+    return Math.max(50, 80 - currentLevel * 5)
+  }
+
+  const handleEnhance = async () => {
+    if (isEnhancing || equipment.enhancement >= 10) return
+
+    const cost = getEnhancementCost(equipment.enhancement || 0)
+    if (player.gold < cost) {
+      addCombatLog('loot', '❌ 강화에 필요한 골드가 부족합니다.')
+      return
+    }
+
+    setIsEnhancing(true)
+    setEnhancementCount(prev => prev + 1)
+
+    // 강화 실행
+    enhanceEquipment(equipmentType)
+
+    // 잠시 후 다음 강화 가능
+    setTimeout(() => {
+      setIsEnhancing(false)
+    }, 500)
+  }
+
+  const handleContinuousEnhance = async () => {
+    if (isEnhancing || equipment.enhancement >= 10) return
+
+    const cost = getEnhancementCost(equipment.enhancement || 0)
+    if (player.gold < cost) {
+      addCombatLog('loot', '❌ 강화에 필요한 골드가 부족합니다.')
+      return
+    }
+
+    setIsEnhancing(true)
+    setEnhancementCount(prev => prev + 1)
+
+    // 연속 강화 실행
+    enhanceEquipment(equipmentType)
+
+    // 잠시 후 다음 강화 가능
+    setTimeout(() => {
+      setIsEnhancing(false)
+    }, 300)
+  }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-lg border border-gray-700 w-full max-w-md max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60" onClick={onClose}>
+      <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-white">⚡ 장비 강화</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* 장비 정보 */}
+        <div className="bg-gray-800 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="text-2xl">
+              {equipmentType === 'weapon' ? <Sword className="text-red-400" /> : <Shield className="text-blue-400" />}
+            </div>
+            <div>
+              <h4 className="font-semibold text-white">{equipment.name || equipment.itemId}</h4>
+              <p className="text-sm text-gray-400">품질: {equipment.quality || 'Common'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 강화 정보 */}
+        <div className="space-y-3 mb-4">
+          <div className="flex justify-between">
+            <span className="text-gray-400">현재 강화 레벨</span>
+            <span className="text-yellow-400">+{equipment.enhancement || 0}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">다음 강화 비용</span>
+            <span className="text-yellow-400">{getEnhancementCost(equipment.enhancement || 0)} 골드</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">성공률</span>
+            <span className="text-green-400">{getEnhancementRate(equipment.enhancement || 0)}%</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">보유 골드</span>
+            <span className="text-yellow-400">{player.gold} 골드</span>
+          </div>
+        </div>
+
+        {/* 강화 횟수 */}
+        <div className="text-center mb-4">
+          <p className="text-sm text-gray-400">
+            이번 세션 강화 횟수: <span className="text-yellow-400">{enhancementCount}</span>
+          </p>
+        </div>
+
+        {/* 버튼들 */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleEnhance}
+            disabled={isEnhancing || equipment.enhancement >= 10 || player.gold < getEnhancementCost(equipment.enhancement || 0)}
+            className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-1"
+          >
+            <Zap size={16} />
+            {isEnhancing ? '강화 중...' : '강화'}
+          </button>
+          <button
+            onClick={handleContinuousEnhance}
+            disabled={isEnhancing || equipment.enhancement >= 10 || player.gold < getEnhancementCost(equipment.enhancement || 0)}
+            className="flex-1 py-2 px-4 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+          >
+            연속 강화
+          </button>
+        </div>
+
+        {equipment.enhancement >= 10 && (
+          <div className="text-center text-yellow-400 text-sm mt-3">
+            ⭐ 최대 강화 달성!
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose }) => {
+  const { player, equipItem, unequipItem, enhanceEquipment } = useGameStore()
+  const [showEnhancementModal, setShowEnhancementModal] = useState(false)
+
+  if (!isOpen || !item) return null
+
+  // 현재 착용 중인지 확인
+  const isEquipped = () => {
+    if (item.type === 'weapon') {
+      // uniqueId가 있으면 uniqueId로 정확히 비교, 없으면 itemId로 비교
+      if (item.uniqueId) {
+        return player.equipment.weapon?.uniqueId === item.uniqueId
+      } else {
+        return player.equipment.weapon?.itemId === item.itemId
+      }
+    }
+    if (item.type === 'armor') {
+      // uniqueId가 있으면 uniqueId로 정확히 비교, 없으면 itemId로 비교
+      if (item.uniqueId) {
+        return player.equipment.armor?.uniqueId === item.uniqueId
+      } else {
+        return player.equipment.armor?.itemId === item.itemId
+      }
+    }
+    return false
+  }
+
+  // 장착/해제 처리
+  const handleEquipToggle = () => {
+    if (isEquipped()) {
+      // 해제
+      if (item.type === 'weapon') {
+        unequipItem('weapon')
+      } else if (item.type === 'armor') {
+        unequipItem('armor')
+      }
+    } else {
+      // 장착 - uniqueId가 있는 경우 해당 아이템을 찾아서 장착
+      if (item.uniqueId) {
+        // uniqueId로 정확한 아이템을 찾아서 장착
+        equipItem(item.uniqueId)
+      } else {
+        // 기존 방식
+        equipItem(item.itemId)
+      }
+    }
+  }
+
+  // 강화 모달 열기
+  const handleEnhance = () => {
+    setShowEnhancementModal(true)
+  }
+
+  // 강화 비용 계산
+  const getEnhancementCost = (currentLevel: number) => {
+    return Math.floor(100 * Math.pow(1.5, currentLevel))
+  }
+
+  // 강화 성공률 계산
+  const getEnhancementRate = (currentLevel: number) => {
+    return Math.max(30, 90 - currentLevel * 5)
+  }
+
+  // 장비 타입인지 확인
+  const isEquipment = item.type === 'weapon' || item.type === 'armor'
+  const currentEquipment = isEquipped() ? (item.type === 'weapon' ? player.equipment.weapon : player.equipment.armor) : null
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 헤더 */}
         <div className="flex justify-between items-center p-4 border-b border-gray-700">
-          <div>
-            <h2 className={`text-lg font-bold ${qualityColor}`}>{item.name}</h2>
-            <div className="text-sm text-gray-400">{item.type} • {item.quality}</div>
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">
+              {item.type === 'weapon' && <Sword className="text-red-400" />}
+              {item.type === 'armor' && <Shield className="text-blue-400" />}
+              {item.type === 'consumable' && <span>🧪</span>}
+              {item.type === 'material' && <span>📦</span>}
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">{item.name}</h3>
+              <div className="text-sm text-gray-400">{item.type} • {item.quality}</div>
+            </div>
           </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* 내용 */}
+        {/* 아이템 정보 */}
         <div className="p-4 space-y-4">
           {/* 설명 */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-300 mb-2">설명</h3>
-            <p className="text-gray-400 text-sm">{item.description}</p>
+            <p className="text-gray-300">{item.description}</p>
           </div>
 
-          {/* 기본 정보 */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-300 mb-2">기본 정보</h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="text-gray-400">레벨: <span className="text-white">{item.level}</span></div>
-              <div className="text-gray-400">요구 레벨: <span className="text-white">{item.requiredLevel || 1}</span></div>
-              {item.sellPrice && (
-                <div className="text-gray-400">판매가: <span className="text-yellow-400">{item.sellPrice}G</span></div>
-              )}
-              {item.maxEnhancement && (
-                <div className="text-gray-400">최대 강화: <span className="text-white">+{item.maxEnhancement}</span></div>
-              )}
-            </div>
-          </div>
-
-          {/* 스탯 */}
-          {item.stats && Object.values(item.stats).some((v: any) => v > 0) && (
+          {/* 기본 스탯 */}
+          {item.baseStats && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">스탯</h3>
-              <div className="space-y-1">
-                {item.stats.physicalAttack > 0 && (
-                  <div className="text-sm text-red-400">물리 공격력: +{item.stats.physicalAttack}</div>
-                )}
-                {item.stats.magicalAttack > 0 && (
-                  <div className="text-sm text-blue-400">마법 공격력: +{item.stats.magicalAttack}</div>
-                )}
-                {item.stats.physicalDefense > 0 && (
-                  <div className="text-sm text-green-400">물리 방어력: +{item.stats.physicalDefense}</div>
-                )}
-                {item.stats.magicalDefense > 0 && (
-                  <div className="text-sm text-cyan-400">마법 방어력: +{item.stats.magicalDefense}</div>
-                )}
-                {item.stats.speed > 0 && (
-                  <div className="text-sm text-yellow-400">속도: +{item.stats.speed}</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 효과 */}
-          {item.effects && item.effects.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">효과</h3>
-              <div className="space-y-1">
-                {item.effects.map((effect: any, index: number) => (
-                  <div key={index} className="text-sm text-purple-400">
-                    • {effect.type === 'heal_hp' ? `HP ${effect.value} 회복` : 
-                       effect.type === 'heal_mp' ? `MP ${effect.value} 회복` :
-                       effect.type === 'damage' ? `${effect.value}% 데미지` :
-                       effect.type}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 재료 */}
-          {item.materials && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">제작 재료</h3>
-              <div className="grid grid-cols-2 gap-1">
-                {Object.entries(item.materials).map(([material, count]: [string, any]) => (
-                  <div key={material} className="text-sm text-gray-400">
-                    {material}: {count}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 추가 정보 */}
-          {item.type === 'consumable' && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">소모품 정보</h3>
+              <h4 className="text-white font-medium mb-2">기본 능력치</h4>
               <div className="space-y-1 text-sm">
-                {item.stackable && (
-                  <div className="text-gray-400">최대 중첩: <span className="text-white">{item.maxStack}</span></div>
+                {item.baseStats.physicalAttack && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">물리 공격력</span>
+                    <span className="text-red-400">+{item.baseStats.physicalAttack}</span>
+                  </div>
                 )}
-                {item.cooldown > 0 && (
-                  <div className="text-gray-400">재사용 대기시간: <span className="text-white">{item.cooldown}초</span></div>
+                {item.baseStats.magicalAttack && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">마법 공격력</span>
+                    <span className="text-blue-400">+{item.baseStats.magicalAttack}</span>
+                  </div>
                 )}
+                {item.baseStats.physicalDefense && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">물리 방어력</span>
+                    <span className="text-green-400">+{item.baseStats.physicalDefense}</span>
+                  </div>
+                )}
+                {item.baseStats.magicalDefense && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">마법 방어력</span>
+                    <span className="text-purple-400">+{item.baseStats.magicalDefense}</span>
+                  </div>
+                )}
+                {item.baseStats.speed && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">속도</span>
+                    <span className="text-yellow-400">+{item.baseStats.speed}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 강화 정보 (장비인 경우) */}
+          {isEquipment && currentEquipment && (
+            <div className="bg-gray-800 rounded-lg p-3">
+              <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+                <Star className="text-yellow-400" size={16} />
+                강화 정보
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">강화 레벨</span>
+                  <span className="text-yellow-400">+{currentEquipment.enhancement || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">품질</span>
+                  <span className="text-purple-400">{currentEquipment.quality || 'Normal'}</span>
+                </div>
+                {currentEquipment.enhancement < 10 && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">다음 강화 비용</span>
+                      <span className="text-yellow-400">{getEnhancementCost(currentEquipment.enhancement || 0)} 골드</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">성공률</span>
+                      <span className="text-green-400">{getEnhancementRate(currentEquipment.enhancement || 0)}%</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 요구사항 */}
+          {item.requirements && (
+            <div>
+              <h4 className="text-white font-medium mb-2">요구사항</h4>
+              <div className="space-y-1 text-sm">
+                {item.requirements.level && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">필요 레벨</span>
+                    <span className="text-yellow-400">{item.requirements.level}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 가격 정보 */}
+          {item.sellPrice && (
+            <div>
+              <h4 className="text-white font-medium mb-2">가격 정보</h4>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">판매 가격</span>
+                <span className="text-yellow-400">{item.sellPrice} 골드</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* 하단 버튼 */}
-        <div className="p-4 border-t border-gray-700">
-          <button
-            onClick={onClose}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded transition-colors"
-          >
-            닫기
-          </button>
-        </div>
+        {/* 하단 버튼들 (장비인 경우만) */}
+        {isEquipment && (
+          <div className="border-t border-gray-700 p-4">
+            <div className="flex gap-2">
+              <button
+                onClick={handleEquipToggle}
+                className={`flex-1 py-2 px-4 rounded font-medium transition-colors ${
+                  isEquipped()
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                {isEquipped() ? '해제' : '장착'}
+              </button>
+              
+              {isEquipped() && currentEquipment && currentEquipment.enhancement < 10 && (
+                <button
+                  onClick={handleEnhance}
+                  className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors flex items-center justify-center gap-1"
+                >
+                  <Zap size={16} />
+                  강화
+                </button>
+              )}
+            </div>
+            
+            {isEquipped() && currentEquipment && currentEquipment.enhancement >= 10 && (
+              <div className="text-center text-yellow-400 text-sm mt-2">
+                ⭐ 최대 강화 달성!
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 강화 모달 */}
+        <EnhancementModal
+          isOpen={showEnhancementModal}
+          onClose={() => setShowEnhancementModal(false)}
+          equipment={currentEquipment}
+          equipmentType={item.type as 'weapon' | 'armor'}
+        />
       </div>
     </div>
   )

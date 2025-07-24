@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Package, Wrench, Zap, Shirt } from 'lucide-react'
+import { X, Package, Hammer, Pill, ArrowUpDown, Flame, Snowflake, Skull, Moon, Zap, Leaf } from 'lucide-react'
 import { useGameStore } from '../../stores'
 import ItemDetailModal from '../common/ItemDetailModal'
 import { loadItem } from '../../utils/dataLoader'
@@ -9,36 +9,196 @@ interface InventoryPanelProps {
   onClose: () => void
 }
 
-const qualityColors = {
-  Common: 'border-gray-500 text-gray-300',
-  Uncommon: 'border-green-500 text-green-300',
-  Rare: 'border-blue-500 text-blue-300',
-  Epic: 'border-purple-500 text-purple-300',
-  Legendary: 'border-yellow-500 text-yellow-300'
-}
+type MainTab = 'materials' | 'equipment' | 'consumables'
+type SortOrder = 'level_desc' | 'level_asc'
+type ElementFilter = 'all' | 'Flame' | 'Frost' | 'Toxic' | 'Shadow' | 'Thunder' | 'Verdant'
 
 const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
-  const { player, inventory } = useGameStore()
-  const [activeTab, setActiveTab] = useState<'items' | 'materials' | 'equipment' | 'consumables'>('items')
+  const { inventory, equipItem, player } = useGameStore()
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>('materials')
+  const [activeSubTab, setActiveSubTab] = useState<string>('all')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('level_desc')
+  const [elementFilter, setElementFilter] = useState<ElementFilter>('all')
   const [selectedItem, setSelectedItem] = useState<any>(null)
-  const [showModal, setShowModal] = useState(false)
+  const [showItemModal, setShowItemModal] = useState(false)
 
   if (!isOpen) return null
 
-  const handleItemClick = async (itemId: string, itemType: 'equipment' | 'consumable' = 'equipment') => {
+  // 장비가 현재 장착되어 있는지 확인하는 함수
+  const isEquipped = (item: any) => {
+    if (item.uniqueId) {
+      // 고유 ID가 있는 장비는 uniqueId로 비교
+      return (
+        player.equipment.weapon?.uniqueId === item.uniqueId ||
+        player.equipment.armor?.uniqueId === item.uniqueId ||
+        player.equipment.accessory?.uniqueId === item.uniqueId
+      )
+    } else {
+      // 일반 아이템은 itemId로 비교
+      return (
+        player.equipment.weapon?.itemId === item.itemId ||
+        player.equipment.armor?.itemId === item.itemId ||
+        player.equipment.accessory?.itemId === item.itemId
+      )
+    }
+  }
+
+  const handleItemClick = async (itemId: string) => {
     try {
       const itemData = await loadItem(itemId)
       if (itemData) {
         setSelectedItem(itemData)
-        setShowModal(true)
+        setShowItemModal(true)
       }
     } catch (error) {
       console.error('아이템 데이터 로드 실패:', error)
     }
   }
 
-  const getQualityColor = (quality: string) => {
-    return qualityColors[quality as keyof typeof qualityColors] || qualityColors.Common
+  const handleMainTabChange = (tab: MainTab) => {
+    setActiveMainTab(tab)
+    setActiveSubTab('all')
+    setElementFilter('all')
+  }
+
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === 'level_desc' ? 'level_asc' : 'level_desc')
+  }
+
+  // 속성별 아이콘과 색상
+  const getElementInfo = (element: ElementFilter) => {
+    const elementMap: Record<ElementFilter, { icon: any, color: string, name: string }> = {
+      'all': { icon: Package, color: 'text-gray-400', name: '전체' },
+      'Flame': { icon: Flame, color: 'text-red-400', name: '화염' },
+      'Frost': { icon: Snowflake, color: 'text-blue-400', name: '빙결' },
+      'Toxic': { icon: Skull, color: 'text-green-400', name: '독성' },
+      'Shadow': { icon: Moon, color: 'text-gray-400', name: '암흑' },
+      'Thunder': { icon: Zap, color: 'text-yellow-400', name: '번개' },
+      'Verdant': { icon: Leaf, color: 'text-emerald-400', name: '자연' }
+    }
+    return elementMap[element]
+  }
+
+  // 아이템 분류 및 정렬 함수
+  const getFilteredAndSortedItems = () => {
+    let items: any[] = []
+
+    if (activeMainTab === 'materials') {
+      items = inventory.materials.map(mat => ({
+        ...mat,
+        type: 'material',
+        level: 1, // 재료는 기본 레벨 1
+        element: 'neutral' // 임시로 중성 속성
+      }))
+
+      // 재료 하위 탭 필터링
+      if (activeSubTab === 'elemental') {
+        items = items.filter(item => ['Flame', 'Frost', 'Toxic', 'Shadow', 'Thunder', 'Verdant'].includes(item.element))
+        
+        // 속성 필터 적용
+        if (elementFilter !== 'all') {
+          items = items.filter(item => item.element === elementFilter)
+        }
+      } else if (activeSubTab === 'fish') {
+        items = items.filter(item => item.materialId?.includes('fish'))
+      } else if (activeSubTab === 'herb') {
+        items = items.filter(item => item.materialId?.includes('herb'))
+      } else if (activeSubTab === 'ore') {
+        items = items.filter(item => item.materialId?.includes('ore'))
+      }
+    } else if (activeMainTab === 'equipment') {
+      // 장비는 items에서 health_potion, mana_potion 제외하고 가져오기
+      // 장비는 uniqueId로 개별 관리되므로 각각 별도 아이템으로 표시
+      items = inventory.items
+        .filter(item => !item.itemId.includes('potion'))
+        .map(item => ({
+          ...item,
+          type: 'equipment',
+          category: item.itemId.includes('sword') || item.itemId.includes('staff') ? 'weapon' : 
+                   item.itemId.includes('armor') ? 'armor' : 'accessory',
+          displayId: item.uniqueId || `${item.itemId}_${Math.random()}` // 고유 표시용 ID
+        }))
+
+      // 장비 하위 탭 필터링
+      if (activeSubTab === 'weapon') {
+        items = items.filter(item => item.category === 'weapon')
+      } else if (activeSubTab === 'armor') {
+        items = items.filter(item => item.category === 'armor')
+      } else if (activeSubTab === 'accessory') {
+        items = items.filter(item => item.category === 'accessory')
+      }
+    } else if (activeMainTab === 'consumables') {
+      // 소모품은 consumables + potion류 items 합치기
+      const potionItems = inventory.items
+        .filter(item => item.itemId.includes('potion'))
+        .map(item => ({
+          ...item,
+          type: 'consumable',
+          level: 1,
+          consumableId: item.itemId,
+          category: 'potion'
+        }))
+      
+      items = [
+        ...inventory.consumables.map(consumable => ({
+          ...consumable,
+          type: 'consumable',
+          level: 1,
+          category: 'potion' // 임시로 물약으로 분류
+        })),
+        ...potionItems
+      ]
+
+      // 소모품 하위 탭 필터링
+      if (activeSubTab === 'potion') {
+        items = items.filter(item => item.category === 'potion')
+      } else if (activeSubTab === 'food') {
+        items = items.filter(item => item.category === 'food')
+      } else if (activeSubTab === 'scroll') {
+        items = items.filter(item => item.category === 'scroll')
+      }
+    }
+
+    // 정렬 적용
+    items.sort((a, b) => {
+      if (sortOrder === 'level_desc') {
+        return (b.level || 1) - (a.level || 1)
+      } else {
+        return (a.level || 1) - (b.level || 1)
+      }
+    })
+
+    return items
+  }
+
+  const filteredItems = getFilteredAndSortedItems()
+
+  // 탭 구성
+  const getSubTabs = () => {
+    if (activeMainTab === 'materials') {
+      return [
+        { id: 'all', name: '전체' },
+        { id: 'elemental', name: '속성' },
+        { id: 'fish', name: '물고기' },
+        { id: 'herb', name: '약초' },
+        { id: 'ore', name: '광석' }
+      ]
+    } else if (activeMainTab === 'equipment') {
+      return [
+        { id: 'all', name: '전체' },
+        { id: 'weapon', name: '무기' },
+        { id: 'armor', name: '방어구' },
+        { id: 'accessory', name: '악세사리' }
+      ]
+    } else if (activeMainTab === 'consumables') {
+      return [
+        { id: 'all', name: '전체' },
+        { id: 'potion', name: '물약' },
+        { id: 'food', name: '음식' },
+        { id: 'scroll', name: '스크롤' }
+      ]
+    }
+    return []
   }
 
   return (
@@ -49,322 +209,199 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
       >
         {/* 패널 헤더 */}
         <div className="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
-          <h2 className="text-lg font-bold text-white">📦 인벤토리</h2>
-            <button
-              onClick={onClose}
+          <h2 className="text-lg font-bold text-white">🎒 인벤토리</h2>
+          <button
+            onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
-            >
+          >
             <X size={24} />
-            </button>
+          </button>
         </div>
-        
-        {/* 구분 탭 */}
+
+        {/* 메인 탭 */}
         <div className="flex border-b border-gray-700 bg-gray-800 flex-shrink-0">
           <button
-            onClick={() => setActiveTab('items')}
+            onClick={() => handleMainTabChange('materials')}
             className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
-              activeTab === 'items' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'
+              activeMainTab === 'materials' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <Package size={16} />
-              <span>아이템</span>
-            </div>
-          </button>
-          <button
-            onClick={() => setActiveTab('materials')}
-            className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
-              activeTab === 'materials' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <Wrench size={16} />
               <span>재료</span>
             </div>
           </button>
           <button
-            onClick={() => setActiveTab('equipment')}
+            onClick={() => handleMainTabChange('equipment')}
             className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
-              activeTab === 'equipment' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'
+              activeMainTab === 'equipment' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
-              <Shirt size={16} />
+              <Hammer size={16} />
               <span>장비</span>
             </div>
           </button>
           <button
-            onClick={() => setActiveTab('consumables')}
+            onClick={() => handleMainTabChange('consumables')}
             className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
-              activeTab === 'consumables' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'
+              activeMainTab === 'consumables' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
-              <Zap size={16} />
+              <Pill size={16} />
               <span>소모품</span>
             </div>
           </button>
         </div>
-        
-        {/* 패널 내용 - 스크롤 가능 */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="pb-32">
-            {activeTab === 'items' && (
-              <div className="p-4 space-y-6">
-                {/* 스킬 페이지 */}
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-md font-semibold mb-3 text-purple-400">📜 스킬 페이지</h3>
-                  {inventory.skillPages && inventory.skillPages.length > 0 ? (
-                    <div className="space-y-2">
-                      {inventory.skillPages.map((page: any, index: number) => (
-                  <div 
-                    key={index}
-                          className="flex justify-between items-center bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors"
-                          onClick={() => handleItemClick(page.skillId)}
-                        >
-                          <div>
-                            <div className="font-medium text-white capitalize">
-                              {page.skillId.replace('_', ' ')} 페이지
-                            </div>
-                            <div className="text-sm text-gray-400">
-                              {page.count >= 3 ? '✅ 스킬 해금 가능' : `${3 - page.count}장 더 필요`}
-                            </div>
-                          </div>
-                          <div className="text-purple-400 font-bold">
-                            {page.count}/3
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 text-center py-4">스킬 페이지가 없습니다</div>
-                  )}
-                </div>
-              </div>
-            )}
 
-            {activeTab === 'materials' && (
-              <div className="p-4 space-y-6">
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-md font-semibold mb-3 text-green-400">🔥 재료</h3>
-                  {inventory.materials && inventory.materials.length > 0 ? (
-                    <div className="space-y-2">
-                      {inventory.materials.map((material: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center bg-gray-800 rounded p-3">
-                          <div>
-                            <div className="font-medium text-white capitalize">
-                              {material.name || material.materialId.replace('_', ' ')}
-                            </div>
-                            <div className="text-sm text-gray-400">레벨 {material.level}</div>
-                          </div>
-                          <div className="text-green-400 font-bold">
-                            {material.count}개
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 text-center py-4">재료가 없습니다</div>
-                  )}
-                </div>
-              </div>
-            )}
+        {/* 서브 탭 */}
+        <div className="flex border-b border-gray-700 bg-gray-700 flex-shrink-0 overflow-x-auto">
+          {getSubTabs().map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveSubTab(tab.id)}
+              className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                activeSubTab === tab.id ? 'bg-gray-600 text-white' : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
 
-            {activeTab === 'equipment' && (
-              <div className="p-4 space-y-6">
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-md font-semibold mb-3 text-orange-400">⚔️ 장비 목록</h3>
-                  
-                  <div className="space-y-3">
-                    {/* 착용 중인 무기 */}
-                    {player.equipment.weapon && (
-                      <div 
-                        className={`bg-gray-800 rounded p-3 border-l-4 border-red-400 cursor-pointer hover:bg-gray-700 transition-colors`}
-                        onClick={() => handleItemClick(player.equipment.weapon!.itemId)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-red-400">🗡️</span>
-                              <div className={`font-medium ${getQualityColor('Common')}`}>
-                                {player.equipment.weapon.itemId.replace('_', ' ')}
-                              </div>
-                              <span className="text-green-400 text-sm font-semibold px-2 py-1 bg-green-900 rounded">착용중</span>
-                            </div>
-                            <div className="text-sm text-gray-400 mt-1">
-                              레벨 {player.equipment.weapon.level} | +{player.equipment.weapon.enhancement}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 착용 중인 방어구 */}
-                    {player.equipment.armor && (
-                      <div 
-                        className={`bg-gray-800 rounded p-3 border-l-4 border-blue-400 cursor-pointer hover:bg-gray-700 transition-colors`}
-                        onClick={() => handleItemClick(player.equipment.armor!.itemId)}
+        {/* 속성 필터 영역 (재료 > 속성 탭에서만 표시) */}
+        {activeMainTab === 'materials' && activeSubTab === 'elemental' && (
+          <div className="p-3 bg-gray-700 border-b border-gray-600 flex-shrink-0">
+            <div className="flex items-center gap-1">
+              {(['all', 'Flame', 'Frost', 'Toxic', 'Shadow', 'Thunder', 'Verdant'] as ElementFilter[]).map((element) => {
+                const elementInfo = getElementInfo(element)
+                const ElementIcon = elementInfo.icon
+                return (
+                  <button
+                    key={element}
+                    onClick={() => setElementFilter(element)}
+                    className={`p-1 rounded transition-colors ${
+                      elementFilter === element
+                        ? 'bg-gray-600 text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    title={elementInfo.name}
                   >
-                    <div className="flex justify-between items-center">
-                      <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-blue-400">🛡️</span>
-                              <div className={`font-medium ${getQualityColor('Common')}`}>
-                                {player.equipment.armor.itemId.replace('_', ' ')}
-                              </div>
-                              <span className="text-green-400 text-sm font-semibold px-2 py-1 bg-green-900 rounded">착용중</span>
-                            </div>
-                            <div className="text-sm text-gray-400 mt-1">
-                              레벨 {player.equipment.armor.level} | +{player.equipment.armor.enhancement}
-                            </div>
-                          </div>
-                        </div>
+                    <ElementIcon size={16} className={elementInfo.color} />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 정렬 컨트롤 영역 */}
+        <div className="flex justify-end items-center p-3 bg-gray-800 border-b border-gray-600 flex-shrink-0">
+          <button
+            onClick={toggleSortOrder}
+            className="flex items-center gap-2 px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded text-sm transition-colors"
+          >
+            <ArrowUpDown size={14} />
+            <span>{sortOrder === 'level_desc' ? '레벨 높은순' : '레벨 낮은순'}</span>
+          </button>
+        </div>
+
+        {/* 아이템 목록 */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {filteredItems.length === 0 ? (
+            <div className="text-gray-500 text-center py-8">
+              {activeMainTab === 'materials' ? '보유한 재료가 없습니다' :
+               activeMainTab === 'equipment' ? '보유한 장비가 없습니다' :
+               '보유한 소모품이 없습니다'}
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-3">
+              {filteredItems.map((item, index) => {
+                const itemId = item.materialId || item.itemId || item.consumableId
+                const equipped = activeMainTab === 'equipment' && isEquipped(item)
+                
+                return (
+                  <div
+                    key={item.displayId || item.uniqueId || `${itemId}-${index}`}
+                    className={`relative bg-gray-800 rounded-lg p-3 cursor-pointer transition-colors border ${
+                      equipped 
+                        ? 'border-yellow-400 border-2 bg-yellow-900/20 hover:bg-yellow-800/30' 
+                        : 'border-gray-700 hover:bg-gray-700'
+                    }`}
+                    onClick={() => handleItemClick(itemId)}
+                  >
+                    {/* 장착 상태 뱃지 */}
+                    {equipped && (
+                      <div className="absolute -top-1 -right-1 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        E
                       </div>
                     )}
-
-                    {/* 착용 중인 액세서리 */}
-                    {player.equipment.accessory && (
-                      <div 
-                        className={`bg-gray-800 rounded p-3 border-l-4 border-purple-400 cursor-pointer hover:bg-gray-700 transition-colors`}
-                        onClick={() => handleItemClick(player.equipment.accessory!.itemId)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-purple-400">💍</span>
-                              <div className={`font-medium ${getQualityColor('Common')}`}>
-                                {player.equipment.accessory.itemId.replace('_', ' ')}
-                              </div>
-                              <span className="text-green-400 text-sm font-semibold px-2 py-1 bg-green-900 rounded">착용중</span>
-                            </div>
-                            <div className="text-sm text-gray-400 mt-1">
-                              레벨 {player.equipment.accessory.level} | +{player.equipment.accessory.enhancement}
+                    
+                  {/* 아이템 정보 */}
+                    <div className="space-y-1">
+                    {/* 아이템 이름 */}
+                      <div className={`text-xs font-medium mb-1 ${equipped ? 'text-yellow-200' : 'text-white'}`}>
+                        {itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </div>
+                    
+                    {/* 레벨 표시 */}
+                    <div className="text-xs text-purple-400 mb-1">
+                      Lv {item.level || 1}
+                    </div>
+
+                      {/* 품질 표시 (장비인 경우) */}
+                      {activeMainTab === 'equipment' && item.quality && (
+                        <div className={`text-xs mb-1 ${
+                          item.quality === 'Legendary' ? 'text-orange-400' :
+                          item.quality === 'Epic' ? 'text-purple-400' :
+                          item.quality === 'Superior' ? 'text-blue-400' :
+                          item.quality === 'Fine' ? 'text-green-400' :
+                          'text-gray-400'
+                        }`}>
+                          {item.quality}
+                          {item.enhancement > 0 && ` +${item.enhancement}`}
+                        </div>
+                      )}
+
+                      {/* 수량 표시 (장비가 아닌 경우만) */}
+                      {activeMainTab !== 'equipment' && (
+                    <div className="text-xs text-gray-400">
+                      {item.count || item.quantity || 1}개
+                    </div>
+                      )}
+
+                    {/* 속성 표시 (재료 > 속성 탭에서) */}
+                    {activeMainTab === 'materials' && activeSubTab === 'elemental' && item.element && item.element !== 'neutral' && (
+                      <div className="mt-1">
+                        <span className={`text-xs px-1 py-0.5 rounded ${
+                          item.element === 'Flame' ? 'bg-red-900 text-red-400' :
+                          item.element === 'Frost' ? 'bg-blue-900 text-blue-400' :
+                          item.element === 'Toxic' ? 'bg-green-900 text-green-400' :
+                          item.element === 'Shadow' ? 'bg-gray-900 text-gray-400' :
+                          item.element === 'Thunder' ? 'bg-yellow-900 text-yellow-400' :
+                          item.element === 'Verdant' ? 'bg-emerald-900 text-emerald-400' :
+                          'bg-gray-900 text-gray-400'
+                        }`}>
+                          {getElementInfo(item.element as ElementFilter)?.name || item.element}
+                        </span>
+                      </div>
+                    )}
                   </div>
-              </div>
+                </div>
+                )
+              })}
             </div>
           )}
-          
-                    {/* 구분선 */}
-                    {(player.equipment.weapon || player.equipment.armor || player.equipment.accessory) && (
-                      <div className="border-t border-gray-700 my-4"></div>
-                    )}
 
-                    {/* 보관된 장비들 */}
-                    <div 
-                      className={`bg-gray-800 rounded p-3 border border-green-500 cursor-pointer hover:bg-gray-700 transition-colors`}
-                      onClick={() => handleItemClick('iron_sword')}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-400">🗡️</span>
-                            <div className={`font-medium ${getQualityColor('Uncommon')}`}>Iron Sword</div>
-                          </div>
-                          <div className="text-sm text-gray-400 mt-1">
-                            레벨 2 | +0
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button 
-                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              // 착용 로직
-                            }}
-                          >
-                            착용
-                          </button>
-                        </div>
-                      </div>
-                    </div>
 
-                    <div 
-                      className={`bg-gray-800 rounded p-3 border border-gray-500 cursor-pointer hover:bg-gray-700 transition-colors`}
-                      onClick={() => handleItemClick('leather_armor')}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-400">🛡️</span>
-                            <div className={`font-medium ${getQualityColor('Common')}`}>Leather Armor</div>
-                          </div>
-                          <div className="text-sm text-gray-400 mt-1">
-                            레벨 1 | +1
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button 
-                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              // 착용 로직
-                            }}
-                          >
-                            착용
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 빈 상태 메시지 */}
-                    <div className="text-gray-500 text-center py-4 text-sm">
-                      💡 보관된 장비가 더 이상 없습니다
-                    </div>
-                  </div>
-                </div>
-            </div>
-          )}
-          
-            {activeTab === 'consumables' && (
-              <div className="p-4 space-y-6">
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-md font-semibold mb-3 text-blue-400">🧪 소모품</h3>
-                  {inventory.items && inventory.items.length > 0 ? (
-                    <div className="space-y-2">
-                      {inventory.items.map((item: any, index: number) => (
-                        <div 
-                          key={index} 
-                          className="flex justify-between items-center bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors"
-                          onClick={() => handleItemClick(item.itemId, 'consumable')}
-                        >
-                      <div>
-                            <div className={`font-medium ${getQualityColor('Common')} capitalize`}>
-                              {item.itemId.replace('_', ' ')}
-                            </div>
-                            <div className="text-sm text-gray-400">레벨 {item.level || 1}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="text-blue-400 font-bold">
-                              {item.quantity}개
-                            </div>
-                            <button 
-                              className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                // 사용 로직
-                              }}
-                            >
-                              사용
-                            </button>
-                          </div>
-                      </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 text-center py-4">소모품이 없습니다</div>
-                  )}
-                  </div>
-              </div>
-            )}
-            </div>
         </div>
       </div>
 
       {/* 아이템 상세 모달 */}
       <ItemDetailModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
+        isOpen={showItemModal}
+        onClose={() => setShowItemModal(false)}
         item={selectedItem}
       />
     </>

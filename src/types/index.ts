@@ -5,13 +5,14 @@ export type ItemQuality = 'Normal' | 'Fine' | 'Masterwork' | 'Legendary'
 
 export type SkillType = 'Active' | 'Passive'
 
-export type LifeSkillType = 'Smithing' | 'Alchemy' | 'Cooking' | 'Fishing' | 'Farming' | 'Mining' | 'Herbalism'
+export type LifeSkillType = 'smithing' | 'alchemy' | 'cooking' | 'fishing' | 'farming' | 'herbalism' | 'mining'
 
 // === 장비 및 아이템 ===
 export interface EquipmentInstance {
   itemId: string
+  uniqueId?: string // 장비 고유 ID
   level: number
-  quality: string
+  quality: 'Common' | 'Fine' | 'Superior' | 'Epic' | 'Legendary'
   enhancement: number
   traits: string[]
   
@@ -23,6 +24,34 @@ export interface EquipmentInstance {
   speed?: number
   hp?: number
   mp?: number
+}
+
+// === 상성 스탯 ===
+export interface ElementalStats {
+  flame: {
+    attack: number
+    resistance: number
+  }
+  frost: {
+    attack: number
+    resistance: number
+  }
+  toxic: {
+    attack: number
+    resistance: number
+  }
+  shadow: {
+    attack: number
+    resistance: number
+  }
+  thunder: {
+    attack: number
+    resistance: number
+  }
+  verdant: {
+    attack: number
+    resistance: number
+  }
 }
 
 // === 플레이어 상태 ===
@@ -53,6 +82,10 @@ export interface PlayerState {
   physicalDefense: number
   magicalDefense: number
   speed: number
+  
+  // 상성 스탯 (기본값 + 장비/스킬 보정)
+  baseElementalStats: ElementalStats
+  elementalStats: ElementalStats
   
   // 장비
   equipment: {
@@ -126,7 +159,7 @@ export interface Skill {
 export interface SkillEffect {
   type: 'damage' | 'heal' | 'buff' | 'debuff'
   target: 'self' | 'enemy' | 'all'
-  element?: ThemeType | 'physical' | 'magical'
+  element?: ThemeType | 'physical' | 'magical' | 'neutral'
   value: number // 데미지량, 회복량, 버프량 등
   stat?: string // 버프/디버프 대상 스탯
   duration?: number // 지속 시간 (ms)
@@ -221,8 +254,11 @@ export interface ItemStats {
 
 export interface ItemInstance {
   itemId: string
+  uniqueId?: string // 장비 고유 ID (장비만 사용)
+  level: number
   quantity: number
-  level?: number
+  quality?: 'Common' | 'Fine' | 'Superior' | 'Epic' | 'Legendary'
+  enhancement?: number
 }
 
 export interface ItemTrait {
@@ -302,22 +338,55 @@ export interface PlayerSkill {
 }
 
 // === 생활 스킬 ===
-export interface LifeSkillState {
-  levels: Record<LifeSkillType, number>
-  experience: Record<LifeSkillType, number>
-  
-  // 미니게임 상태
-  minigameState: MinigameState
-  
-  // 쿨다운
-  cooldowns: Record<string, number>
+export interface LifeSkill {
+  id: LifeSkillType
+  name: string
+  description: string
+  level: number
+  currentXp: number
+  maxXp: number
+  unlocked: boolean
+  cooldownUntil?: number // timestamp
 }
 
-export interface MinigameState {
-  currentCombo: number
-  maxCombo: number
-  perfectStreak: number
-  totalPerfects: number
+export interface LifeSkillState {
+  skills: Record<LifeSkillType, LifeSkill>
+  activeMinigame: {
+    skillType: LifeSkillType | null
+    gameType: 'slot' | 'rhythm' | 'matching' | 'timing' | null
+    data: any
+  } | null
+}
+
+// === 미니게임 ===
+export interface MinigameResult {
+  success: boolean
+  perfect: boolean
+  rewards: {
+    xp: number
+    items?: { itemId: string, quantity: number }[]
+    materials?: { materialId: string, quantity: number }[]
+  }
+}
+
+// === 제작 시스템 ===
+export interface CraftingRecipe {
+  id: string
+  name: string
+  description: string
+  skillType: LifeSkillType
+  requiredLevel: number
+  materials: MaterialRequirement[]
+  baseQuality: number
+  resultItem: string
+  craftingTime: number // milliseconds
+}
+
+export interface CraftingSession {
+  recipeId: string
+  startTime: number
+  endTime: number
+  qualityBonus: number
 }
 
 // === 탑 상태 ===
@@ -339,7 +408,7 @@ export interface CombatLogEntry {
 
 // === UI 상태 ===
 export interface UIState {
-  activePanel: 'character' | 'inventory' | 'shop' | null
+  activePanel: 'character' | 'inventory' | 'shop' | 'life' | null
   notifications: Array<{
     id: string
     type: 'info' | 'success' | 'warning' | 'error'

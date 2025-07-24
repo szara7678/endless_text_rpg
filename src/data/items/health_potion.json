@@ -1,25 +1,18 @@
 {
-  "id": "health_potion",
+  "itemId": "health_potion",
   "name": "체력 물약",
-  "description": "HP를 50 회복시켜주는 기본적인 치료 물약입니다.",
+  "description": "체력을 즉시 회복시켜주는 빨간 물약입니다.",
   "type": "consumable",
-  "subType": "potion",
-  "quality": "Common",
+  "subtype": "potion",
+  "rarity": "Normal",
   "level": 1,
-  "requiredLevel": 1,
-  "effects": [
-    {
-      "type": "heal_hp",
-      "value": 50,
-      "target": "self"
-    }
-  ],
-  "sellPrice": 10,
-  "stackable": true,
-  "maxStack": 99,
-  "cooldown": 0,
-  "materials": {
-    "herb": 1,
-    "water": 1
-  }
+  "effects": {
+    "healHp": 50
+  },
+  "requirements": {
+    "level": 1
+  },
+  "sellPrice": 5,
+  "stackSize": 99,
+  "consumable": true
 } 

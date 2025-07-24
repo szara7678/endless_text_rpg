@@ -32,7 +32,7 @@ export const initialPlayerState: PlayerState = {
   highestFloor: 1,
   
   // 재화
-  gold: 0,
+  gold: 1000, // 초기 골드 지급
   gem: 0,
   
   // 기본 전투 스탯 (base~ 값들)
@@ -48,6 +48,26 @@ export const initialPlayerState: PlayerState = {
   physicalDefense: 8,
   magicalDefense: 6,
   speed: 12,
+  
+  // 기본 상성 스탯
+  baseElementalStats: {
+    flame: { attack: 0, resistance: 0 },
+    frost: { attack: 0, resistance: 0 },
+    toxic: { attack: 0, resistance: 0 },
+    shadow: { attack: 0, resistance: 0 },
+    thunder: { attack: 0, resistance: 0 },
+    verdant: { attack: 0, resistance: 0 }
+  },
+  
+  // 계산된 상성 스탯 (초기값은 base와 동일)
+  elementalStats: {
+    flame: { attack: 0, resistance: 0 },
+    frost: { attack: 0, resistance: 0 },
+    toxic: { attack: 0, resistance: 0 },
+    shadow: { attack: 0, resistance: 0 },
+    thunder: { attack: 0, resistance: 0 },
+    verdant: { attack: 0, resistance: 0 }
+  },
   
   // 장비
   equipment: {

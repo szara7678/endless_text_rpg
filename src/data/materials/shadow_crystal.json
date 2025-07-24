@@ -1,0 +1,12 @@
+{
+  "id": "shadow_crystal",
+  "name": "암흑 수정",
+  "description": "어둠의 힘이 응축된 검은 수정",
+  "type": "material",
+  "category": "crystal",
+  "element": "Shadow",
+  "baseValue": 22,
+  "rarity": "Superior",
+  "stackable": true,
+  "maxStack": 99
+} 

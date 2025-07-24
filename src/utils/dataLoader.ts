@@ -102,33 +102,26 @@ export async function loadThemes(): Promise<any[]> {
 // 아이템 데이터 로딩
 export async function loadItem(itemId: string): Promise<any | null> {
   try {
-    let itemData: any
-    
-    switch (itemId) {
-      case 'wooden_sword':
-        itemData = (await import('../data/items/wooden_sword.json')).default
-        break
-      case 'iron_sword':
-        itemData = (await import('../data/items/iron_sword.json')).default
-        break
-      case 'leather_armor':
-        itemData = (await import('../data/items/leather_armor.json')).default
-        break
-      case 'health_potion':
-        itemData = (await import('../data/items/health_potion.json')).default
-        break
-      case 'mana_potion':
-        itemData = (await import('../data/items/mana_potion.json')).default
-        break
-      case 'basic_attack':
-        itemData = (await import('../data/skills/basic_attack.json')).default
-        break
-      default:
-        console.warn(`알 수 없는 아이템: ${itemId}`)
-        return null
+    // 동적으로 아이템 파일 로드 시도
+    try {
+      const itemData = (await import(`../data/items/${itemId}.json`)).default
+      return itemData
+    } catch (importError) {
+      // 개별 파일이 없으면 materials 폴더에서 시도
+      try {
+        const materialData = (await import(`../data/materials/${itemId}.json`)).default
+        return materialData
+      } catch (materialError) {
+        // materials에도 없으면 스킬 폴더에서 시도
+        try {
+          const skillData = (await import(`../data/skills/${itemId}.json`)).default
+          return skillData
+        } catch (skillError) {
+          console.warn(`알 수 없는 아이템: ${itemId}`)
+          return null
+        }
+      }
     }
-    
-    return itemData
   } catch (error) {
     console.warn(`아이템 ${itemId} 로드 실패:`, error)
     return null

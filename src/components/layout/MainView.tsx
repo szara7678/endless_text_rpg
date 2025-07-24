@@ -1,8 +1,17 @@
 import React, { useEffect, useRef } from 'react'
 import { useGameStore } from '../../stores'
+import { Play, Pause, RotateCcw } from 'lucide-react'
 
 const MainView: React.FC = () => {
-  const { player, tower, setAutoMode, setAutoSpeed } = useGameStore()
+  const { 
+    tower, 
+    player,
+    startAutoCombat,
+    stopAutoCombat,
+    clearCombatLog,
+    addSkillTrainingXp,
+    addSkillPage
+  } = useGameStore()
   const logContainerRef = useRef<HTMLDivElement>(null)
 
   // 로그가 업데이트될 때마다 스크롤을 맨 아래로
@@ -45,25 +54,104 @@ const MainView: React.FC = () => {
     }
   }
 
+  // 자동 전투 토글
   const handleToggleAuto = () => {
-    if (tower) {
-      setAutoMode(!tower.autoMode)
+    if (tower.autoMode) {
+      stopAutoCombat()
+    } else {
+      startAutoCombat(tower.autoSpeed || 1)
     }
   }
 
+  // 속도 변경
   const handleSpeedChange = () => {
-    if (tower) {
-      const speeds = [1, 2, 4]
-      const currentIndex = speeds.indexOf(tower.autoSpeed || 1)
-      const nextIndex = (currentIndex + 1) % speeds.length
-      setAutoSpeed(speeds[nextIndex])
+    const speeds = [1, 2, 3, 5]
+    const currentIndex = speeds.indexOf(tower.autoSpeed || 1)
+    const nextSpeed = speeds[(currentIndex + 1) % speeds.length]
+    
+    if (tower.autoMode) {
+      stopAutoCombat()
+      startAutoCombat(nextSpeed)
+    } else {
+      startAutoCombat(nextSpeed)
     }
+  }
+
+  const handleClearLog = () => {
+    clearCombatLog()
+  }
+
+  // 스킬 시스템 테스트용
+  const handleAddSkillXp = () => {
+    addSkillTrainingXp('basic_attack', 'cast', 10)
+  }
+
+  const handleAddSkillPage = () => {
+    const skills = ['fireball', 'ice_shard', 'flame_aura', 'frost_bite', 'ember_toss']
+    const randomSkill = skills[Math.floor(Math.random() * skills.length)]
+    addSkillPage(randomSkill)
   }
 
   return (
     <div className="main-view h-full bg-gray-900 p-4">
       <div className="h-full bg-gray-800 rounded-lg border border-gray-700 p-4 flex flex-col">
         
+        {/* 상단 컨트롤 */}
+        <div className="flex-shrink-0 p-4 border-b border-gray-700">
+          <div className="flex items-center justify-between">
+            {/* 자동 진행 컨트롤 */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleToggleAuto}
+                className={`px-4 py-2 rounded font-medium transition-colors ${
+                  tower.autoMode
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+              >
+                {tower.autoMode ? <Pause size={16} /> : <Play size={16} />}
+                <span className="ml-2">
+                  {tower.autoMode ? '정지' : '시작'}
+                </span>
+              </button>
+
+              <button
+                onClick={handleSpeedChange}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded font-medium transition-colors"
+              >
+                {tower.autoSpeed}x
+              </button>
+            </div>
+
+            {/* 기타 컨트롤 */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleClearLog}
+                className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+              >
+                <RotateCcw size={14} />
+              </button>
+
+              {/* 스킬 시스템 테스트 버튼들 */}
+              <button
+                onClick={handleAddSkillXp}
+                className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition-colors"
+                title="스킬 XP +10"
+              >
+                +XP
+              </button>
+
+              <button
+                onClick={handleAddSkillPage}
+                className="px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm transition-colors"
+                title="랜덤 스킬 페이지 획득"
+              >
+                +Page
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* 전투 상황 및 자동 진행 컨트롤 */}
         {tower?.isInCombat && tower.currentMonster && (
           <div className="mb-4 p-4 bg-red-900/20 border border-red-700 rounded-lg">

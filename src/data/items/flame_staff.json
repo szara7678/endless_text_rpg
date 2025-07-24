@@ -1,0 +1,23 @@
+{
+  "itemId": "flame_staff",
+  "name": "화염 지팡이",
+  "description": "화염 마법의 위력을 증폭시키는 지팡이입니다.",
+  "type": "weapon",
+  "subtype": "staff",
+  "element": "flame",
+  "rarity": "Superior",
+  "level": 2,
+  "baseStats": {
+    "magicalAttack": 25,
+    "elementalAttack": {
+      "flame": 20
+    },
+    "mp": 30
+  },
+  "requirements": {
+    "level": 8
+  },
+  "sellPrice": 80,
+  "enhanceable": true,
+  "maxEnhancement": 10
+} 

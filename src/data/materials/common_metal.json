@@ -1,0 +1,12 @@
+{
+  "id": "common_metal",
+  "name": "일반 금속",
+  "description": "모든 장비 제작에 필요한 기본 금속",
+  "type": "material",
+  "category": "metal",
+  "element": "neutral",
+  "baseValue": 8,
+  "rarity": "Common",
+  "stackable": true,
+  "maxStack": 99
+} 

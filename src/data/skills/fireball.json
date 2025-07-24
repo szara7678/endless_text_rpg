@@ -1,31 +1,33 @@
 {
-  "id": "fireball",
+  "skillId": "fireball",
   "name": "화염구",
-  "description": "기본적인 화염 마법. 적에게 화염 피해를 입힌다.",
+  "description": "강력한 화염구를 발사하여 적에게 큰 피해를 입힙니다.",
   "type": "Active",
   "element": "Flame",
-  
-  "triggerChance": 30,
-  "mpCost": 10,
-  
+  "baseTriggerChance": 10,
+  "triggerChanceLevels": [1, 3, 7, 12, 18, 25, 35, 45, 60, 80, 100],
+  "maxLevel": 0,
+  "requiredPages": 3,
   "effects": [
     {
       "type": "damage",
-      "target": "enemy",
       "element": "Flame",
-      "value": 25
+      "baseValue": 150,
+      "levelScaling": 25
     }
   ],
-  
-  "requiredPages": 3,
   "trainingRules": [
     {
-      "on": "cast",
-      "xp": 5
+      "condition": "cast",
+      "xpGain": 2
     },
     {
-      "on": "killWeak", 
-      "xp": 20
+      "condition": "kill",
+      "xpGain": 8
+    },
+    {
+      "condition": "killWeak",
+      "xpGain": 25
     }
   ]
 } 

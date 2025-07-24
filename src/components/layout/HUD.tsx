@@ -6,42 +6,57 @@ const HUD: React.FC = () => {
 
   return (
     <div className="hud bg-gray-800 border-b border-gray-700 p-4">
-      <div className="flex items-center justify-between">
-        {/* 플레이어 기본 정보 */}
-        <div className="flex items-center gap-4">
-          <div className="text-sm">
-            <div className="text-gray-400">HP</div>
-            <div className="text-red-400 font-mono">
-              {player.hp}/{player.maxHp}
-          </div>
-          </div>
-          <div className="text-sm">
-            <div className="text-gray-400">MP</div>
-            <div className="text-blue-400 font-mono">
-              {player.mp}/{player.maxMp}
-        </div>
-          </div>
-          <div className="text-sm">
-            <div className="text-gray-400">층수</div>
-            <div className="text-yellow-400 font-mono">
-              {player.highestFloor}F
+      <div className="flex justify-between items-center">
+        {/* 좌측: HP/MP */}
+        <div className="flex flex-col space-y-1">
+          <div className="flex items-center space-x-2">
+            <span className="text-red-400 text-sm font-medium">❤️ HP</span>
+            <div className="w-24 bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${Math.max(0, (player.hp / player.maxHp) * 100)}%` }}
+              />
             </div>
+            <span className="text-white text-xs font-mono">
+              {player.hp}/{player.maxHp}
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <span className="text-blue-400 text-sm font-medium">💧 MP</span>
+            <div className="w-24 bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${Math.max(0, (player.mp / player.maxMp) * 100)}%` }}
+              />
+            </div>
+            <span className="text-white text-xs font-mono">
+              {player.mp}/{player.maxMp}
+            </span>
           </div>
         </div>
 
-        {/* 재화 정보 */}
-        <div className="flex items-center gap-4">
-          <div className="text-sm">
-            <div className="text-gray-400">골드</div>
-            <div className="text-yellow-400 font-mono">
-              {player.gold.toLocaleString()}G
-      </div>
+        {/* 중앙: 층수 */}
+        <div className="flex flex-col items-center">
+          <div className="text-white text-lg font-bold">
+            {player.highestFloor}층
           </div>
-          <div className="text-sm">
-            <div className="text-gray-400">젠</div>
-            <div className="text-purple-400 font-mono">
-              {player.gem}💎
-            </div>
+        </div>
+
+        {/* 우측: 재화 */}
+        <div className="flex flex-col items-end space-y-1">
+          <div className="flex items-center space-x-1">
+            <span className="text-yellow-400 text-sm">💰</span>
+            <span className="text-white text-sm font-mono">
+              {player.gold.toLocaleString()}
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-1">
+            <span className="text-purple-400 text-sm">💎</span>
+            <span className="text-white text-sm font-mono">
+              {player.gem.toLocaleString()}
+            </span>
           </div>
         </div>
       </div>

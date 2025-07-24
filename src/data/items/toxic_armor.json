@@ -1,0 +1,24 @@
+{
+  "itemId": "toxic_armor",
+  "name": "독 방어구",
+  "description": "독에 대한 저항력을 높여주는 방어구입니다.",
+  "type": "armor",
+  "subtype": "light",
+  "element": "toxic",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalDefense": 12,
+    "magicalDefense": 18,
+    "elementalResistance": {
+      "toxic": 30
+    },
+    "speed": 5
+  },
+  "requirements": {
+    "level": 6
+  },
+  "sellPrice": 60,
+  "enhanceable": true,
+  "maxEnhancement": 10
+} 

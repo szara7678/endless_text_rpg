@@ -1,0 +1,30 @@
+{
+  "itemId": "shadow_sword",
+  "name": "그림자 검",
+  "description": "어둠의 힘이 깃든 검입니다. 적의 방어력을 무시하는 효과가 있습니다.",
+  "type": "weapon",
+  "subtype": "sword",
+  "element": "shadow",
+  "rarity": "Superior",
+  "level": 2,
+  "baseStats": {
+    "physicalAttack": 35,
+    "elementalAttack": {
+      "shadow": 25
+    },
+    "speed": 8
+  },
+  "requirements": {
+    "level": 10
+  },
+  "sellPrice": 120,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "craftingMaterials": {
+    "steel_ore": 3,
+    "shadow_gem": 2,
+    "wood": 1
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 3
+} 

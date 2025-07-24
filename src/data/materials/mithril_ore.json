@@ -1,0 +1,13 @@
+{
+  "materialId": "mithril_ore",
+  "name": "미스릴 광석",
+  "description": "희귀한 미스릴 광석입니다. 최고급 장비 제작에 사용됩니다.",
+  "type": "ore",
+  "element": "neutral",
+  "rarity": "Epic",
+  "baseLevel": 3,
+  "maxLevel": 5,
+  "sellPrice": 50,
+  "stackSize": 999,
+  "category": "smithing"
+} 

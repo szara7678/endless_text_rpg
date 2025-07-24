@@ -1,0 +1,25 @@
+{
+  "itemId": "bread",
+  "name": "빵",
+  "description": "갓 구운 따뜻한 빵입니다. 체력을 소량 회복합니다.",
+  "type": "consumable",
+  "subtype": "food",
+  "rarity": "Common",
+  "level": 1,
+  "effects": [
+    {
+      "type": "heal_hp",
+      "value": 30,
+      "duration": 0
+    }
+  ],
+  "sellPrice": 5,
+  "stackable": true,
+  "maxStack": 20,
+  "craftingMaterials": {
+    "flour": 2,
+    "water": 1
+  },
+  "requiredSkill": "cooking",
+  "requiredSkillLevel": 1
+} 

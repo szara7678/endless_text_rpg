@@ -1,0 +1,24 @@
+{
+  "itemId": "flame_armor",
+  "name": "화염 방어구",
+  "description": "화염에 대한 저항력을 높여주는 방어구입니다.",
+  "type": "armor",
+  "subtype": "heavy",
+  "element": "flame",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalDefense": 15,
+    "magicalDefense": 10,
+    "elementalResistance": {
+      "flame": 25
+    },
+    "hp": 50
+  },
+  "requirements": {
+    "level": 6
+  },
+  "sellPrice": 60,
+  "enhanceable": true,
+  "maxEnhancement": 10
+} 

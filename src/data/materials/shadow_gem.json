@@ -1,0 +1,13 @@
+{
+  "materialId": "shadow_gem",
+  "name": "그림자 보석",
+  "description": "어둠의 힘이 깃든 신비로운 보석입니다. 그림자 장비 제작에 사용됩니다.",
+  "type": "gem",
+  "element": "shadow",
+  "rarity": "Superior",
+  "baseLevel": 2,
+  "maxLevel": 5,
+  "sellPrice": 30,
+  "stackSize": 999,
+  "category": "crafting"
+} 

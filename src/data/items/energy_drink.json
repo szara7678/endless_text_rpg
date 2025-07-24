@@ -1,0 +1,28 @@
+{
+  "id": "energy_drink",
+  "name": "에너지 드링크",
+  "description": "일시적으로 모든 능력치를 증가시키는 음료",
+  "type": "consumable",
+  "category": "potion",
+  "baseValue": 80,
+  "rarity": "Fine",
+  "stackable": true,
+  "maxStack": 10,
+  "effect": {
+    "type": "buff",
+    "duration": 300000,
+    "stats": {
+      "physicalAttack": 10,
+      "magicalAttack": 10,
+      "speed": 5
+    }
+  },
+  "craftingMaterials": {
+    "blue_herb": 2,
+    "thunder_gem": 1
+  },
+  "requirements": {
+    "requiredSkill": "alchemy",
+    "requiredSkillLevel": 3
+  }
+} 

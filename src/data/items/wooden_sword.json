@@ -1,24 +1,19 @@
 {
-  "id": "wooden_sword",
+  "itemId": "wooden_sword",
   "name": "나무 검",
-  "description": "초보자용 기본 무기입니다. 가벼우면서도 튼튼합니다.",
+  "description": "간단하게 나무로 만든 검입니다. 초보자가 사용하기 적합합니다.",
   "type": "weapon",
-  "subType": "sword",
-  "quality": "Common",
+  "subtype": "sword",
+  "rarity": "Normal",
   "level": 1,
-  "requiredLevel": 1,
-  "stats": {
-    "physicalAttack": 10,
-    "magicalAttack": 0,
-    "physicalDefense": 0,
-    "magicalDefense": 0,
-    "speed": 0
+  "baseStats": {
+    "physicalAttack": 8,
+    "speed": 2
   },
-  "effects": [],
-  "sellPrice": 5,
-  "maxEnhancement": 10,
-  "materials": {
-    "wood": 2,
-    "iron": 1
-  }
+  "requirements": {
+    "level": 1
+  },
+  "sellPrice": 10,
+  "enhanceable": true,
+  "maxEnhancement": 5
 } 

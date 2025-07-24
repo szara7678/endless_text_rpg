@@ -6,6 +6,7 @@ import TabBar from './TabBar'
 import CharacterPanel from '../character/CharacterPanel'
 import InventoryPanel from '../inventory/InventoryPanel'
 import ShopPanel from '../shop/ShopPanel'
+import LifePanel from '../life/LifePanel'
 
 const Layout: React.FC = () => {
   const { gameState, forceResetToMenu, ui, setActivePanel } = useGameStore()
@@ -13,7 +14,7 @@ const Layout: React.FC = () => {
   // 게임 상태가 아니면 렌더링 안함
   if (gameState !== 'playing') return null
 
-  const handlePanelChange = (panel: 'character' | 'inventory' | 'shop' | null) => {
+  const handlePanelChange = (panel: 'character' | 'inventory' | 'shop' | 'life' | null) => {
     // 같은 탭을 다시 클릭하면 닫기, 다른 탭을 클릭하면 해당 탭으로 변경
     if (ui.activePanel === panel) {
       setActivePanel(null)
@@ -55,6 +56,13 @@ const Layout: React.FC = () => {
       
       {ui.activePanel === 'shop' && (
         <ShopPanel 
+          isOpen={true} 
+          onClose={() => setActivePanel(null)} 
+        />
+      )}
+
+      {ui.activePanel === 'life' && (
+        <LifePanel 
           isOpen={true} 
           onClose={() => setActivePanel(null)} 
         />

@@ -26,6 +26,20 @@
     }
   },
   "equipment": {
+    "wooden_sword": {
+      "id": "wooden_sword",
+      "name": "나무 검",
+      "description": "가장 기본적인 나무 검",
+      "type": "weapon",
+      "slot": "weapon"
+    },
+    "iron_sword": {
+      "id": "iron_sword",
+      "name": "철 검",
+      "description": "단단한 철로 만든 검",
+      "type": "weapon",
+      "slot": "weapon"
+    },
     "flame_sword": {
       "id": "flame_sword",
       "name": "화염검",
@@ -51,6 +65,48 @@
       "requiredLifeSkill": "Smithing",
       "requiredLifeLevel": 1
     },
+    "frost_sword": {
+      "id": "frost_sword",
+      "name": "빙결검",
+      "description": "차가운 빙결 에너지를 담은 검",
+      "type": "weapon",
+      "slot": "weapon"
+    },
+    "shadow_sword": {
+      "id": "shadow_sword",
+      "name": "암흑검",
+      "description": "어둠의 힘을 담은 검",
+      "type": "weapon",
+      "slot": "weapon"
+    },
+    "flame_staff": {
+      "id": "flame_staff",
+      "name": "화염 지팡이",
+      "description": "화염 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon"
+    },
+    "toxic_staff": {
+      "id": "toxic_staff",
+      "name": "독성 지팡이",
+      "description": "독성 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon"
+    },
+    "thunder_staff": {
+      "id": "thunder_staff",
+      "name": "번개 지팡이",
+      "description": "번개 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon"
+    },
+    "leather_armor": {
+      "id": "leather_armor",
+      "name": "가죽 갑옷",
+      "description": "기본적인 가죽 갑옷",
+      "type": "armor",
+      "slot": "chest"
+    },
     "flame_armor": {
       "id": "flame_armor",
       "name": "화염 갑옷",
@@ -75,6 +131,20 @@
       },
       "requiredLifeSkill": "Smithing",
       "requiredLifeLevel": 2
+    },
+    "toxic_armor": {
+      "id": "toxic_armor",
+      "name": "독성 갑옷",
+      "description": "독성 저항력을 지닌 갑옷",
+      "type": "armor",
+      "slot": "chest"
+    },
+    "verdant_armor": {
+      "id": "verdant_armor",
+      "name": "자연 갑옷",
+      "description": "자연의 힘을 담은 갑옷",
+      "type": "armor",
+      "slot": "chest"
     }
   },
   "consumables": {
@@ -117,6 +187,30 @@
       ],
       "requiredLifeSkill": "Alchemy",
       "requiredLifeLevel": 1
+    },
+    "greater_health_potion": {
+      "id": "greater_health_potion",
+      "name": "상급 체력 포션",
+      "description": "많은 양의 HP를 즉시 회복한다",
+      "type": "consumable"
+    },
+    "greater_mana_potion": {
+      "id": "greater_mana_potion",
+      "name": "상급 마나 포션",
+      "description": "많은 양의 MP를 즉시 회복한다",
+      "type": "consumable"
+    },
+    "bread": {
+      "id": "bread",
+      "name": "빵",
+      "description": "기본적인 식량",
+      "type": "consumable"
+    },
+    "meat_stew": {
+      "id": "meat_stew",
+      "name": "고기 스튜",
+      "description": "영양가 높은 고기 스튜",
+      "type": "consumable"
     }
   }
 } 

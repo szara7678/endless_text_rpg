@@ -1,0 +1,31 @@
+{
+  "itemId": "thunder_staff",
+  "name": "번개 지팡이",
+  "description": "번개의 힘을 조종하는 강력한 지팡이입니다.",
+  "type": "weapon",
+  "subtype": "staff",
+  "element": "thunder",
+  "rarity": "Superior",
+  "level": 2,
+  "baseStats": {
+    "magicalAttack": 40,
+    "elementalAttack": {
+      "thunder": 30
+    },
+    "mp": 40,
+    "speed": 5
+  },
+  "requirements": {
+    "level": 12
+  },
+  "sellPrice": 150,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "craftingMaterials": {
+    "wood": 2,
+    "thunder_stone": 3,
+    "mithril_ore": 1
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 4
+} 

@@ -1,0 +1,13 @@
+{
+  "materialId": "leather",
+  "name": "가죽",
+  "description": "부드럽고 질긴 가죽입니다. 방어구 제작에 사용됩니다.",
+  "type": "hide",
+  "element": "neutral",
+  "rarity": "Common",
+  "baseLevel": 1,
+  "maxLevel": 3,
+  "sellPrice": 10,
+  "stackSize": 999,
+  "category": "smithing"
+} 

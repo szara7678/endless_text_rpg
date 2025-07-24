@@ -4,12 +4,23 @@
   "description": "순수한 화염 에너지로 이뤄진 정령.",
   "theme": "Flame",
   "tier": "normal",
+  
   "hp": 60,
+  "maxHp": 60,
+  "level": 1,
   "attack": 35,
   "defense": 5,
+  "speed": 30,
+  
+  "goldReward": 20,
+  "xpReward": 0,
+  
   "dropTableId": "flame_normal",
   "skillPageDrops": ["flame_bolt", "burning_aura"],
+  
   "traits": ["magical", "flame_body"],
   "resistances": ["Flame"],
-  "weaknesses": ["Frost"]
+  "weaknesses": ["Frost"],
+  
+  "skills": ["fireball", "flame_burst"]
 } 

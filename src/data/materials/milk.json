@@ -1,0 +1,12 @@
+{
+  "id": "milk",
+  "name": "우유",
+  "description": "신선한 우유, 요리와 물약에 사용됩니다",
+  "type": "material",
+  "category": "food",
+  "element": "neutral",
+  "baseValue": 8,
+  "rarity": "Common",
+  "stackable": true,
+  "maxStack": 50
+} 

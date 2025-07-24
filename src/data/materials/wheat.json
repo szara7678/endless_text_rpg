@@ -1,0 +1,12 @@
+{
+  "id": "wheat",
+  "name": "밀",
+  "description": "빵과 요리의 기본 재료가 되는 곡물",
+  "type": "material",
+  "category": "food",
+  "element": "neutral",
+  "baseValue": 5,
+  "rarity": "Common",
+  "stackable": true,
+  "maxStack": 99
+} 

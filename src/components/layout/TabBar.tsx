@@ -1,9 +1,9 @@
 import React from 'react'
-import { User, Package, ShoppingCart } from 'lucide-react'
+import { User, Package, ShoppingCart, Hammer } from 'lucide-react'
 
 interface TabBarProps {
   activePanel: string | null
-  onPanelChange: (panel: 'character' | 'inventory' | 'shop' | null) => void
+  onPanelChange: (panel: 'character' | 'inventory' | 'shop' | 'life' | null) => void
 }
 
 const TabBar: React.FC<TabBarProps> = ({ activePanel, onPanelChange }) => {
@@ -48,6 +48,19 @@ const TabBar: React.FC<TabBarProps> = ({ activePanel, onPanelChange }) => {
         >
           <ShoppingCart size={20} />
           <span className="text-xs mt-1">상점</span>
+        </button>
+
+        {/* 생활 스킬 탭 */}
+        <button
+          onClick={() => onPanelChange('life')}
+          className={`tab-item flex flex-col items-center py-2 px-4 rounded-lg transition-colors ${
+            activePanel === 'life' 
+              ? 'text-orange-400 bg-orange-900/30' 
+              : 'text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          <Hammer size={20} />
+          <span className="text-xs mt-1">생활</span>
         </button>
         
       </div>

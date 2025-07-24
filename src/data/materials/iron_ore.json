@@ -1,0 +1,13 @@
+{
+  "materialId": "iron_ore",
+  "name": "철 광석",
+  "description": "단단한 철이 함유된 광석입니다. 제작에 사용됩니다.",
+  "type": "ore",
+  "element": "Neutral",
+  "rarity": "Fine",
+  "baseLevel": 1,
+  "maxLevel": 10,
+  "sellPrice": 8,
+  "stackSize": 999,
+  "category": "crafting"
+} 

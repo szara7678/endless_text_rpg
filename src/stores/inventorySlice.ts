@@ -19,20 +19,14 @@ export interface InventorySlice {
   useConsumable: (itemId: string, quantity: number) => boolean
 }
 
-// 초기 재료 목록
-const initialMaterials: MaterialInstance[] = [
-  { materialId: 'flame_ore', name: '화염 광석', level: 2, count: 8 },
-  { materialId: 'ember_crystal', name: '잔불 수정', level: 1, count: 3 },
-  { materialId: 'fire_essence', name: '화염 정수', level: 1, count: 2 }
-]
-
+// 초기 인벤토리 상태 (비어있음 - 게임 시작시 loadInitialInventory로 로드)
 const initialInventoryState: InventoryState = {
-  materials: initialMaterials,
+  materials: [],
   items: [],
-  consumables: {},
+  consumables: [],
   skillPages: [],
   maxSlots: 100,
-  usedSlots: 3
+  usedSlots: 0
 }
 
 export const inventorySlice: StateCreator<InventorySlice> = (set, get) => ({
@@ -55,9 +49,9 @@ export const inventorySlice: StateCreator<InventorySlice> = (set, get) => ({
         newMaterials.push(material)
       }
       
-        return {
-          inventory: {
-            ...state.inventory,
+      return {
+        inventory: {
+          ...state.inventory,
           materials: newMaterials,
           usedSlots: state.inventory.usedSlots + (existingIndex >= 0 ? 0 : 1)
         }

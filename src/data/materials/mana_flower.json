@@ -1,0 +1,13 @@
+{
+  "materialId": "mana_flower",
+  "name": "마나 꽃",
+  "description": "마법의 힘이 깃든 파란 꽃입니다. 마나 물약 제작에 사용됩니다.",
+  "type": "herb",
+  "element": "frost",
+  "rarity": "Fine",
+  "baseLevel": 1,
+  "maxLevel": 4,
+  "sellPrice": 15,
+  "stackSize": 999,
+  "category": "alchemy"
+} 

@@ -1,0 +1,13 @@
+{
+  "materialId": "raw_meat",
+  "name": "날고기",
+  "description": "신선한 날고기입니다. 요리하여 맛있는 음식을 만들 수 있습니다.",
+  "type": "ingredient",
+  "element": "neutral",
+  "rarity": "Common",
+  "baseLevel": 1,
+  "maxLevel": 3,
+  "sellPrice": 8,
+  "stackSize": 999,
+  "category": "fishing"
+} 

@@ -1,24 +1,46 @@
 {
-  "materials": [],
-  "equipment": {
-    "weapon": {
-      "itemId": "wooden_sword",
-      "level": 1,
-      "quality": "Normal",
-      "enhancement": 0,
-      "traits": []
-    },
-    "chest": null,
-    "gloves": null,
-    "boots": null,
-    "ring1": null,
-    "ring2": null,
-    "amulet": null
-  },
-  "consumables": {
-    "health_potion": 3,
-    "mana_potion": 2
-  },
-  "maxSlots": 50,
-  "usedSlots": 5
+  "maxSlots": 100,
+  "usedSlots": 0,
+  "initialItems": [
+    { "itemId": "wooden_sword", "type": "equipment", "level": 1, "quality": "Common", "quantity": 1 },
+    { "itemId": "leather_armor", "type": "equipment", "level": 1, "quality": "Common", "quantity": 1 },
+    { "itemId": "iron_sword", "type": "equipment", "level": 2, "quality": "Fine", "quantity": 1 },
+    { "itemId": "flame_sword", "type": "equipment", "level": 3, "quality": "Superior", "quantity": 1 },
+    { "itemId": "frost_sword", "type": "equipment", "level": 2, "quality": "Fine", "quantity": 1 },
+    { "itemId": "shadow_sword", "type": "equipment", "level": 4, "quality": "Epic", "quantity": 1 },
+    { "itemId": "flame_staff", "type": "equipment", "level": 3, "quality": "Superior", "quantity": 1 },
+    { "itemId": "toxic_staff", "type": "equipment", "level": 2, "quality": "Fine", "quantity": 1 },
+    { "itemId": "thunder_staff", "type": "equipment", "level": 4, "quality": "Epic", "quantity": 1 },
+    { "itemId": "flame_armor", "type": "equipment", "level": 2, "quality": "Fine", "quantity": 1 },
+    { "itemId": "toxic_armor", "type": "equipment", "level": 3, "quality": "Superior", "quantity": 1 },
+    { "itemId": "verdant_armor", "type": "equipment", "level": 4, "quality": "Epic", "quantity": 1 }
+  ],
+  "initialMaterials": [
+    { "materialId": "iron_ore", "level": 1, "count": 20 },
+    { "materialId": "wood", "level": 1, "count": 25 },
+    { "materialId": "red_herb", "level": 1, "count": 15 },
+    { "materialId": "flame_crystal", "level": 2, "count": 10 },
+    { "materialId": "frost_ore", "level": 1, "count": 12 },
+    { "materialId": "toxic_shard", "level": 2, "count": 8 },
+    { "materialId": "shadow_crystal", "level": 2, "count": 6 },
+    { "materialId": "thunder_gem", "level": 2, "count": 7 },
+    { "materialId": "nature_essence", "level": 2, "count": 9 },
+    { "materialId": "common_metal", "level": 1, "count": 30 },
+    { "materialId": "refined_metal", "level": 2, "count": 15 },
+    { "materialId": "green_herb", "level": 1, "count": 18 },
+    { "materialId": "blue_herb", "level": 1, "count": 12 },
+    { "materialId": "wheat", "level": 1, "count": 25 },
+    { "materialId": "milk", "level": 1, "count": 10 },
+    { "materialId": "leather", "level": 1, "count": 12 }
+  ],
+  "initialConsumables": [
+    { "itemId": "health_potion", "level": 1, "quantity": 12 },
+    { "itemId": "mana_potion", "level": 1, "quantity": 8 },
+    { "itemId": "greater_health_potion", "level": 2, "quantity": 5 },
+    { "itemId": "greater_mana_potion", "level": 2, "quantity": 3 },
+    { "itemId": "stamina_potion", "level": 1, "quantity": 6 },
+    { "itemId": "energy_drink", "level": 2, "quantity": 2 },
+    { "itemId": "bread", "level": 1, "quantity": 15 },
+    { "itemId": "meat_stew", "level": 2, "quantity": 8 }
+  ]
 } 

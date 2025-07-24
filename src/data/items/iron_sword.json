@@ -1,24 +1,19 @@
 {
-  "id": "iron_sword",
+  "itemId": "iron_sword",
   "name": "철 검",
-  "description": "튼튼한 철로 만든 검입니다. 신뢰할 수 있는 무기입니다.",
+  "description": "튼튼한 철로 제작된 검입니다. 나무 검보다 훨씬 강력합니다.",
   "type": "weapon",
-  "subType": "sword",
-  "quality": "Uncommon",
-  "level": 2,
-  "requiredLevel": 3,
-  "stats": {
+  "subtype": "sword",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
     "physicalAttack": 15,
-    "magicalAttack": 0,
-    "physicalDefense": 0,
-    "magicalDefense": 0,
-    "speed": 0
+    "speed": 1
   },
-  "effects": [],
-  "sellPrice": 15,
-  "maxEnhancement": 10,
-  "materials": {
-    "iron": 5,
-    "wood": 1
-  }
+  "requirements": {
+    "level": 3
+  },
+  "sellPrice": 25,
+  "enhanceable": true,
+  "maxEnhancement": 10
 } 

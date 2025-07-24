@@ -1,0 +1,25 @@
+{
+  "itemId": "greater_health_potion",
+  "name": "상급 체력 물약",
+  "description": "강력한 치유 효과를 지닌 물약입니다.",
+  "type": "consumable",
+  "subtype": "potion",
+  "rarity": "Fine",
+  "level": 2,
+  "effects": [
+    {
+      "type": "heal_hp",
+      "value": 150,
+      "duration": 0
+    }
+  ],
+  "sellPrice": 30,
+  "stackable": true,
+  "maxStack": 10,
+  "craftingMaterials": {
+    "healing_herb": 3,
+    "red_herb": 2
+  },
+  "requiredSkill": "alchemy",
+  "requiredSkillLevel": 2
+} 

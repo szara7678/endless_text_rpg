@@ -1,0 +1,23 @@
+{
+  "itemId": "frost_sword",
+  "name": "빙결 검",
+  "description": "얼음의 힘이 깃든 검입니다. 적을 얼려 속도를 늦춥니다.",
+  "type": "weapon",
+  "subtype": "sword",
+  "element": "frost",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalAttack": 18,
+    "elementalAttack": {
+      "frost": 17
+    },
+    "speed": 3
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 40,
+  "enhanceable": true,
+  "maxEnhancement": 10
+} 

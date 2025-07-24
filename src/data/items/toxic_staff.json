@@ -1,0 +1,23 @@
+{
+  "itemId": "toxic_staff",
+  "name": "독 지팡이",
+  "description": "독성 마법의 위력을 증폭시키는 지팡이입니다.",
+  "type": "weapon",
+  "subtype": "staff",
+  "element": "toxic",
+  "rarity": "Superior",
+  "level": 2,
+  "baseStats": {
+    "magicalAttack": 23,
+    "elementalAttack": {
+      "toxic": 22
+    },
+    "mp": 25
+  },
+  "requirements": {
+    "level": 8
+  },
+  "sellPrice": 80,
+  "enhanceable": true,
+  "maxEnhancement": 10
+} 

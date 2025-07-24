@@ -1,0 +1,12 @@
+{
+  "id": "green_herb",
+  "name": "초록 약초",
+  "description": "기본적인 치유 약초",
+  "type": "material",
+  "category": "herb",
+  "element": "Verdant",
+  "baseValue": 10,
+  "rarity": "Common",
+  "stackable": true,
+  "maxStack": 99
+} 

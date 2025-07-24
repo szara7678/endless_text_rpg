@@ -8,8 +8,20 @@ import { playerSlice, initialPlayerState } from './playerSlice'
 import { inventorySlice } from './inventorySlice'
 import { skillSlice } from './skillSlice'
 import { uiSlice } from './uiSlice'
+import { lifeSlice } from './lifeSlice'
 import { processAutoCombatTurn, generateNextMonster } from '../utils/combatEngine'
 import { processItemDrops } from '../utils/dropSystem'
+import * as EquipmentSystem from '../utils/equipmentSystem'
+import { generateInitialItems } from '../utils/itemGenerator'
+
+// equipmentSystem 함수들을 destructure
+const { 
+  equipItem, 
+  unequipItem, 
+  enhanceEquipment, 
+  calculateEnhancementCost, 
+  recalculatePlayerStats 
+} = EquipmentSystem
 
 interface GameStore {
   // 상태
@@ -18,6 +30,7 @@ interface GameStore {
   inventory: InventoryState
   skills: SkillState
   ui: UIState
+  life: any // LifeSkillState
   gameState: 'menu' | 'playing' | 'loading'
 
   // 게임 플로우
@@ -27,31 +40,55 @@ interface GameStore {
   resetGame: () => Promise<void>
   setGameState: (state: 'menu' | 'playing' | 'loading') => void
   startAutoSave: () => void
+  loadInitialInventory: () => Promise<void>
 
   // UI 관리
-  setActivePanel: (panel: 'character' | 'inventory' | 'shop' | null) => void
+  setActivePanel: (panel: 'character' | 'inventory' | 'shop' | 'life' | null) => void
 
   // 인벤토리 관리
   addItem: (itemId: string, quantity: number) => void
   addMaterial: (materialId: string, count: number) => void
   addSkillPage: (skillId: string) => void
+  removeMaterial: (materialId: string, count: number) => void
+
+  // 스킬 시스템
+  unlockSkill: (skillId: string) => void
+  levelUpSkill: (skillId: string) => void
+  addSkillTrainingXp: (skillId: string, event: 'cast' | 'killWeak' | 'perfect' | 'kill', customXp?: number) => void
+
+  // 장비 시스템
+  equipItem: (itemId: string) => void
+  unequipItem: (slot: 'weapon' | 'armor' | 'accessory') => void
+  enhanceEquipment: (slot: 'weapon' | 'armor' | 'accessory') => void
+
+  // 생활 스킬 시스템
+  addLifeSkillXp: (skillType: any, xp: number) => void
+  levelUpLifeSkill: (skillType: any) => void
+  startCooldown: (skillType: any, duration: number) => void
+  startMinigame: (skillType: any, gameType: 'slot' | 'rhythm' | 'matching' | 'timing') => void
+  endMinigame: (result: any) => void
+  startCrafting: (recipeId: string) => void
+  completeCrafting: () => void
+
+  // 환생 시스템
+  canRebirth: () => { canRebirth: boolean, currentFloor: number, apGain: number }
+  executeRebirth: (benefits: { ap: number, skillLevelBonus: number, materialBonus: number }) => void
+
+  // 상점 시스템
+  purchaseItem: (item: any) => void
 
   // 자동 전투 시스템
-  startAutoCombat: () => void
+  startAutoCombat: (speed: number) => void
   stopAutoCombat: () => void
-  processCombatTurn: () => Promise<void>
+  setAutoMode: (autoMode: boolean) => void
+  setAutoSpeed: (speed: number) => void
+  performCombatAction: (action: 'attack' | 'skill' | 'defend') => Promise<void>
   handleMonsterDeath: (monster: Monster) => Promise<void>
-  handlePlayerDeath: () => void
+  handlePlayerDeath: () => Promise<void>
   proceedToNextFloor: () => Promise<void>
-
-  // 로그 시스템
   addCombatLog: (type: CombatLogEntry['type'], message: string) => void
   clearCombatLog: () => void
-
-  // 디버깅 및 긴급 기능
   forceResetToMenu: () => void
-  setAutoMode: (autoMode: boolean) => void
-  setAutoSpeed: (autoSpeed: number) => void
 }
 
 // 자동 전투 타이머
@@ -89,6 +126,18 @@ export const useGameStore = create<GameStore>()(
         activePanel: null,
         notifications: []
       },
+      life: {
+        skills: {
+          smithing: { id: 'smithing', name: '제작', level: 1, currentXp: 0, maxXp: 100, unlocked: true },
+          alchemy: { id: 'alchemy', name: '연금술', level: 1, currentXp: 0, maxXp: 100, unlocked: true },
+          cooking: { id: 'cooking', name: '요리', level: 1, currentXp: 0, maxXp: 100, unlocked: true },
+          fishing: { id: 'fishing', name: '낚시', level: 1, currentXp: 0, maxXp: 100, unlocked: false },
+          farming: { id: 'farming', name: '농사', level: 1, currentXp: 0, maxXp: 100, unlocked: false },
+          herbalism: { id: 'herbalism', name: '채집', level: 1, currentXp: 0, maxXp: 100, unlocked: false },
+          mining: { id: 'mining', name: '광산', level: 1, currentXp: 0, maxXp: 100, unlocked: false }
+        },
+        activeMinigame: null
+      },
       gameState: 'menu',
 
       // 자동 저장 (5초마다)
@@ -109,52 +158,132 @@ export const useGameStore = create<GameStore>()(
         }, 5000)
       },
 
-      // 게임 플로우 관리
+      // 초기 인벤토리 로드
+      loadInitialInventory: async () => {
+        try {
+          console.log('📦 초기 인벤토리 로드 중...')
+          
+          // initial/inventory.json 로드
+          const initialInventoryResponse = await fetch('/src/data/initial/inventory.json')
+          const initialInventoryData = await initialInventoryResponse.json()
+          
+          // 초기 아이템들 생성
+          const generatedItems = await generateInitialItems(initialInventoryData.initialItems)
+          
+          // 인벤토리 상태 업데이트
+          set((state: any) => ({
+            ...state,
+            inventory: {
+              ...state.inventory,
+              items: generatedItems,
+              materials: initialInventoryData.initialMaterials.map((m: any) => ({
+                materialId: m.materialId,
+                name: m.materialId.replace(/_/g, ' '),
+                level: m.level,
+                count: m.count
+              })),
+              consumables: initialInventoryData.initialConsumables,
+              usedSlots: generatedItems.length + initialInventoryData.initialMaterials.length + initialInventoryData.initialConsumables.length
+            }
+          }))
+          
+          console.log(`✅ 초기 인벤토리 로드 완료: 아이템 ${generatedItems.length}개, 재료 ${initialInventoryData.initialMaterials.length}개, 소모품 ${initialInventoryData.initialConsumables.length}개`)
+          
+        } catch (error) {
+          console.error('❌ 초기 인벤토리 로드 실패:', error)
+          
+          // 기본 아이템만 지급
+          set((state: any) => ({
+            ...state,
+            inventory: {
+              ...state.inventory,
+              items: [
+                { itemId: 'wooden_sword', level: 1, quantity: 1, uniqueId: 'default_sword', quality: 'Common', enhancement: 0 }
+              ],
+              consumables: [
+                { itemId: 'health_potion', level: 1, quantity: 3 }
+              ],
+              usedSlots: 2
+            }
+          }))
+        }
+      },
+
       startNewGame: async () => {
         try {
-          console.log('🎮 새 게임 초기화 시작...')
+          console.log('🎮 새 게임 시작!')
+          set({ gameState: 'loading' } as any)
           
-          // 1단계: 초기 데이터 로딩
-          console.log('📦 1단계: 초기 데이터 로딩 중...')
-          const { loadInitialCharacter, loadInitialInventory, loadInitialSkills, loadInitialTower, loadMonster } = await import('../utils/dataLoader')
+          // 1단계: 초기 데이터 로드
+          console.log('⏳ 1단계: 초기 데이터 로드 중...')
+          const [initialCharacterResponse, initialInventoryResponse, initialSkillsResponse, initialTowerResponse] = await Promise.all([
+            fetch('/src/data/initial/character.json'),
+            fetch('/src/data/initial/inventory.json'),
+            fetch('/src/data/initial/skills.json'),
+            fetch('/src/data/initial/tower.json')
+          ])
           
           const [initialCharacter, initialInventory, initialSkills, initialTower] = await Promise.all([
-            loadInitialCharacter(),
-            loadInitialInventory(), 
-            loadInitialSkills(),
-            loadInitialTower()
+            initialCharacterResponse.json(),
+            initialInventoryResponse.json(),
+            initialSkillsResponse.json(),
+            initialTowerResponse.json()
           ])
+          
           console.log('✅ 1단계 완료: 초기 데이터 로드됨')
           
-          // 2단계: 게임 상태 설정
-          console.log('📝 2단계: 게임 상태 초기화 중...')
+          // 2단계: 상태 초기화
+          console.log('⏳ 2단계: 게임 상태 초기화 중...')
+          
           set((state: any) => ({
             ...state,
             player: {
-              // initial 데이터 사용하되 없으면 기본값 사용
-              hp: initialCharacter?.hp || initialPlayerState.hp,
-              maxHp: initialCharacter?.maxHp || initialPlayerState.maxHp,
-              mp: initialCharacter?.mp || initialPlayerState.mp,
-              maxMp: initialCharacter?.maxMp || initialPlayerState.maxMp,
+              // 생명 정보 (기획안)
+              hp: initialCharacter?.hp || 100,
+              maxHp: initialCharacter?.maxHp || 100,
+              mp: initialCharacter?.mp || 50,
+              maxMp: initialCharacter?.maxMp || 50,
               
-              // 기본 스탯
-              highestFloor: initialCharacter?.highestFloor || 1,
-              gold: initialCharacter?.gold || 100,
+              // 재화
+              gold: initialCharacter?.gold || 1000,
               gem: initialCharacter?.gem || 0,
               
-              // 기본 전투 스탯
-              basePhysicalAttack: initialCharacter?.physicalAttack || initialPlayerState.basePhysicalAttack,
-              baseMagicalAttack: initialCharacter?.magicalAttack || initialPlayerState.baseMagicalAttack,
-              basePhysicalDefense: initialCharacter?.physicalDefense || initialPlayerState.basePhysicalDefense,
-              baseMagicalDefense: initialCharacter?.magicalDefense || initialPlayerState.baseMagicalDefense,
-              baseSpeed: initialCharacter?.speed || initialPlayerState.baseSpeed,
+              // 기본 스탯 (base~)
+              basePhysicalAttack: initialCharacter?.basePhysicalAttack || 15,
+              baseMagicalAttack: initialCharacter?.baseMagicalAttack || 10,
+              basePhysicalDefense: initialCharacter?.basePhysicalDefense || 8,
+              baseMagicalDefense: initialCharacter?.baseMagicalDefense || 6,
+              baseSpeed: initialCharacter?.baseSpeed || 12,
               
-              // 계산된 전투 스탯 (초기값은 base와 동일)
-              physicalAttack: initialCharacter?.physicalAttack || initialPlayerState.physicalAttack,
-              magicalAttack: initialCharacter?.magicalAttack || initialPlayerState.magicalAttack,
-              physicalDefense: initialCharacter?.physicalDefense || initialPlayerState.physicalDefense,
-              magicalDefense: initialCharacter?.magicalDefense || initialPlayerState.magicalDefense,
-              speed: initialCharacter?.speed || initialPlayerState.speed,
+              // 계산된 스탯 (기본값은 base와 동일)
+              physicalAttack: initialCharacter?.basePhysicalAttack || 15,
+              magicalAttack: initialCharacter?.baseMagicalAttack || 10,
+              physicalDefense: initialCharacter?.basePhysicalDefense || 8,
+              magicalDefense: initialCharacter?.baseMagicalDefense || 6,
+              speed: initialCharacter?.baseSpeed || 12,
+              
+              // 기본 상성 스탯
+              baseElementalStats: {
+                flame: { attack: 0, resistance: 0 },
+                frost: { attack: 0, resistance: 0 },
+                toxic: { attack: 0, resistance: 0 },
+                shadow: { attack: 0, resistance: 0 },
+                thunder: { attack: 0, resistance: 0 },
+                verdant: { attack: 0, resistance: 0 }
+              },
+              
+              // 계산된 상성 스탯 (초기값은 base와 동일)
+              elementalStats: {
+                flame: { attack: 0, resistance: 0 },
+                frost: { attack: 0, resistance: 0 },
+                toxic: { attack: 0, resistance: 0 },
+                shadow: { attack: 0, resistance: 0 },
+                thunder: { attack: 0, resistance: 0 },
+                verdant: { attack: 0, resistance: 0 }
+              },
+              
+              // 최고 층수
+              highestFloor: initialCharacter?.highestFloor || 1,
               
               // 장비 (초기 장비 사용)
               equipment: {
@@ -173,10 +302,10 @@ export const useGameStore = create<GameStore>()(
             },
             inventory: {
               maxSlots: initialInventory?.maxSlots || 100,
-              usedSlots: initialInventory?.usedSlots || 0,
-              items: [], // 소모품은 별도 처리
-              materials: initialInventory?.materials || [],
-              consumables: [], // 소모품 변환 필요
+              usedSlots: 0, // 초기 인벤토리 로드 시 업데이트
+              items: [],
+              materials: [],
+              consumables: [],
               skillPages: []
             },
             skills: {
@@ -198,138 +327,163 @@ export const useGameStore = create<GameStore>()(
           }))
           console.log('✅ 2단계 완료: 초기 상태 설정됨')
           
-          // 3단계: 소모품 변환 (consumables 객체를 배열로 변환)
-          if (initialInventory?.consumables) {
-            const consumablesArray = Object.entries(initialInventory.consumables).map(([itemId, quantity]: [string, any]) => ({
-              itemId,
-              quantity: Number(quantity),
-              level: 1
-            }))
-            
-            set((state: any) => ({
-              ...state,
-              inventory: {
-                ...state.inventory,
-                items: consumablesArray
-              }
-            }))
-            console.log('✅ 3단계 완료: 소모품 변환됨')
+          // 3단계: 초기 인벤토리 로드
+          console.log('⏳ 3단계: 초기 인벤토리 생성 중...')
+          await get().loadInitialInventory()
+          console.log('✅ 3단계 완료: 초기 인벤토리 생성됨')
+          
+          // 4단계: 첫 몬스터 생성
+          console.log('⏳ 4단계: 첫 몬스터 생성 중...')
+          try {
+            const firstMonster = await generateNextMonster(1)
+            if (firstMonster) {
+              set((state: any) => ({
+                ...state,
+                tower: {
+                  ...state.tower,
+                  currentMonster: firstMonster,
+                  isInCombat: true
+                }
+              }))
+              console.log('✅ 4단계 완료: 첫 몬스터 생성됨')
+            }
+          } catch (error) {
+            console.error('첫 몬스터 생성 실패:', error)
           }
           
-          // 4단계: 첫 번째 몬스터 생성
-          console.log('👹 4단계: flame_imp 몬스터 로딩 중...')
-          const monster = await loadMonster('flame_imp')
-          console.log('몬스터 데이터:', monster)
-          
-          if (monster) {
-            console.log('✅ 4단계 완료: 몬스터 로드 성공')
-            set((state: any) => ({
-              ...state,
-              tower: {
-                ...state.tower,
-                currentMonster: monster,
-                isInCombat: true,
-                combatLog: [
-                  {
-                    id: '1',
-                    timestamp: Date.now(),
-                    type: 'floor',
-                    message: '🗼 1층에 도착했습니다!'
-                  },
-                  {
-                    id: '2', 
-                    timestamp: Date.now() + 1,
-                    type: 'combat',
-                    message: `⚔️ ${monster.name}이(가) 나타났습니다!`
-                  }
-                ]
-              },
-              gameState: 'playing'
-            }))
-            console.log('✅ 게임 상태를 playing으로 변경')
-          } else {
-            console.error('❌ 몬스터 로드 실패 - null 반환')
-            // 몬스터 로드 실패시에도 게임은 시작
-            set((state: any) => ({
-              ...state,
-              tower: {
-                ...state.tower,
-                combatLog: [
-                  {
-                    id: '1',
-                    timestamp: Date.now(),
-                    type: 'floor',
-                    message: '🗼 1층에 도착했습니다!'
-                  },
-                  {
-                    id: '2', 
-                    timestamp: Date.now() + 1,
-                    type: 'combat',
-                    message: '⚠️ 몬스터를 불러오는데 실패했습니다.'
-                  }
-                ]
-              },
-              gameState: 'playing'
-            }))
-          }
-          
-          // 5단계: 자동 저장 시작
-          console.log('💾 5단계: 자동 저장 시작...')
+          // 5단계: 게임 시작
+          console.log('⏳ 5단계: 게임 시작...')
+          set({ gameState: 'playing' } as any)
           get().startAutoSave()
-          console.log('✅ 5단계 완료: 자동 저장 시작됨')
-          
           console.log('🎉 새 게임 시작 완료!')
+          
         } catch (error) {
           console.error('❌ 새 게임 시작 실패:', error)
-          console.error('에러 상세:', error.message, error.stack)
-          
-          // 에러 발생시 강제로 게임 상태를 playing으로 변경
-          set((state: any) => ({
-            ...state,
-            tower: {
-              ...state.tower,
-              combatLog: [
-                {
-                  id: '1',
-                  timestamp: Date.now(),
-                  type: 'floor',
-                  message: '🗼 1층에 도착했습니다!'
-                },
-                {
-                  id: '2', 
-                  timestamp: Date.now() + 1,
-                  type: 'combat',
-                  message: '⚠️ 초기화 중 오류가 발생했지만 게임을 시작합니다.'
-                }
-              ]
-            },
-            gameState: 'playing'
-          }))
+          set({ gameState: 'menu' } as any)
         }
       },
 
       // 자동 전투 시스템
-      startAutoCombat: () => {
+      startAutoCombat: (speed: number) => {
         const { tower } = get()
-        if (autoCombatInterval || !tower.isInCombat) return
+        if (autoCombatInterval) return
 
-        const speed = tower.autoSpeed || 1
         const interval = Math.max(500, 2000 / speed) // 속도에 따른 간격 조절
 
-        autoCombatInterval = setInterval(() => {
-          const currentState = get()
-          if (currentState.tower.autoMode && currentState.tower.isInCombat) {
-            currentState.processCombatTurn()
-          } else {
-            currentState.stopAutoCombat()
+        autoCombatInterval = setInterval(async () => {
+          try {
+            const currentState = get()
+            // 전투 중이 아니고 몬스터가 없으면 새 몬스터 생성
+            if (!currentState.tower.isInCombat && !currentState.tower.currentMonster) {
+              const newMonster = await generateNextMonster(currentState.tower.currentFloor)
+              if (newMonster) {
+                set((state: any) => ({
+                  ...state,
+                  tower: {
+                    ...state.tower,
+                    currentMonster: newMonster,
+                    isInCombat: true
+                  }
+                }))
+                get().addCombatLog('combat', `👹 ${newMonster.name}이(가) 나타났습니다!`)
+              }
+            }
+            
+            // 전투 액션 수행
+            if (currentState.tower.isInCombat && currentState.tower.currentMonster) {
+              await get().performCombatAction('attack')
+            }
+          } catch (error) {
+            console.error('자동 전투 오류:', error)
+            get().stopAutoCombat()
           }
         }, interval)
+
+        set((state: any) => ({
+          ...state,
+          tower: {
+            ...state.tower,
+            autoMode: true,
+            autoSpeed: speed
+          }
+        }))
+
+        get().addCombatLog('combat', `⚡ 자동 전투 시작 (속도: ${speed}x)`)
       },
 
       stopAutoCombat: () => {
         if (autoCombatInterval) {
           clearInterval(autoCombatInterval)
           autoCombatInterval = null
+        }
+
+        set((state: any) => ({
+          ...state,
+          tower: {
+            ...state.tower,
+            autoMode: false
+          }
+        }))
+
+        get().addCombatLog('combat', '⏸️ 자동 전투 정지')
+      },
+
+      // 자동 전투 속도 설정
+      setAutoSpeed: (speed: number) => {
+        set((state: any) => ({
+          ...state,
+          tower: {
+            ...state.tower,
+            autoSpeed: speed
+          }
+        }))
+      },
+
+      // 전투 액션 수행
+      performCombatAction: async (action: 'attack' | 'skill' | 'defend') => {
+        const { player, tower } = get()
+        if (!tower.currentMonster || !tower.isInCombat) return
+        
+        try {
+          // 전투 한 턴 실행
+          const result = await processAutoCombatTurn(player, tower.currentMonster, tower.currentFloor)
+          
+          // 상태 업데이트
+          set((state: any) => ({
+            ...state,
+            player: { 
+              ...state.player, 
+              hp: result.playerHpAfter
+            },
+            tower: {
+              ...state.tower,
+              currentMonster: result.monsterHpAfter > 0 ? {
+                ...state.tower.currentMonster,
+                hp: result.monsterHpAfter
+              } : null,
+              isInCombat: result.monsterHpAfter > 0 && result.playerHpAfter > 0,
+              combatLog: [
+                ...state.tower.combatLog.slice(-49), // 최근 50개만 유지
+                ...result.logs.map((log: any, index: number) => ({
+                  id: `${Date.now()}_${index}`,
+                  timestamp: Date.now() + index,
+                  type: log.type || 'combat',
+                  message: log.message || log
+                }))
+              ]
+            }
+          }))
+
+          // 전투 결과 처리
+          if (result.isMonsterDefeated) {
+            await get().handleMonsterDeath(tower.currentMonster)
+          } else if (result.isPlayerDefeated) {
+            await get().handlePlayerDeath()
+          }
+          
+        } catch (error) {
+          console.error('전투 액션 실패:', error)
+          get().addCombatLog('combat', '⚠️ 전투 처리 중 오류가 발생했습니다.')
         }
       },
 
@@ -383,83 +537,98 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
+      // 몬스터 사망 처리
       handleMonsterDeath: async (monster: Monster) => {
-        const { player, tower } = get()
-        
-        // 골드 획득
-        const goldGained = monster.goldReward
-        set((state: any) => ({
-          ...state,
-          player: { 
-            ...state.player, 
-            gold: state.player.gold + goldGained
-          }
-        }))
-
-        get().addCombatLog('loot', `💰 ${goldGained} 골드를 획득했습니다!`)
-
-        // 스킬 페이지 드롭 처리
-        if (monster.skillPageDrops && monster.skillPageDrops.length > 0) {
-          for (const skillPageId of monster.skillPageDrops) {
-            // 20% 확률로 스킬 페이지 드롭
-            if (Math.random() < 0.2) {
-              get().addCombatLog('loot', `📜 ${skillPageId} 스킬 페이지를 획득했습니다!`)
-              get().addSkillPage(skillPageId)
+        try {
+          console.log(`💀 ${monster.name} 처치!`)
+          
+          // 골드 획득
+          const goldGain = Math.floor(Math.random() * 20) + 10
+          set((state: any) => ({
+            ...state,
+            player: {
+              ...state.player,
+              gold: state.player.gold + goldGain
             }
-          }
-        }
-
-        // 아이템 드롭 처리 (간단한 재료 드롭)
-        if (monster.dropTableId) {
-          // 60% 확률로 화염 광석 드롭
-          if (Math.random() < 0.6) {
-            const quantity = Math.floor(Math.random() * 3) + 1
-            get().addCombatLog('loot', `🔥 화염 광석 ${quantity}개를 획득했습니다!`)
-            get().addMaterial('flame_ore', quantity)
+          }))
+          get().addCombatLog('loot', `💰 골드 +${goldGain}`)
+          
+          // 간단한 아이템 드롭
+          if (Math.random() < 0.3) {
+            get().addMaterial('iron_ore', 1)
+            get().addCombatLog('loot', `⛏️ 철 광석 획득!`)
           }
           
-          // 15% 확률로 체력 물약 드롭
-          if (Math.random() < 0.15) {
-            get().addCombatLog('loot', `🧪 체력 물약을 획득했습니다!`)
-            get().addItem('health_potion', 1)
+          // 몬스터 제거 및 다음 몬스터 생성
+          const { tower } = get()
+          const nextMonster = await generateNextMonster(tower.currentFloor)
+          
+          if (nextMonster) {
+            set((state: any) => ({
+              ...state,
+              tower: {
+                ...state.tower,
+                currentMonster: nextMonster,
+                isInCombat: true
+              }
+            }))
+            get().addCombatLog('combat', `👹 ${nextMonster.name}이(가) 나타났습니다!`)
+          } else {
+            // 몬스터가 없으면 다음 층으로
+            await get().proceedToNextFloor()
           }
+          
+        } catch (error) {
+          console.error('몬스터 사망 처리 실패:', error)
         }
-
-        // 다음 층으로 진행
-        await get().proceedToNextFloor()
       },
 
-      handlePlayerDeath: () => {
-        const { player } = get()
+      // 플레이어 사망 처리
+      handlePlayerDeath: async () => {
+        console.log('💀 플레이어 사망!')
         
-        get().addCombatLog('death', '💀 플레이어가 사망했습니다...')
-        get().addCombatLog('death', '🔄 3층 뒤로 되돌아갑니다.')
-
-        // 사망 패널티 적용
+        const { player } = get()
+        // 3층 전으로 돌아가기 (최소 1층)
         const newFloor = Math.max(1, player.highestFloor - 3)
         
         set((state: any) => ({
           ...state,
-          player: { 
-            ...state.player, 
+          player: {
+            ...state.player,
             hp: state.player.maxHp,
             mp: state.player.maxMp,
-            highestFloor: newFloor,
-            lastDeathAt: Date.now()
+            highestFloor: newFloor // 최고 층도 함께 조정
           },
           tower: {
             ...state.tower,
             currentFloor: newFloor,
             currentMonster: null,
-            isInCombat: false,
-            autoMode: false
+            isInCombat: false
           }
         }))
-
-        // 잠시 후 새 몬스터 생성
-        setTimeout(() => {
-          get().proceedToNextFloor()
-        }, 2000)
+        
+        get().addCombatLog('floor', `💀 사망하여 ${newFloor}층으로 돌아갑니다...`)
+        get().stopAutoCombat()
+        
+        // 해당 층에 맞는 몬스터 생성
+        try {
+          const newMonster = await generateNextMonster(newFloor)
+          if (newMonster) {
+            set((state: any) => ({
+              ...state,
+              tower: {
+                ...state.tower,
+                currentMonster: newMonster,
+                isInCombat: true
+              }
+            }))
+            
+            get().addCombatLog('combat', `👹 ${newMonster.name}이(가) 나타났습니다!`)
+          }
+        } catch (error) {
+          console.error('몬스터 생성 실패:', error)
+          get().addCombatLog('combat', '⚠️ 몬스터를 불러오는데 실패했습니다.')
+        }
       },
 
       proceedToNextFloor: async () => {
@@ -544,27 +713,9 @@ export const useGameStore = create<GameStore>()(
 
         // 자동 모드 시작/정지
         if (autoMode) {
-          get().startAutoCombat()
+          get().startAutoCombat(get().tower.autoSpeed) // 현재 속도로 재시작
         } else {
           get().stopAutoCombat()
-        }
-      },
-
-      setAutoSpeed: (autoSpeed: number) => {
-        const wasAuto = get().tower.autoMode
-        
-        set((state: any) => ({
-          ...state,
-      tower: {
-            ...state.tower,
-            autoSpeed
-          }
-        }))
-
-        // 자동 모드가 켜져있으면 새 속도로 재시작
-        if (wasAuto) {
-          get().stopAutoCombat()
-          get().startAutoCombat()
         }
       },
 
@@ -581,10 +732,17 @@ export const useGameStore = create<GameStore>()(
           
           const data = JSON.parse(saveData)
           
+          // 기존 데이터에 상성 스탯이 없으면 기본값으로 설정
+          const playerData = {
+            ...data.player,
+            baseElementalStats: data.player.baseElementalStats || initialPlayerState.baseElementalStats,
+            elementalStats: data.player.elementalStats || initialPlayerState.elementalStats
+          }
+          
           // 저장된 데이터로 상태 복원
           set((state: any) => ({
             ...state,
-            player: data.player,
+            player: playerData,
             tower: data.tower,
             inventory: data.inventory,
             skills: data.skills,
@@ -598,7 +756,7 @@ export const useGameStore = create<GameStore>()(
           
           // 전투 중이었다면 자동 전투 재시작
           if (data.tower.autoMode && data.tower.isInCombat) {
-            get().startAutoCombat()
+            get().startAutoCombat(data.tower.autoSpeed)
           }
           
         } catch (error) {
@@ -655,16 +813,47 @@ export const useGameStore = create<GameStore>()(
 
       // 인벤토리 관리
       addItem: (itemId: string, quantity: number) => {
-        set((state: any) => ({
-          ...state,
-          inventory: {
-            ...state.inventory,
-            items: [
-              ...state.inventory.items,
-              { itemId, quantity, level: 1 }
-            ]
+        set((state: any) => {
+          const newItems = [...state.inventory.items]
+          
+          // 장비류는 고유하게 관리 (중복 수량 없음)
+          const isEquipment = itemId.includes('sword') || 
+                            itemId.includes('armor') || 
+                            itemId.includes('staff') ||
+                            itemId.includes('weapon') ||
+                            itemId.includes('chest') ||
+                            itemId.includes('accessory')
+          
+          if (isEquipment) {
+            // 장비는 각각 고유 ID로 개별 관리
+            for (let i = 0; i < quantity; i++) {
+              newItems.push({
+                itemId,
+                uniqueId: `${itemId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                level: 1,
+                quantity: 1,
+                quality: 'Common',
+                enhancement: 0
+              })
+            }
+          } else {
+            // 소모품은 기존 방식대로 수량 관리
+            const existingIndex = newItems.findIndex(item => item.itemId === itemId && !item.uniqueId)
+            if (existingIndex >= 0) {
+              newItems[existingIndex].quantity += quantity
+            } else {
+              newItems.push({ itemId, quantity, level: 1 })
+            }
           }
-        }))
+          
+          return {
+            ...state,
+            inventory: {
+              ...state.inventory,
+              items: newItems
+            }
+          }
+        })
       },
 
       addMaterial: (materialId: string, count: number) => {
@@ -693,6 +882,36 @@ export const useGameStore = create<GameStore>()(
         })
       },
 
+      removeMaterial: (materialId: string, count: number) => {
+        set((state: any) => {
+          const materials = [...state.inventory.materials]
+          const existingIndex = materials.findIndex(m => m.materialId === materialId)
+          
+          if (existingIndex >= 0) {
+            const currentCount = materials[existingIndex].count
+            if (currentCount >= count) {
+              materials[existingIndex].count -= count
+              // 수량이 0이 되면 제거
+              if (materials[existingIndex].count <= 0) {
+                materials.splice(existingIndex, 1)
+              }
+            } else {
+              console.warn(`재료 ${materialId}가 부족합니다. (${currentCount}/${count})`)
+            }
+          } else {
+            console.warn(`재료 ${materialId}를 찾을 수 없습니다.`)
+          }
+          
+          return {
+            ...state,
+            inventory: {
+              ...state.inventory,
+              materials
+            }
+          }
+        })
+      },
+
       addSkillPage: (skillId: string) => {
         set((state: any) => {
           const skillPages = [...state.inventory.skillPages]
@@ -706,16 +925,639 @@ export const useGameStore = create<GameStore>()(
               count: 1
             })
           }
+
+          // skills.pagesOwned도 동시에 업데이트
+          const pagesOwned = { ...state.skills.pagesOwned }
+          pagesOwned[skillId] = (pagesOwned[skillId] || 0) + 1
           
           return {
             ...state,
             inventory: {
               ...state.inventory,
               skillPages
+            },
+            skills: {
+              ...state.skills,
+              pagesOwned
             }
           }
         })
       },
+
+      // 스킬 해금
+      unlockSkill: (skillId: string) => {
+        const { skills } = get()
+        const pageCount = skills.pagesOwned[skillId] || 0
+        
+        // 페이지 부족 체크
+        if (pageCount < 3) {
+          get().addCombatLog('skill', `❌ ${skillId} 해금에 필요한 페이지가 부족합니다. (${pageCount}/3)`)
+          return
+        }
+
+        // 이미 보유 체크
+        const alreadyOwned = skills.activeSkills.some(s => s.skillId === skillId) ||
+                           skills.passiveSkills.some(s => s.skillId === skillId)
+        
+        if (alreadyOwned) {
+          get().addCombatLog('skill', `❌ ${skillId}은(는) 이미 보유한 스킬입니다.`)
+          return
+        }
+
+        // 새 스킬 생성 (Lv 1) - 발동률 상승 레벨은 각 스킬별로 다름
+        const newSkill = {
+          skillId,
+          level: 1,
+          triggerChance: skillId === 'basic_attack' ? 100 : 10, // 기본 공격은 100%, 나머지는 10%
+          currentXp: 0,
+          maxXp: 100 // 기본 필요 경험치
+        }
+
+        // 스킬 타입 분류 (임시)
+        const isActive = skillId.includes('ball') || skillId.includes('shard') || skillId.includes('toss')
+
+        set((state: any) => ({
+          ...state,
+          skills: {
+            ...state.skills,
+            activeSkills: isActive ? [...state.skills.activeSkills, newSkill] : state.skills.activeSkills,
+            passiveSkills: !isActive ? [...state.skills.passiveSkills, newSkill] : state.skills.passiveSkills,
+            pagesOwned: {
+              ...state.skills.pagesOwned,
+              [skillId]: pageCount - 3
+            }
+          }
+        }))
+        
+        get().addCombatLog('skill', `🎉 ${skillId} 스킬을 해금했습니다! (Lv 1)`)
+      },
+
+      // 스킬 레벨업
+      levelUpSkill: (skillId: string) => {
+        const { skills, player } = get()
+        
+        // 스킬 찾기
+        let targetSkill = skills.activeSkills.find(s => s.skillId === skillId)
+        let isActive = true
+        
+        if (!targetSkill) {
+          targetSkill = skills.passiveSkills.find(s => s.skillId === skillId)
+          isActive = false
+        }
+
+        if (!targetSkill) {
+          get().addCombatLog('skill', `❌ ${skillId} 스킬을 찾을 수 없습니다.`)
+          return
+        }
+
+        // 무제한 레벨업 가능하므로 최대 레벨 체크 제거
+
+        // 경험치 체크
+        if ((targetSkill.currentXp || 0) < (targetSkill.maxXp || 0)) {
+          get().addCombatLog('skill', `❌ 경험치가 부족합니다.`)
+          return
+        }
+
+        // 비용 계산
+        const apCost = 1
+        const goldCost = Math.floor(100 * Math.pow(1.5, targetSkill.level - 1))
+
+        // 비용 체크
+        if (player.rebirthLevel < apCost) {
+          get().addCombatLog('skill', `❌ AP가 부족합니다.`)
+          return
+        }
+        
+        if (player.gold < goldCost) {
+          get().addCombatLog('skill', `❌ 골드가 부족합니다.`)
+          return
+        }
+
+        // 레벨업 실행 - 스킬별 발동률 상승 레벨 적용
+        const newLevel = targetSkill.level + 1
+        
+        // 스킬 데이터에서 발동률 계산 (동기적으로 처리)
+        const skillTriggerMap: Record<string, number[]> = {
+          'basic_attack': [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100],
+          'fireball': [1, 3, 7, 12, 18, 25, 35, 45, 60, 80, 100],
+          'ice_shard': [1, 4, 8, 15, 22, 30, 40, 55, 70, 90],
+          'flame_aura': [1, 6, 12, 20, 30, 45, 60, 80, 100],
+          'frost_bite': [1, 5, 12, 20, 30, 45, 65, 85],
+          'ember_toss': [1, 2, 5, 10, 16, 24, 35, 50, 70, 95]
+        }
+        
+        const skillTriggerLevels = skillTriggerMap[skillId] || [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
+        
+        // 새 레벨이 발동률 증가 레벨인지 확인 (기본 공격은 항상 100% 유지)
+        let newTriggerChance = targetSkill.triggerChance
+        if (skillId !== 'basic_attack' && skillTriggerLevels.includes(newLevel)) {
+          newTriggerChance = Math.min(95, targetSkill.triggerChance + 5)
+        }
+        
+        const newSkill = {
+          ...targetSkill,
+          level: newLevel,
+          triggerChance: newTriggerChance,
+          currentXp: 0,
+          maxXp: Math.floor(100 * Math.pow(1.8, newLevel - 1))
+        }
+        
+        set((state: any) => ({
+          ...state,
+          player: {
+            ...state.player,
+            rebirthLevel: state.player.rebirthLevel - apCost,
+            gold: state.player.gold - goldCost
+          },
+          skills: {
+            ...state.skills,
+            activeSkills: isActive 
+              ? state.skills.activeSkills.map((s: any) => s.skillId === skillId ? newSkill : s)
+              : state.skills.activeSkills,
+            passiveSkills: !isActive
+              ? state.skills.passiveSkills.map((s: any) => s.skillId === skillId ? newSkill : s)
+              : state.skills.passiveSkills
+          }
+        }))
+
+        get().addCombatLog('skill', `⬆️ ${skillId} 스킬이 Lv ${newLevel}로 상승했습니다!`)
+        get().addCombatLog('skill', `💰 AP ${apCost}, 골드 ${goldCost} 소모`)
+      },
+
+      // 스킬 수련치 추가
+      addSkillTrainingXp: (skillId: string, event: 'cast' | 'killWeak' | 'perfect' | 'kill', customXp?: number) => {
+        const { skills } = get()
+        
+        // 수련치 양 결정
+        const xpAmounts = {
+          cast: 1,
+          killWeak: 20,
+          perfect: 15,
+          kill: 5
+        }
+        const xpGain = customXp || xpAmounts[event] || 0
+        
+        if (xpGain <= 0) return
+
+        // 스킬 찾기 및 수련치 추가
+        const updatedActiveSkills = skills.activeSkills.map(skill => 
+          skill.skillId === skillId 
+            ? { ...skill, currentXp: Math.min((skill.currentXp || 0) + xpGain, skill.maxXp || 0) }
+            : skill
+        )
+        
+        const updatedPassiveSkills = skills.passiveSkills.map(skill => 
+          skill.skillId === skillId 
+            ? { ...skill, currentXp: Math.min((skill.currentXp || 0) + xpGain, skill.maxXp || 0) }
+            : skill
+        )
+
+        // 실제로 수련치가 추가되었는지 확인
+        const skillFound = skills.activeSkills.some(s => s.skillId === skillId) ||
+                          skills.passiveSkills.some(s => s.skillId === skillId)
+
+        if (skillFound) {
+          set((state: any) => ({
+            ...state,
+            skills: {
+              ...state.skills,
+              activeSkills: updatedActiveSkills,
+              passiveSkills: updatedPassiveSkills
+            }
+          }))
+
+          // 수련치 획득 로그
+          const eventNames = {
+            cast: '사용',
+            killWeak: '상성 처치',
+            perfect: 'Perfect',
+            kill: '처치'
+          }
+          
+          get().addCombatLog('skill', `📈 ${skillId} (${eventNames[event]}) +${xpGain} XP`)
+        }
+      },
+
+      // 장비 착용
+      equipItem: (itemIdOrUniqueId: string) => {
+        const { player, inventory } = get()
+        
+        // 인벤토리에서 아이템 찾기 (uniqueId 또는 itemId로 검색)
+        const item = inventory.items.find(item => 
+          item.uniqueId === itemIdOrUniqueId || item.itemId === itemIdOrUniqueId
+        )
+        if (!item) {
+          get().addCombatLog('loot', `❌ ${itemIdOrUniqueId} 아이템을 찾을 수 없습니다.`)
+          return
+        }
+
+        const result = equipItem(player, item)
+        
+        if (result.success) {
+          set((state: any) => ({
+            ...state,
+            player: result.newPlayer
+          }))
+          get().addCombatLog('loot', `✅ ${result.message}`)
+        } else {
+          get().addCombatLog('loot', `❌ ${result.message}`)
+        }
+      },
+
+      // 장비 해제
+      unequipItem: (slot: 'weapon' | 'armor' | 'accessory') => {
+        const { player } = get()
+        
+        const result = unequipItem(player, slot)
+        
+        if (result.success) {
+          set((state: any) => ({
+            ...state,
+            player: result.newPlayer
+          }))
+          get().addCombatLog('loot', `✅ ${result.message}`)
+        } else {
+          get().addCombatLog('loot', `❌ ${result.message}`)
+        }
+      },
+
+      // 장비 강화
+      enhanceEquipment: (slot: 'weapon' | 'armor' | 'accessory') => {
+        const { player } = get()
+        
+        const equipment = player.equipment[slot]
+        if (!equipment) {
+          get().addCombatLog('loot', `❌ 착용한 ${slot === 'weapon' ? '무기' : slot === 'armor' ? '방어구' : '악세서리'}가 없습니다.`)
+          return
+        }
+
+        const result = enhanceEquipment(equipment, player.gold)
+        
+        if (result.success) {
+          const newPlayer = { ...player }
+          newPlayer.equipment[slot] = result.newEquipment
+          newPlayer.gold -= result.goldCost
+          
+          // 스탯 재계산
+          const updatedPlayer = recalculatePlayerStats(newPlayer)
+          
+          set((state: any) => ({
+            ...state,
+            player: updatedPlayer
+          }))
+          get().addCombatLog('loot', `✅ ${result.message}`)
+         } else {
+           if (result.goldCost > 0) {
+             // 실패했지만 골드는 소모됨
+             set((state: any) => ({
+               ...state,
+               player: {
+                 ...state.player,
+                 gold: state.player.gold - result.goldCost
+               }
+             }))
+           }
+           get().addCombatLog('loot', `❌ ${result.message}`)
+        }
+      },
+
+      // 생활 스킬 시스템
+      addLifeSkillXp: (skillType: any, xp: number) => {
+        const { life } = get()
+        if (!life) {
+          console.error('Life skill state not initialized.')
+          return
+        }
+
+        const skill = life.skills[skillType]
+        if (!skill) {
+          console.warn(`Skill type ${skillType} not found.`)
+          return
+        }
+
+        const newXp = (skill.currentXp || 0) + xp
+        let newLevel = skill.level
+        let newMaxXp = skill.maxXp
+        let remainingXp = newXp
+
+        // 레벨업 체크
+        while (remainingXp >= newMaxXp) {
+          remainingXp -= newMaxXp
+          newLevel += 1
+          newMaxXp = Math.floor(100 * Math.pow(1.5, newLevel - 1))
+        }
+
+        // 스토어 상태 업데이트
+        set((state: any) => ({
+          ...state,
+          life: {
+            ...state.life,
+            skills: {
+              ...state.life.skills,
+              [skillType]: {
+                ...skill,
+                level: newLevel,
+                currentXp: remainingXp,
+                maxXp: newMaxXp
+              }
+            }
+          }
+        }))
+
+        if (newLevel > skill.level) {
+          get().addCombatLog('skill', `⬆️ ${skillType} 스킬이 Lv ${newLevel}로 상승했습니다!`)
+        } else {
+          get().addCombatLog('skill', `📈 ${skillType} +${xp} XP (Lv ${newLevel})`)
+        }
+      },
+
+      levelUpLifeSkill: (skillType: any) => {
+        const { life } = get()
+        if (!life) {
+          console.error('Life skill state not initialized.')
+          return
+        }
+
+        const skill = life.skills[skillType]
+        if (!skill) {
+          console.warn(`Skill type ${skillType} not found.`)
+          return
+        }
+
+        // 레벨업 비용 (임시)
+        const apCost = 1
+        const goldCost = Math.floor(100 * Math.pow(1.5, skill.level - 1))
+
+        if (skill.level >= 10) { // 최대 레벨 제한
+          get().addCombatLog('skill', `❌ ${skillType} 스킬은 최대 레벨에 도달했습니다.`)
+          return
+        }
+
+        if (skill.currentXp < skill.maxXp) {
+          get().addCombatLog('skill', `❌ 경험치가 부족합니다.`)
+          return
+        }
+
+        if (skill.cooldown > 0) {
+          get().addCombatLog('skill', `❌ 스킬이 쿨다운 중입니다.`)
+          return
+        }
+
+        if (skill.gold < goldCost) {
+          get().addCombatLog('skill', `❌ 골드가 부족합니다.`)
+          return
+        }
+
+        if (skill.rebirthLevel < apCost) {
+          get().addCombatLog('skill', `❌ AP가 부족합니다.`)
+          return
+        }
+
+        skill.currentXp = 0
+        skill.level = skill.level + 1
+        skill.gold -= goldCost
+        skill.rebirthLevel -= apCost
+
+        get().addCombatLog('skill', `⬆️ ${skillType} 스킬이 Lv ${skill.level}로 상승했습니다!`)
+        get().addCombatLog('skill', `💰 AP ${apCost}, 골드 ${goldCost} 소모`)
+      },
+
+      startCooldown: (skillType: any, duration: number) => {
+        const { life } = get()
+        if (!life) {
+          console.error('Life skill state not initialized.')
+          return
+        }
+
+        const skill = life.skills[skillType]
+        if (!skill) {
+          console.warn(`Skill type ${skillType} not found.`)
+          return
+        }
+
+        skill.cooldown = duration
+        get().addCombatLog('skill', `${skillType} 스킬이 ${duration}초 동안 쿨다운 상태가 되었습니다.`)
+      },
+
+      startMinigame: (skillType: any, gameType: 'slot' | 'rhythm' | 'matching' | 'timing') => {
+        const { life } = get()
+        if (!life) {
+          console.error('Life skill state not initialized.')
+          return
+        }
+
+        const skill = life.skills[skillType]
+        if (!skill) {
+          console.warn(`Skill type ${skillType} not found.`)
+          return
+        }
+
+        if (skill.cooldown > 0) {
+          get().addCombatLog('skill', `${skillType} 스킬이 쿨다운 중이므로 미니게임을 시작할 수 없습니다.`)
+          return
+        }
+
+        // 미니게임 로직 구현 (예: 슬롯머신, 리듬게임 등)
+        // 여기서는 간단히 쿨다운 설정
+        skill.cooldown = 10 // 예시: 10초 쿨다운
+        get().addCombatLog('skill', `${skillType} 스킬을 미니게임으로 사용했습니다. (쿨다운 ${skill.cooldown}초)`)
+      },
+
+      endMinigame: (result: any) => {
+        const { life } = get()
+        if (!life) {
+          console.error('Life skill state not initialized.')
+          return
+        }
+
+        // 미니게임 결과에 따른 경험치 및 골드 획득 로직
+        // 예: 슬롯머신 결과에 따라 경험치 추가
+        if (result.type === 'slot') {
+          get().addLifeSkillXp(result.skillType, result.xpGain || 10) // 슬롯머신 결과에 따라 경험치 추가
+        }
+
+        // 미니게임 종료 후 쿨다운 해제
+        const skill = life.skills.find(s => s.skillType === result.skillType)
+        if (skill) {
+          skill.cooldown = 0
+        }
+      },
+
+      startCrafting: (recipeId: string) => {
+        const { life } = get()
+        if (!life) {
+          console.error('Life skill state not initialized.')
+          return
+        }
+
+        const skill = life.skills.find(s => s.skillType === 'crafting')
+        if (!skill) {
+          console.warn('Crafting skill not found.')
+          return
+        }
+
+        if (skill.cooldown > 0) {
+          get().addCombatLog('skill', 'Crafting 스킬이 쿨다운 중이므로 제작을 시작할 수 없습니다.')
+          return
+        }
+
+        // 제작 로직 구현 (예: 재료 소모, 경험치 획득, 골드 소모 등)
+        // 여기서는 간단히 쿨다운 설정
+        skill.cooldown = 10 // 예시: 10초 쿨다운
+        get().addCombatLog('skill', 'Crafting 스킬을 사용하여 제작을 시작했습니다. (쿨다운 ${skill.cooldown}초)')
+      },
+
+      completeCrafting: () => {
+        const { life } = get()
+        if (!life) {
+          console.error('Life skill state not initialized.')
+          return
+        }
+
+        const skill = life.skills.find(s => s.skillType === 'crafting')
+        if (!skill) {
+          console.warn('Crafting skill not found.')
+          return
+        }
+
+        // 제작 완료 시 경험치 및 골드 획득 로직
+        get().addLifeSkillXp('crafting', 50) // 예시: 제작 완료 시 경험치 추가
+        get().addCombatLog('loot', 'Crafting 제작을 완료했습니다!')
+
+        // 제작 완료 후 쿨다운 해제
+        skill.cooldown = 0
+      },
+
+      // 환생 가능 여부 확인
+      canRebirth: () => {
+        const { tower } = get()
+        const canRebirth = tower.currentFloor > 100
+        const apGain = canRebirth ? (tower.currentFloor - 100) * 2 + Math.floor((tower.currentFloor - 100) / 50) * 10 : 0
+        
+        return {
+          canRebirth,
+          currentFloor: tower.currentFloor,
+          apGain
+        }
+      },
+
+      // 환생 실행
+      executeRebirth: (benefits) => {
+        const { player, tower, inventory, skills } = get()
+        
+        console.log('🔄 환생 실행!')
+        console.log('AP 획득:', benefits.ap)
+        console.log('스킬 레벨 보너스:', benefits.skillLevelBonus)
+        console.log('재료 보너스:', benefits.materialBonus)
+        
+        // 상태 초기화 및 보상 적용 (층수만 초기화)
+        set((state: any) => ({
+          ...state,
+          player: {
+            ...state.player,
+            hp: state.player.maxHp,
+            mp: state.player.maxMp,
+            rebirthLevel: state.player.rebirthLevel + benefits.ap
+          },
+          tower: {
+            ...state.tower,
+            currentFloor: 1,
+            currentMonster: null,
+            combatLog: []
+          }
+        }))
+        
+        get().addCombatLog('floor', `🌟 환생 완료! +${benefits.ap} AP 획득`)
+        get().addCombatLog('skill', `🔥 스킬 레벨 +${benefits.skillLevelBonus} 보너스 (다음 게임부터 적용)`)
+        
+        // 환생시 젬 지급
+        const gemReward = Math.floor((tower.currentFloor - 100) / 10)
+        if (gemReward > 0) {
+          set((state: any) => ({
+            ...state,
+            player: {
+              ...state.player,
+                             gem: (state.player.gem || 0) + gemReward
+            }
+          }))
+          get().addCombatLog('loot', `💎 젬 +${gemReward}개 획득`)
+        }
+      },
+
+      // 상점 아이템 구매
+      purchaseItem: (item) => {
+        const { player } = get()
+        
+        // 비용 확인
+        const canAfford = item.currency === 'gold' 
+          ? player.gold >= item.price 
+                     : (player.gem || 0) >= item.price
+
+        if (!canAfford) {
+          get().addCombatLog('loot', `❌ ${item.currency === 'gold' ? '골드' : '젬'}가 부족합니다`)
+          return
+        }
+
+        // 요구사항 확인
+                 if (item.requirements?.level && player.rebirthLevel < (item.requirements.level * 10)) {
+          get().addCombatLog('loot', `❌ 레벨 ${item.requirements.level} 이상 필요`)
+          return
+        }
+        if (item.requirements?.rebirthLevel && player.rebirthLevel < item.requirements.rebirthLevel) {
+          get().addCombatLog('loot', `❌ 환생 레벨 ${item.requirements.rebirthLevel} 이상 필요`)
+          return
+        }
+
+        // 비용 차감
+        set((state: any) => ({
+          ...state,
+          player: {
+            ...state.player,
+            gold: item.currency === 'gold' ? state.player.gold - item.price : state.player.gold,
+                         gem: item.currency === 'gem' ? (state.player.gem || 0) - item.price : (state.player.gem || 0)
+          }
+        }))
+
+        // 아이템별 특별 처리
+        if (item.itemData.itemId === 'skill_page_random') {
+          // 랜덤 스킬 페이지 지급
+          const skills = ['fireball', 'ice_shard', 'flame_aura', 'frost_bite', 'ember_toss']
+          for (let i = 0; i < item.itemData.quantity; i++) {
+            const randomSkill = skills[Math.floor(Math.random() * skills.length)]
+            get().addSkillPage(randomSkill)
+          }
+          get().addCombatLog('loot', `✅ ${item.name} 구매! 랜덤 스킬 페이지 ${item.itemData.quantity}개 획득`)
+        } else if (item.itemData.itemId === 'premium_material_pack') {
+          // 프리미엄 재료 팩
+          get().addMaterial('iron_ore', 20)
+          get().addMaterial('wood', 30)
+          get().addMaterial('red_herb', 15)
+          get().addCombatLog('loot', `✅ ${item.name} 구매! 고급 재료 대량 획득`)
+        } else if (item.itemData.itemId === 'rebirth_stone') {
+          // 환생석 - 즉시 AP 지급
+          set((state: any) => ({
+            ...state,
+            player: {
+              ...state.player,
+              rebirthLevel: state.player.rebirthLevel + 10
+            }
+          }))
+          get().addCombatLog('loot', `✅ ${item.name} 구매! +10 AP 획득`)
+        } else {
+          // 일반 아이템
+          if (item.category === 'consumable') {
+            // 소모품은 consumables에 추가
+            get().addItem(item.itemData.itemId, item.itemData.quantity)
+          } else if (item.category === 'material') {
+            // 재료는 materials에 추가
+            get().addMaterial(item.itemData.itemId, item.itemData.quantity)
+          } else {
+            // 장비는 items에 추가
+            get().addItem(item.itemData.itemId, item.itemData.quantity)
+          }
+          get().addCombatLog('loot', `✅ ${item.name} 구매 완료!`)
+        }
+      }
     }),
     { name: 'game-store' }
   )

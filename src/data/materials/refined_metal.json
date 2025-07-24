@@ -1,0 +1,12 @@
+{
+  "id": "refined_metal",
+  "name": "정제된 금속",
+  "description": "순도가 높은 고급 금속 재료",
+  "type": "material",
+  "category": "metal",
+  "element": "neutral",
+  "baseValue": 15,
+  "rarity": "Fine",
+  "stackable": true,
+  "maxStack": 99
+} 

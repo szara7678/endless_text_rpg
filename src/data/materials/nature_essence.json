@@ -1,0 +1,12 @@
+{
+  "id": "nature_essence",
+  "name": "자연 정수",
+  "description": "대지와 생명의 힘이 농축된 녹색 정수",
+  "type": "material",
+  "category": "essence",
+  "element": "Verdant",
+  "baseValue": 20,
+  "rarity": "Fine",
+  "stackable": true,
+  "maxStack": 99
+} 

@@ -1,0 +1,32 @@
+{
+  "itemId": "verdant_armor",
+  "name": "자연 방어구",
+  "description": "자연의 생명력이 깃든 방어구입니다. 지속적인 체력 회복 효과가 있습니다.",
+  "type": "armor",
+  "subtype": "robe",
+  "element": "verdant",
+  "rarity": "Superior",
+  "level": 2,
+  "baseStats": {
+    "physicalDefense": 25,
+    "magicalDefense": 30,
+    "elementalResistance": {
+      "verdant": 40
+    },
+    "hp": 80,
+    "hpRegen": 2
+  },
+  "requirements": {
+    "level": 10
+  },
+  "sellPrice": 100,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "craftingMaterials": {
+    "leather": 3,
+    "verdant_sap": 2,
+    "healing_herb": 2
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 3
+} 

@@ -1,0 +1,23 @@
+{
+  "itemId": "flame_sword",
+  "name": "화염 검",
+  "description": "화염의 힘이 깃든 검입니다. 적을 벨 때마다 화염 데미지를 추가로 가합니다.",
+  "type": "weapon",
+  "subtype": "sword",
+  "element": "flame",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalAttack": 20,
+    "elementalAttack": {
+      "flame": 15
+    },
+    "speed": 2
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 40,
+  "enhanceable": true,
+  "maxEnhancement": 10
+} 

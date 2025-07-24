@@ -1,0 +1,25 @@
+{
+  "itemId": "greater_mana_potion",
+  "name": "상급 마나 물약",
+  "description": "강력한 마나 회복 효과를 지닌 물약입니다.",
+  "type": "consumable",
+  "subtype": "potion",
+  "rarity": "Fine",
+  "level": 2,
+  "effects": [
+    {
+      "type": "heal_mp",
+      "value": 100,
+      "duration": 0
+    }
+  ],
+  "sellPrice": 35,
+  "stackable": true,
+  "maxStack": 10,
+  "craftingMaterials": {
+    "mana_flower": 3,
+    "frost_crystal": 1
+  },
+  "requiredSkill": "alchemy",
+  "requiredSkillLevel": 2
+} 
