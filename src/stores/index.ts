@@ -26,6 +26,15 @@ interface GameStore {
   saveGame: () => Promise<void>
   resetGame: () => Promise<void>
   setGameState: (state: 'menu' | 'playing' | 'loading') => void
+  startAutoSave: () => void
+
+  // UI 관리
+  setActivePanel: (panel: 'character' | 'inventory' | 'shop' | null) => void
+
+  // 인벤토리 관리
+  addItem: (itemId: string, quantity: number) => void
+  addMaterial: (materialId: string, count: number) => void
+  addSkillPage: (skillId: string) => void
 
   // 자동 전투 시스템
   startAutoCombat: () => void
@@ -61,10 +70,44 @@ export const useGameStore = create<GameStore>()(
         autoSpeed: 1,
         isInCombat: false
       },
-      inventory: {} as InventoryState,
-      skills: {} as SkillState,
-      ui: {} as UIState,
+      inventory: {
+        maxSlots: 100,
+        usedSlots: 0,
+        items: [],
+        materials: [],
+        consumables: [],
+        skillPages: []
+      },
+      skills: {
+        activeSkills: [],
+        passiveSkills: [],
+        pagesOwned: {},
+        skillPages: [],
+        learnedSkills: []
+      },
+      ui: {
+        activePanel: null,
+        notifications: []
+      },
       gameState: 'menu',
+
+      // 자동 저장 (5초마다)
+      startAutoSave: () => {
+        setInterval(() => {
+          const state = get()
+          if (state.gameState === 'playing') {
+            const saveData = {
+              player: state.player,
+              tower: state.tower,
+              inventory: state.inventory,
+              skills: state.skills,
+              timestamp: Date.now()
+            }
+            localStorage.setItem('endless_rpg_save', JSON.stringify(saveData))
+            console.log('💾 자동 저장 완료')
+          }
+        }, 5000)
+      },
 
       // 게임 플로우 관리
       startNewGame: async () => {
@@ -121,6 +164,9 @@ export const useGameStore = create<GameStore>()(
               }
             }))
           }
+          
+          // 자동 저장 시작
+          get().startAutoSave()
           
           console.log('✅ 새 게임 시작 완료!')
         } catch (error) {
@@ -224,9 +270,7 @@ export const useGameStore = create<GameStore>()(
             // 20% 확률로 스킬 페이지 드롭
             if (Math.random() < 0.2) {
               get().addCombatLog('loot', `📜 ${skillPageId} 스킬 페이지를 획득했습니다!`)
-              
-              // TODO: 인벤토리에 스킬 페이지 추가
-              // get().addSkillPage(skillPageId)
+              get().addSkillPage(skillPageId)
             }
           }
         }
@@ -237,13 +281,13 @@ export const useGameStore = create<GameStore>()(
           if (Math.random() < 0.6) {
             const quantity = Math.floor(Math.random() * 3) + 1
             get().addCombatLog('loot', `🔥 화염 광석 ${quantity}개를 획득했습니다!`)
-            // TODO: 인벤토리에 재료 추가
+            get().addMaterial('flame_ore', quantity)
           }
           
           // 15% 확률로 체력 물약 드롭
           if (Math.random() < 0.15) {
             get().addCombatLog('loot', `🧪 체력 물약을 획득했습니다!`)
-            // TODO: 인벤토리에 소모품 추가
+            get().addItem('health_potion', 1)
           }
         }
 
@@ -392,12 +436,61 @@ export const useGameStore = create<GameStore>()(
 
       // 기타 함수들 (임시 구현)
       continueGame: async () => {
-        console.log('📂 이어하기 (준비 중)')
-        set({ gameState: 'menu' } as any)
+        try {
+          console.log('📂 저장된 게임 불러오는 중...')
+          
+          const saveData = localStorage.getItem('endless_rpg_save')
+          if (!saveData) {
+            alert('저장된 게임이 없습니다.')
+            return
+          }
+          
+          const data = JSON.parse(saveData)
+          
+          // 저장된 데이터로 상태 복원
+          set((state: any) => ({
+            ...state,
+            player: data.player,
+            tower: data.tower,
+            inventory: data.inventory,
+            skills: data.skills,
+            gameState: 'playing'
+          }))
+          
+          // 자동 저장 시작
+          get().startAutoSave()
+          
+          console.log('✅ 게임 불러오기 완료!')
+          
+          // 전투 중이었다면 자동 전투 재시작
+          if (data.tower.autoMode && data.tower.isInCombat) {
+            get().startAutoCombat()
+          }
+          
+        } catch (error) {
+          console.error('❌ 게임 불러오기 실패:', error)
+          alert('저장된 게임을 불러오는데 실패했습니다.')
+        }
       },
 
       saveGame: async () => {
-        console.log('💾 게임 저장 (준비 중)')
+        try {
+          const state = get()
+          const saveData = {
+            player: state.player,
+            tower: state.tower,
+            inventory: state.inventory,
+            skills: state.skills,
+            timestamp: Date.now()
+          }
+          localStorage.setItem('endless_rpg_save', JSON.stringify(saveData))
+          console.log('💾 수동 저장 완료!')
+          
+          // 저장 완료 알림 (UI에 표시)
+          get().addCombatLog('combat', '💾 게임이 저장되었습니다.')
+        } catch (error) {
+          console.error('❌ 게임 저장 실패:', error)
+        }
       },
 
       resetGame: async () => {
@@ -413,7 +506,82 @@ export const useGameStore = create<GameStore>()(
         get().stopAutoCombat()
         console.log('🚨 강제 메뉴 복귀')
         set({ gameState: 'menu' } as any)
-      }
+      },
+
+      // UI 관리
+      setActivePanel: (panel: 'character' | 'inventory' | 'shop' | null) => {
+        set((state: any) => ({
+          ...state,
+          ui: {
+            ...state.ui,
+            activePanel: panel
+          }
+        }))
+      },
+
+      // 인벤토리 관리
+      addItem: (itemId: string, quantity: number) => {
+        set((state: any) => ({
+          ...state,
+          inventory: {
+            ...state.inventory,
+            items: [
+              ...state.inventory.items,
+              { itemId, quantity, level: 1 }
+            ]
+          }
+        }))
+      },
+
+      addMaterial: (materialId: string, count: number) => {
+        set((state: any) => {
+          const materials = [...state.inventory.materials]
+          const existingIndex = materials.findIndex(m => m.materialId === materialId)
+          
+          if (existingIndex >= 0) {
+            materials[existingIndex].count += count
+          } else {
+            materials.push({
+              materialId,
+              name: materialId.replace('_', ' '),
+              level: 1,
+              count
+            })
+          }
+          
+          return {
+            ...state,
+            inventory: {
+              ...state.inventory,
+              materials
+            }
+          }
+        })
+      },
+
+      addSkillPage: (skillId: string) => {
+        set((state: any) => {
+          const skillPages = [...state.inventory.skillPages]
+          const existingIndex = skillPages.findIndex(sp => sp.skillId === skillId)
+          
+          if (existingIndex >= 0) {
+            skillPages[existingIndex].count += 1
+          } else {
+            skillPages.push({
+              skillId,
+              count: 1
+            })
+          }
+          
+          return {
+            ...state,
+            inventory: {
+              ...state.inventory,
+              skillPages
+            }
+          }
+        })
+      },
     }),
     { name: 'game-store' }
   )

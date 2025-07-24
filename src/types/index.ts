@@ -260,17 +260,16 @@ export interface DropEntry {
   qualityWeights: Record<ItemQuality, number>
 }
 
-// === 인벤토리 ===
+// === 인벤토리 상태 ===
 export interface InventoryState {
+  // 슬롯 관리
   maxSlots: number
   usedSlots: number
   
   // 아이템들
   items: ItemInstance[]
   materials: MaterialInstance[]
-  consumables: Record<string, number>
-  
-  // 스킬 페이지 (기획안: 3장으로 스킬 해금)
+  consumables: ItemInstance[]
   skillPages: SkillPageInstance[]
 }
 
@@ -342,9 +341,13 @@ export interface CombatLogEntry {
 
 // === UI 상태 ===
 export interface UIState {
-  activePanel: 'life' | 'character' | 'shop' | 'inventory' | null
-  notifications: Notification[]
-  settings: GameSettings
+  activePanel: 'character' | 'inventory' | 'shop' | null
+  notifications: Array<{
+    id: string
+    type: 'info' | 'success' | 'warning' | 'error'
+    message: string
+    timestamp: number
+  }>
 }
 
 export interface Notification {

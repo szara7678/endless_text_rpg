@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { X, Coins, Gem } from 'lucide-react'
+import { X, ShoppingCart, Package, Zap, FileText, Star } from 'lucide-react'
+import { useGameStore } from '../../stores'
 
 interface ShopPanelProps {
   isOpen: boolean
@@ -7,190 +8,262 @@ interface ShopPanelProps {
 }
 
 const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
-  const [activeCategory, setActiveCategory] = useState<'consumables' | 'materials' | 'buffs' | 'pages'>('consumables')
+  const { player } = useGameStore()
+  const [activeTab, setActiveTab] = useState<'consumables' | 'materials' | 'buffs' | 'pages' | 'boosters'>('consumables')
+
+  if (!isOpen) return null
+
+  const getShopItems = () => {
+    switch (activeTab) {
+      case 'consumables':
+        return [
+          {
+            id: 'health_potion',
+            name: '체력 물약',
+            description: 'HP를 50 회복합니다',
+            price: 25,
+            currency: 'gold',
+            icon: '🧪'
+          },
+          {
+            id: 'mana_potion', 
+            name: '마나 물약',
+            description: 'MP를 30 회복합니다',
+            price: 20,
+            currency: 'gold',
+            icon: '💙'
+          }
+        ]
+      case 'materials':
+        return [
+          {
+            id: 'flame_ore_pack',
+            name: '화염 광석 팩',
+            description: '화염 광석 5개 + 잔불 수정 2개',
+            price: 3,
+            currency: 'gem',
+            icon: '📦'
+          },
+          {
+            id: 'frost_ore_pack',
+            name: '서리 광석 팩',
+            description: '서리 광석 5개 + 얼음 수정 2개',
+            price: 3,
+            currency: 'gem',
+            icon: '📦'
+          }
+        ]
+      case 'buffs':
+        return [
+          {
+            id: 'attack_buff',
+            name: '공격력 증진 물약',
+            description: '1시간 동안 공격력 +20%',
+            price: 5,
+            currency: 'gem',
+            icon: '⚔️'
+          },
+          {
+            id: 'gold_buff',
+            name: '황금 손 물약',
+            description: '1시간 동안 골드 획득량 +50%',
+            price: 7,
+            currency: 'gem',
+            icon: '💰'
+          }
+        ]
+      case 'pages':
+        return [
+          {
+            id: 'skill_page_random',
+            name: '랜덤 스킬 페이지',
+            description: '랜덤한 스킬 페이지 1장을 획득합니다',
+            price: 5,
+            currency: 'gem',
+            icon: '📜'
+          },
+          {
+            id: 'skill_page_rare',
+            name: '희귀 스킬 페이지',
+            description: '희귀 등급 스킬 페이지 1장을 획득합니다',
+            price: 15,
+            currency: 'gem',
+            icon: '📜'
+          }
+        ]
+      case 'boosters':
+        return [
+          {
+            id: 'exp_booster',
+            name: 'EXP 부스터',
+            description: '1시간 동안 경험치 획득량 +100%',
+            price: 10,
+            currency: 'gem',
+            icon: '⭐'
+          },
+          {
+            id: 'drop_booster',
+            name: '드롭 부스터',
+            description: '1시간 동안 아이템 드롭률 +50%',
+            price: 8,
+            currency: 'gem',
+            icon: '🎁'
+          }
+        ]
+      default:
+        return []
+    }
+  }
+
+  const handlePurchase = (item: any) => {
+    const canAfford = item.currency === 'gold' 
+      ? player.gold >= item.price
+      : player.gem >= item.price
+
+    if (!canAfford) {
+      alert(`${item.currency === 'gold' ? '골드' : '젠'}가 부족합니다!`)
+      return
+    }
+
+    // TODO: 실제 구매 로직 구현
+    alert(`${item.name}을(를) 구매했습니다! (구매 기능 구현 예정)`)
+  }
 
   return (
-    <div className={`panel-slide-up ${isOpen ? 'open' : ''} fixed inset-x-0 bottom-16 h-[calc(100vh-80px-64px)] bg-dark-800 border-t border-gray-700 z-30`}>
+    <div 
+      className="fixed inset-x-0 bg-gray-800 border-t border-gray-700 z-20 flex flex-col"
+      style={{ top: '64px', bottom: '64px' }}
+    >
       {/* 패널 헤더 */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-700">
-        <h2 className="text-lg font-bold text-white">상점</h2>
+      <div className="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
+        <h2 className="text-lg font-bold text-white">🛒 상점</h2>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          className="text-gray-400 hover:text-white transition-colors"
         >
-          <X size={20} />
+          <X size={24} />
         </button>
       </div>
-      
-      {/* 재화 표시 */}
-      <div className="flex justify-center gap-6 p-3 bg-dark-900 border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          <Coins size={16} className="text-yellow-400" />
-          <span className="text-yellow-400 font-mono">1,250</span>
+
+      {/* 구분 탭 */}
+      <div className="flex border-b border-gray-700 bg-gray-800 overflow-x-auto flex-shrink-0">
+        <button
+          onClick={() => setActiveTab('consumables')}
+          className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
+            activeTab === 'consumables' ? 'bg-yellow-600 text-white' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-1">
+            <ShoppingCart size={14} />
+            <span>소모품</span>
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('materials')}
+          className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
+            activeTab === 'materials' ? 'bg-yellow-600 text-white' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-1">
+            <Package size={14} />
+            <span>재료팩</span>
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('buffs')}
+          className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
+            activeTab === 'buffs' ? 'bg-yellow-600 text-white' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-1">
+            <Zap size={14} />
+            <span>버프</span>
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('pages')}
+          className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
+            activeTab === 'pages' ? 'bg-yellow-600 text-white' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-1">
+            <FileText size={14} />
+            <span>페이지</span>
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('boosters')}
+          className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
+            activeTab === 'boosters' ? 'bg-yellow-600 text-white' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-1">
+            <Star size={14} />
+            <span>부스터</span>
+          </div>
+        </button>
+      </div>
+
+      {/* 패널 내용 - 스크롤 가능 */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="pb-32">
+          <div className="p-4">
+            <div className="space-y-3">
+              {getShopItems().map((item) => {
+                const canAfford = item.currency === 'gold' 
+                  ? player.gold >= item.price
+                  : player.gem >= item.price
+
+                return (
+                  <div key={item.id} className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{item.icon}</div>
+                        <div>
+                          <div className="font-semibold text-white">{item.name}</div>
+                          <div className="text-sm text-gray-400">{item.description}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <div className={`font-bold ${
+                          item.currency === 'gold' ? 'text-yellow-400' : 'text-purple-400'
+                        }`}>
+                          {item.currency === 'gold' ? '💰' : '💎'} {item.price.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          보유: {item.currency === 'gold' ? player.gold.toLocaleString() : player.gem}
+                        </div>
+                        <button
+                          onClick={() => handlePurchase(item)}
+                          disabled={!canAfford}
+                          className={`mt-2 px-4 py-2 rounded text-sm font-semibold transition-colors ${
+                            canAfford
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                          }`}
+                        >
+                          {canAfford ? '구매' : '부족'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* 상점 안내 */}
+            <div className="mt-6 bg-blue-900/30 border border-blue-700 rounded-lg p-4">
+              <h3 className="text-blue-300 font-semibold mb-2">💡 상점 이용 안내</h3>
+              <div className="text-sm text-gray-300 space-y-1">
+                <div>• 골드는 몬스터 처치로 획득할 수 있습니다</div>
+                <div>• 젠은 특별한 보상으로 가끔 획득됩니다</div>
+                <div>• 스킬 페이지는 3장을 모으면 스킬을 배울 수 있습니다</div>
+                <div>• 버프와 부스터는 일정 시간 동안 효과가 지속됩니다</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Gem size={16} className="text-purple-400" />
-          <span className="text-purple-400 font-mono">15</span>
-        </div>
-      </div>
-      
-      {/* 카테고리 탭 */}
-      <div className="flex border-b border-gray-700">
-        <button
-          onClick={() => setActiveCategory('consumables')}
-          className={`flex-1 py-2 text-center text-xs font-medium transition-colors ${
-            activeCategory === 'consumables' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          소모품
-        </button>
-        <button
-          onClick={() => setActiveCategory('materials')}
-          className={`flex-1 py-2 text-center text-xs font-medium transition-colors ${
-            activeCategory === 'materials' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          재료팩
-        </button>
-        <button
-          onClick={() => setActiveCategory('buffs')}
-          className={`flex-1 py-2 text-center text-xs font-medium transition-colors ${
-            activeCategory === 'buffs' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          버프
-        </button>
-        <button
-          onClick={() => setActiveCategory('pages')}
-          className={`flex-1 py-2 text-center text-xs font-medium transition-colors ${
-            activeCategory === 'pages' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          페이지
-        </button>
-      </div>
-      
-      {/* 상품 목록 - 스크롤 가능 영역 */}
-      <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 80px - 64px - 140px)' }}>
-        {activeCategory === 'consumables' && (
-          <div className="p-4 space-y-3">
-            <h3 className="text-md font-semibold text-white mb-3">소모품</h3>
-            
-            {Array.from({ length: 8 }, (_, index) => (
-              <div key={index} className="bg-dark-900 p-3 rounded border border-gray-700">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-red-400 font-semibold">
-                      {index % 2 === 0 ? '체력 포션' : '마나 포션'}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {index % 2 === 0 ? 'HP 200 즉시 회복' : 'MP 100 즉시 회복'}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-yellow-400">
-                      <Coins size={14} />
-                      <span>{index % 2 === 0 ? '50' : '40'}</span>
-                    </div>
-                    <button className="mt-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors">
-                      구매
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {activeCategory === 'materials' && (
-          <div className="p-4 space-y-3">
-            <h3 className="text-md font-semibold text-white mb-3">재료팩</h3>
-            
-            {Array.from({ length: 6 }, (_, index) => (
-              <div key={index} className="bg-dark-900 p-3 rounded border border-gray-700">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-orange-400 font-semibold">
-                      {['화염', '빙결', '독성', '그림자', '번개', '자연'][index]} 재료팩
-                    </div>
-                    <div className="text-xs text-gray-400">재료 5개, 수정 2개</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-purple-400">
-                      <Gem size={14} />
-                      <span>3</span>
-                    </div>
-                    <button className="mt-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors">
-                      구매
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {activeCategory === 'buffs' && (
-          <div className="p-4 space-y-3">
-            <h3 className="text-md font-semibold text-white mb-3">버프 아이템</h3>
-            
-            {Array.from({ length: 5 }, (_, index) => (
-              <div key={index} className="bg-dark-900 p-3 rounded border border-gray-700">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-yellow-400 font-semibold">
-                      {['경험치', '드롭률', '골드', '스킬', '크리티컬'][index]} 부스터
-                    </div>
-                    <div className="text-xs text-gray-400">1시간 동안 효과 +{30 + index * 10}%</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-purple-400">
-                      <Gem size={14} />
-                      <span>{5 + index * 2}</span>
-                    </div>
-                    <button className="mt-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors">
-                      구매
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {activeCategory === 'pages' && (
-          <div className="p-4 space-y-3">
-            <h3 className="text-md font-semibold text-white mb-3">스킬 페이지</h3>
-            
-            {Array.from({ length: 4 }, (_, index) => (
-              <div key={index} className="bg-dark-900 p-3 rounded border border-gray-700">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-purple-400 font-semibold">
-                      {index === 0 ? '랜덤 스킬 페이지' : 
-                       index === 1 ? '고급 스킬 페이지' :
-                       index === 2 ? '희귀 스킬 페이지' : '전설 스킬 페이지'}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {index === 0 ? '무작위 스킬 페이지 1개' :
-                       index === 1 ? '고급 등급 스킬 페이지 1개' :
-                       index === 2 ? '희귀 등급 스킬 페이지 1개' : '전설 등급 스킬 페이지 1개'}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-purple-400">
-                      <Gem size={14} />
-                      <span>{[10, 25, 50, 100][index]}</span>
-                    </div>
-                    <button className="mt-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors">
-                      구매
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   )
