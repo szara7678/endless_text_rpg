@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/endless_text_rpg/sw.js', { scope: '/endless_text_rpg/' })})}
