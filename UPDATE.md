@@ -223,6 +223,33 @@
 - **파일**: `src/stores/index.ts`
 - **결과**: 생활 스킬 경험치 추가가 정상적으로 작동
 
+### 📦 **제작 아이템 인벤토리 반영 문제 수정**
+- **문제**: 
+  - 룰렛 완료 후 아이템이 실제로 인벤토리에 반영되지 않음
+  - 제작 완료 로그가 표시되지 않아 확인 불가
+- **해결**: 
+  - `completeSlotGame` 함수에서 `addCombatLog` 활성화
+  - `useGameStore.getState()`를 사용하여 전투 로그에 제작 완료 메시지 추가
+  - 콘솔 로그 추가로 아이템 추가 과정 추적 가능
+  - 소모품과 장비 구분하여 적절한 함수 호출
+- **파일**: `src/components/life/CraftingModal.tsx`
+- **결과**: 룰렛 완료 후 아이템이 실제로 인벤토리에 추가되고 전투 로그에 표시됨
+
+### ⚔️ **장비 스탯 불일치 문제 수정**
+- **문제**: 
+  - 장비의 상세 정보에 표시되는 스탯과 실제 전투에 적용되는 스탯이 다름
+  - JSON 파일의 `baseStats`와 `equipmentSystem.ts`의 `getBaseEquipmentStats` 값이 불일치
+- **원인**: 
+  - `flame_sword.json`: `physicalAttack: 20`, `elementalAttack: { flame: 15 }`, `speed: 2`
+  - `equipmentSystem.ts`: `physicalAttack: 25`, `magicalAttack: 10`, `speed: 3`
+- **해결**: 
+  - `equipmentSystem.ts`의 `getBaseEquipmentStats` 값을 JSON 파일과 일치하도록 수정
+  - `flame_sword`: `physicalAttack: 20`, `magicalAttack: 15`, `speed: 2`
+  - `frost_sword`: `physicalAttack: 18`, `magicalAttack: 17`, `speed: 3`
+  - `elementalAttack` 값을 `magicalAttack`으로 변환하여 통일
+- **파일**: `src/utils/equipmentSystem.ts`
+- **결과**: 장비 상세 정보의 스탯과 실제 전투 적용 스탯이 일치함
+
 ### 🔧 **removeMaterial 함수 구현 및 제작 로직 완전 개선**
 - **문제**: 
   - `removeMaterial` 함수가 구현되지 않아 재료 소모가 작동하지 않음

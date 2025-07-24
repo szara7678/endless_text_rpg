@@ -238,14 +238,14 @@ export function getBaseEquipmentStats(itemId: string): any {
       speed: 1
     },
     'flame_sword': {
-      physicalAttack: 25,
-      magicalAttack: 10,
-      speed: 3
+      physicalAttack: 20,
+      magicalAttack: 15, // elementalAttack.flame을 magicalAttack으로 변환
+      speed: 2
     },
     'frost_sword': {
-      physicalAttack: 22,
-      magicalAttack: 8,
-      speed: 2
+      physicalAttack: 18,
+      magicalAttack: 17, // elementalAttack.frost를 magicalAttack으로 변환
+      speed: 3
     },
     'shadow_sword': {
       physicalAttack: 30,

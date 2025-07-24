@@ -242,8 +242,10 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
         const itemData = await loadItem(selectedRecipe.resultItem.itemId)
         if (itemData.type === 'consumable') {
           // addConsumable(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
+          console.log('소모품 제작:', selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
         } else {
           addItem(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
+          console.log('장비 제작:', selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
         }
 
         // 경험치 추가
@@ -257,11 +259,14 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
           quantity: selectedRecipe.resultItem.quantity
         })
 
-        // addCombatLog('loot', `✅ ${selectedRecipe.name} 제작 완료! (품질: ${quality})`)
+        // 전투 로그에 제작 완료 메시지 추가
+        const { addCombatLog } = useGameStore.getState()
+        addCombatLog('loot', `✅ ${selectedRecipe.name} 제작 완료! (품질: ${quality})`)
         
       } catch (error) {
         console.error('제작 실패:', error)
-        // addCombatLog('loot', `❌ 제작 실패`)
+        const { addCombatLog } = useGameStore.getState()
+        addCombatLog('loot', `❌ 제작 실패`)
       }
 
       setIsCrafting(false)
