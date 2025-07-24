@@ -110,15 +110,44 @@ export async function loadItems(): Promise<Record<string, any>> {
 
 // 초기 캐릭터 데이터
 export async function loadInitialCharacter(): Promise<any> {
-  return null // startNewGame에서 초기값 사용
+  try {
+    const data = (await import('../data/initial/character.json')).default
+    return data
+  } catch (error) {
+    console.warn('초기 캐릭터 데이터 로드 실패:', error)
+    return null
+  }
 }
 
 // 초기 인벤토리 데이터  
 export async function loadInitialInventory(): Promise<any> {
-  return null // startNewGame에서 초기값 사용
+  try {
+    const data = (await import('../data/initial/inventory.json')).default
+    return data
+  } catch (error) {
+    console.warn('초기 인벤토리 데이터 로드 실패:', error)
+    return null
+  }
 }
 
 // 초기 스킬 데이터
 export async function loadInitialSkills(): Promise<any> {
-  return null // startNewGame에서 초기값 사용
+  try {
+    const data = (await import('../data/initial/skills.json')).default
+    return data
+  } catch (error) {
+    console.warn('초기 스킬 데이터 로드 실패:', error)
+    return null
+  }
+}
+
+// 초기 타워 데이터
+export async function loadInitialTower(): Promise<any> {
+  try {
+    const data = (await import('../data/initial/tower.json')).default
+    return data
+  } catch (error) {
+    console.warn('초기 타워 데이터 로드 실패:', error)
+    return null
+  }
 } 

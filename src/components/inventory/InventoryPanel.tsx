@@ -142,80 +142,119 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
               <div className="bg-gray-900 rounded-lg p-4">
                 <h3 className="text-md font-semibold mb-3 text-orange-400">⚔️ 장비 목록</h3>
                 
-                {/* 무기 */}
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold mb-2 text-red-400">🗡️ 무기</h4>
-                  {player.equipment.weapon ? (
+                <div className="space-y-3">
+                  {/* 착용 중인 무기 */}
+                  {player.equipment.weapon && (
                     <div className="bg-gray-800 rounded p-3 border-l-4 border-red-400">
                       <div className="flex justify-between items-center">
                         <div>
-                          <div className="font-medium text-white">{player.equipment.weapon.itemId}</div>
-                          <div className="text-sm text-gray-400">
-                            레벨 {player.equipment.weapon.level} | +{player.equipment.weapon.enhancement}
+                          <div className="flex items-center gap-2">
+                            <span className="text-red-400">🗡️</span>
+                            <div className="font-medium text-white">{player.equipment.weapon.itemId}</div>
+                            <span className="text-green-400 text-sm font-semibold px-2 py-1 bg-green-900 rounded">착용중</span>
+                          </div>
+                          <div className="text-sm text-gray-400 mt-1">
+                            레벨 {player.equipment.weapon.level} | +{player.equipment.weapon.enhancement} | 무기
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-green-400 text-sm font-semibold">✅ 착용 중</div>
-                          <div className="text-red-400 text-sm">공격력 +{player.equipment.weapon.physicalAttack || 10}</div>
+                        <div className="text-red-400 text-sm">
+                          공격력 +{player.equipment.weapon.physicalAttack || 10}
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="text-gray-500 text-center py-4 bg-gray-800 rounded">착용 중인 무기가 없습니다</div>
                   )}
-                </div>
 
-                {/* 방어구 */}
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold mb-2 text-blue-400">🛡️ 방어구</h4>
-                  {player.equipment.armor ? (
+                  {/* 착용 중인 방어구 */}
+                  {player.equipment.armor && (
                     <div className="bg-gray-800 rounded p-3 border-l-4 border-blue-400">
                       <div className="flex justify-between items-center">
                         <div>
-                          <div className="font-medium text-white">{player.equipment.armor.itemId}</div>
-                          <div className="text-sm text-gray-400">
-                            레벨 {player.equipment.armor.level} | +{player.equipment.armor.enhancement}
+                          <div className="flex items-center gap-2">
+                            <span className="text-blue-400">🛡️</span>
+                            <div className="font-medium text-white">{player.equipment.armor.itemId}</div>
+                            <span className="text-green-400 text-sm font-semibold px-2 py-1 bg-green-900 rounded">착용중</span>
+                          </div>
+                          <div className="text-sm text-gray-400 mt-1">
+                            레벨 {player.equipment.armor.level} | +{player.equipment.armor.enhancement} | 방어구
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-green-400 text-sm font-semibold">✅ 착용 중</div>
-                          <div className="text-blue-400 text-sm">방어력 +{player.equipment.armor.physicalDefense || 5}</div>
+                        <div className="text-blue-400 text-sm">
+                          방어력 +{player.equipment.armor.physicalDefense || 5}
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="text-gray-500 text-center py-4 bg-gray-800 rounded">착용 중인 방어구가 없습니다</div>
                   )}
-                </div>
 
-                {/* 액세서리 */}
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold mb-2 text-purple-400">💍 액세서리</h4>
-                  {player.equipment.accessory ? (
+                  {/* 착용 중인 액세서리 */}
+                  {player.equipment.accessory && (
                     <div className="bg-gray-800 rounded p-3 border-l-4 border-purple-400">
                       <div className="flex justify-between items-center">
                         <div>
-                          <div className="font-medium text-white">{player.equipment.accessory.itemId}</div>
-                          <div className="text-sm text-gray-400">
-                            레벨 {player.equipment.accessory.level} | +{player.equipment.accessory.enhancement}
+                          <div className="flex items-center gap-2">
+                            <span className="text-purple-400">💍</span>
+                            <div className="font-medium text-white">{player.equipment.accessory.itemId}</div>
+                            <span className="text-green-400 text-sm font-semibold px-2 py-1 bg-green-900 rounded">착용중</span>
+                          </div>
+                          <div className="text-sm text-gray-400 mt-1">
+                            레벨 {player.equipment.accessory.level} | +{player.equipment.accessory.enhancement} | 액세서리
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-green-400 text-sm font-semibold">✅ 착용 중</div>
-                          <div className="text-purple-400 text-sm">특수 효과</div>
+                        <div className="text-purple-400 text-sm">
+                          특수 효과
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="text-gray-500 text-center py-4 bg-gray-800 rounded">착용 중인 액세서리가 없습니다</div>
                   )}
-                </div>
 
-                {/* 보관된 장비 */}
-                <div>
-                  <h4 className="text-sm font-semibold mb-2 text-gray-400">📦 보관된 장비</h4>
-                  <div className="text-gray-500 text-center py-8 bg-gray-800 rounded">
-                    보관된 장비가 없습니다
+                  {/* 구분선 */}
+                  {(player.equipment.weapon || player.equipment.armor || player.equipment.accessory) && (
+                    <div className="border-t border-gray-700 my-4"></div>
+                  )}
+
+                  {/* 보관된 장비들 (예시) */}
+                  <div className="bg-gray-800 rounded p-3 border border-gray-600">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-400">🗡️</span>
+                          <div className="font-medium text-gray-300">iron_sword</div>
+                        </div>
+                        <div className="text-sm text-gray-400 mt-1">
+                          레벨 2 | +0 | 무기
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-red-400 text-sm">공격력 +15</div>
+                        <button className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors">
+                          착용
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800 rounded p-3 border border-gray-600">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-400">🛡️</span>
+                          <div className="font-medium text-gray-300">leather_armor</div>
+                        </div>
+                        <div className="text-sm text-gray-400 mt-1">
+                          레벨 1 | +1 | 방어구
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-blue-400 text-sm">방어력 +8</div>
+                        <button className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors">
+                          착용
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 빈 상태 메시지 */}
+                  <div className="text-gray-500 text-center py-4 text-sm">
+                    💡 보관된 장비가 더 이상 없습니다
                   </div>
                 </div>
               </div>

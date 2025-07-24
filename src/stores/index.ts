@@ -114,42 +114,117 @@ export const useGameStore = create<GameStore>()(
         try {
           console.log('🎮 새 게임 초기화 시작...')
           
-          // 1단계: 게임 상태 설정
-          console.log('📝 1단계: 게임 상태 초기화 중...')
+          // 1단계: 초기 데이터 로딩
+          console.log('📦 1단계: 초기 데이터 로딩 중...')
+          const { loadInitialCharacter, loadInitialInventory, loadInitialSkills, loadInitialTower, loadMonster } = await import('../utils/dataLoader')
+          
+          const [initialCharacter, initialInventory, initialSkills, initialTower] = await Promise.all([
+            loadInitialCharacter(),
+            loadInitialInventory(), 
+            loadInitialSkills(),
+            loadInitialTower()
+          ])
+          console.log('✅ 1단계 완료: 초기 데이터 로드됨')
+          
+          // 2단계: 게임 상태 설정
+          console.log('📝 2단계: 게임 상태 초기화 중...')
           set((state: any) => ({
             ...state,
             player: {
-              ...initialPlayerState,
+              // initial 데이터 사용하되 없으면 기본값 사용
+              hp: initialCharacter?.hp || initialPlayerState.hp,
+              maxHp: initialCharacter?.maxHp || initialPlayerState.maxHp,
+              mp: initialCharacter?.mp || initialPlayerState.mp,
+              maxMp: initialCharacter?.maxMp || initialPlayerState.maxMp,
+              
+              // 기본 스탯
+              highestFloor: initialCharacter?.highestFloor || 1,
+              gold: initialCharacter?.gold || 100,
+              gem: initialCharacter?.gem || 0,
+              
+              // 기본 전투 스탯
+              basePhysicalAttack: initialCharacter?.physicalAttack || initialPlayerState.basePhysicalAttack,
+              baseMagicalAttack: initialCharacter?.magicalAttack || initialPlayerState.baseMagicalAttack,
+              basePhysicalDefense: initialCharacter?.physicalDefense || initialPlayerState.basePhysicalDefense,
+              baseMagicalDefense: initialCharacter?.magicalDefense || initialPlayerState.baseMagicalDefense,
+              baseSpeed: initialCharacter?.speed || initialPlayerState.baseSpeed,
+              
+              // 계산된 전투 스탯 (초기값은 base와 동일)
+              physicalAttack: initialCharacter?.physicalAttack || initialPlayerState.physicalAttack,
+              magicalAttack: initialCharacter?.magicalAttack || initialPlayerState.magicalAttack,
+              physicalDefense: initialCharacter?.physicalDefense || initialPlayerState.physicalDefense,
+              magicalDefense: initialCharacter?.magicalDefense || initialPlayerState.magicalDefense,
+              speed: initialCharacter?.speed || initialPlayerState.speed,
+              
+              // 장비 (초기 장비 사용)
               equipment: {
-                weapon: null,
-                armor: null,
-                accessory: null
-              }
+                weapon: initialInventory?.equipment?.weapon || null,
+                armor: initialInventory?.equipment?.chest || null,
+                accessory: initialInventory?.equipment?.amulet || null
+              },
+              
+              // 환생 시스템
+              rebirthLevel: initialCharacter?.ascensionPoints || 0,
+              actionPoints: 50,
+              maxActionPoints: 50,
+              ascensionGauge: initialCharacter?.ascensionGauge || 0,
+              
+              // 기타
+              lastDeathAt: undefined,
+              totalPlayTime: initialCharacter?.totalPlayTime || 0
+            },
+            inventory: {
+              maxSlots: initialInventory?.maxSlots || 100,
+              usedSlots: initialInventory?.usedSlots || 0,
+              items: [], // 소모품은 별도 처리
+              materials: initialInventory?.materials || [],
+              consumables: [], // 소모품 변환 필요
+              skillPages: []
+            },
+            skills: {
+              activeSkills: initialSkills?.activeSkills || [],
+              passiveSkills: initialSkills?.passiveSkills || [],
+              pagesOwned: initialSkills?.pagesOwned || {},
+              skillPages: [],
+              learnedSkills: []
             },
             tower: {
-              currentFloor: 1,
+              currentFloor: initialTower?.currentFloor || 1,
               currentMonster: null,
               combatLog: [],
-              autoMode: false,
-              autoSpeed: 1,
+              autoMode: initialTower?.autoMode || false,
+              autoSpeed: initialTower?.autoSpeed || 1,
               isInCombat: false
             },
             gameState: 'loading'
           }))
-          console.log('✅ 1단계 완료: 초기 상태 설정됨')
+          console.log('✅ 2단계 완료: 초기 상태 설정됨')
           
-          // 2단계: 데이터 로더 가져오기
-          console.log('📦 2단계: 데이터 로더 가져오는 중...')
-          const { loadMonster } = await import('../utils/dataLoader')
-          console.log('✅ 2단계 완료: 데이터 로더 가져옴')
+          // 3단계: 소모품 변환 (consumables 객체를 배열로 변환)
+          if (initialInventory?.consumables) {
+            const consumablesArray = Object.entries(initialInventory.consumables).map(([itemId, quantity]: [string, any]) => ({
+              itemId,
+              quantity: Number(quantity),
+              level: 1
+            }))
+            
+            set((state: any) => ({
+              ...state,
+              inventory: {
+                ...state.inventory,
+                items: consumablesArray
+              }
+            }))
+            console.log('✅ 3단계 완료: 소모품 변환됨')
+          }
           
-          // 3단계: 첫 번째 몬스터 생성
-          console.log('👹 3단계: flame_imp 몬스터 로딩 중...')
+          // 4단계: 첫 번째 몬스터 생성
+          console.log('👹 4단계: flame_imp 몬스터 로딩 중...')
           const monster = await loadMonster('flame_imp')
           console.log('몬스터 데이터:', monster)
           
           if (monster) {
-            console.log('✅ 3단계 완료: 몬스터 로드 성공')
+            console.log('✅ 4단계 완료: 몬스터 로드 성공')
             set((state: any) => ({
               ...state,
               tower: {
@@ -200,10 +275,10 @@ export const useGameStore = create<GameStore>()(
             }))
           }
           
-          // 4단계: 자동 저장 시작
-          console.log('💾 4단계: 자동 저장 시작...')
+          // 5단계: 자동 저장 시작
+          console.log('💾 5단계: 자동 저장 시작...')
           get().startAutoSave()
-          console.log('✅ 4단계 완료: 자동 저장 시작됨')
+          console.log('✅ 5단계 완료: 자동 저장 시작됨')
           
           console.log('🎉 새 게임 시작 완료!')
         } catch (error) {
