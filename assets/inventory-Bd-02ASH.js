@@ -1,1 +1,0 @@
-const l=[],n={weapon:{itemId:"wooden_sword",level:1,quality:"Normal",enhancement:0,traits:[]},chest:null,gloves:null,boots:null,ring1:null,ring2:null,amulet:null},t={health_potion:3,mana_potion:2},o=50,e=5,s={materials:l,equipment:n,consumables:t,maxSlots:o,usedSlots:e};export{t as consumables,s as default,n as equipment,l as materials,o as maxSlots,e as usedSlots};

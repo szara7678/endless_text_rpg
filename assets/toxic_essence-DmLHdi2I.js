@@ -1,0 +1,1 @@
+const e="toxic_essence",t="독 정수",a="독의 힘이 농축된 녹색 정수",c="material",s="essence",n="Toxic",i=20,o="Fine",r=!0,l=99,m={id:e,name:t,description:a,type:c,category:s,element:n,baseValue:20,rarity:o,stackable:!0,maxStack:99};export{i as baseValue,s as category,m as default,a as description,n as element,e as id,l as maxStack,t as name,o as rarity,r as stackable,c as type};

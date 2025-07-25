@@ -1,0 +1,1 @@
+const e="green_herb",t="초록 약초",a="기본적인 치유 약초",c="material",n="herb",s="Verdant",r=10,o="Common",l=!0,m=99,b={id:e,name:t,description:a,type:c,category:n,element:s,baseValue:10,rarity:o,stackable:!0,maxStack:99};export{r as baseValue,n as category,b as default,a as description,s as element,e as id,m as maxStack,t as name,o as rarity,l as stackable,c as type};

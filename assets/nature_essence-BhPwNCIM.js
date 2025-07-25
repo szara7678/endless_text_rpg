@@ -1,0 +1,1 @@
+const e="nature_essence",t="자연 정수",a="대지와 생명의 힘이 농축된 녹색 정수",s="material",c="essence",n="Verdant",r=20,o="Fine",i=!0,l=99,m={id:e,name:t,description:a,type:s,category:c,element:n,baseValue:20,rarity:o,stackable:!0,maxStack:99};export{r as baseValue,c as category,m as default,a as description,n as element,e as id,l as maxStack,t as name,o as rarity,i as stackable,s as type};
