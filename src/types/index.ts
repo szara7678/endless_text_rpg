@@ -75,6 +75,8 @@ export interface PlayerState {
   basePhysicalDefense: number
   baseMagicalDefense: number
   baseSpeed: number
+  baseMaxHp: number // 추가
+  baseMaxMp: number // 추가
   
   // 계산된 전투 스탯 (장비 효과 적용 후)
   physicalAttack: number
@@ -201,6 +203,8 @@ export interface CombatResult {
   isCritical: boolean
   logs: Array<{type: string, message: string}>
   skillsTriggered: string[]
+  skillsUsed?: string[] // 사용된 스킬 목록 (수련치 추가용)
+  lastUsedSkill?: string | null // 마지막으로 사용된 스킬 (kill 수련치용)
   isMonsterDefeated: boolean
   isPlayerDefeated: boolean
 }
@@ -397,6 +401,7 @@ export interface TowerState {
   autoMode: boolean
   autoSpeed: number // 1x, 2x, 4x 속도
   isInCombat: boolean
+  lastUsedSkill?: string | null // 마지막으로 사용된 스킬 (kill 수련치용)
 }
 
 export interface CombatLogEntry {

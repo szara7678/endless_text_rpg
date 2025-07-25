@@ -12,7 +12,8 @@ import {
 export async function processAutoCombatTurn(
     player: PlayerState,
     monster: Monster,
-  floor: number
+    floor: number,
+    skills?: any
   ): Promise<CombatResult> {
   const result: CombatResult = {
     playerDamageDealt: 0,
@@ -36,7 +37,7 @@ export async function processAutoCombatTurn(
   
   if (playerFirst) {
     // 플레이어 공격
-    await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor)
+    await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor, skills)
     
     // 몬스터가 살아있으면 반격
     if (result.monsterHpAfter > 0) {
@@ -48,7 +49,7 @@ export async function processAutoCombatTurn(
     
     // 플레이어가 살아있으면 공격
     if (result.playerHpAfter > 0) {
-      await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor)
+      await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor, skills)
     }
   }
   
@@ -64,7 +65,8 @@ async function processPlayerAttack(
   player: PlayerState,
   monster: Monster,
   result: CombatResult,
-  floor: number
+  floor: number,
+  skills?: any
 ): Promise<void> {
   result.isPlayerTurn = true
   
@@ -92,18 +94,28 @@ async function processPlayerAttack(
     result.isCritical = true
   }
   
-  // 액티브 스킬 체크 (임시로 기본 스킬 하나만)
-  const skillDamage = await processPlayerSkills(player, monster)
-  totalDamage += skillDamage
+  // 액티브 스킬 체크
+  const skillResult = await processPlayerSkills(player, monster, skills)
+  totalDamage += skillResult.damage
+  
+  // 스킬 로그 추가
+  result.logs.push(...skillResult.logs.map(log => ({
+    type: 'skill',
+    message: log
+  })))
+  
+  // 스킬 수련치 추가 (스토어에서 처리하도록 전달)
+  result.skillsUsed = skillResult.skillUsed
+  result.lastUsedSkill = skillResult.skillUsed.length > 0 ? skillResult.skillUsed[skillResult.skillUsed.length - 1] : null
   
   result.playerDamageDealt = totalDamage
   result.monsterHpAfter = Math.max(0, monster.hp - totalDamage)
   
   // 로그 추가
-  let attackMessage = `⚔️ 플레이어가 ${monster.name}에게 ${totalDamage} 피해를 입혔습니다.`
+  let attackMessage = `플레이어 기본 공격! 대미지 ${totalDamage}`
   
   if (isCritical) {
-    attackMessage = `💥 크리티컬! 플레이어가 ${monster.name}에게 ${totalDamage} 피해를 입혔습니다!`
+    attackMessage = `플레이어 크리티컬 공격! 대미지 ${totalDamage}`
   }
   
   result.logs.push({
@@ -111,14 +123,7 @@ async function processPlayerAttack(
     message: attackMessage
   })
   
-  // 상성 효과 로그
-  const elementalLog = getElementalCombatLog(skillElement, monster.theme, elementalResult.multiplier, true)
-  if (elementalLog) {
-    result.logs.push({
-      type: 'combat',
-      message: elementalLog
-    })
-  }
+
 
   // 스킬 수련치 추가 (basic_attack 사용)
   // TODO: 실제 사용한 스킬 ID를 여기서 가져와야 함
@@ -127,7 +132,7 @@ async function processPlayerAttack(
   if (result.monsterHpAfter <= 0) {
     result.logs.push({
       type: 'loot',
-      message: `🔥 ${monster.name}을(를) 처치했습니다!`
+      message: `${monster.name} 처치!`
     })
   }
 }
@@ -186,7 +191,7 @@ async function processMonsterAttack(
     finalDamage = Math.floor(finalDamage * 1.5)
     result.logs.push({
       type: 'monster_attack',
-      message: `💥 ${monster.name}의 크리티컬 공격!`
+      message: `${monster.name} 크리티컬 공격! 대미지 ${finalDamage}`
     })
   }
   
@@ -196,35 +201,59 @@ async function processMonsterAttack(
   // 로그 추가
   result.logs.push({
     type: 'monster_attack',
-    message: `🐺 ${monster.name}이(가) 플레이어에게 ${finalDamage} 피해를 입혔습니다.`
+    message: `${monster.name} 공격! 대미지 ${finalDamage}`
   })
   
-  // 상성 효과 로그
-  const elementalLog = getElementalCombatLog(
-    monsterElementalAttack.element, 
-    monsterElementalAttack.element, // 플레이어는 현재 필드 테마에 따라 
-    playerDamageResult.multiplier, 
-    false
-  )
-  if (elementalLog && playerDamageResult.isResisted) {
-    result.logs.push({
-      type: 'combat',
-      message: elementalLog
-    })
-  }
+
   
   if (result.playerHpAfter <= 0) {
     result.logs.push({
       type: 'death',
-      message: `💀 플레이어가 쓰러졌습니다...`
+      message: `플레이어 사망!`
     })
   }
 }
 
-// 플레이어 스킬 처리 (임시)
-async function processPlayerSkills(player: PlayerState, monster: Monster): Promise<number> {
-  // TODO: 실제 플레이어 스킬 시스템 연결
-  return 0
+// 플레이어 스킬 처리
+async function processPlayerSkills(player: PlayerState, monster: Monster, skills?: any): Promise<{ damage: number, logs: string[], skillUsed: string[] }> {
+  let totalSkillDamage = 0
+  const skillLogs: string[] = []
+  const skillUsed: string[] = []
+  
+  // 액티브 스킬 체크
+  if (skills && skills.activeSkills) {
+    for (const skill of skills.activeSkills) {
+      // 기본 공격은 항상 발동
+      if (skill.skillId === 'basic_attack') {
+        continue
+      }
+      
+      // 스킬 발동 체크
+      if (Math.random() * 100 < skill.triggerChance) {
+        // 스킬 데이터 로드
+        try {
+          const skillData = await import(`../data/skills/${skill.skillId}.json`)
+          if (skillData.default && skillData.default.effects) {
+            for (const effect of skillData.default.effects) {
+              if (effect.type === 'damage') {
+                // 스킬 데미지 계산
+                const baseDamage = effect.baseValue + (skill.level - 1) * (effect.levelScaling || 0)
+                const skillDamage = Math.floor(baseDamage / 100 * player.magicalAttack)
+                totalSkillDamage += skillDamage
+                
+                skillLogs.push(`플레이어 ${skillData.default.name} 공격! 대미지 ${skillDamage}`)
+                skillUsed.push(skill.skillId)
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`스킬 데이터 로드 실패: ${skill.skillId}`, error)
+        }
+      }
+    }
+  }
+  
+  return { damage: totalSkillDamage, logs: skillLogs, skillUsed }
 }
 
 // 몬스터 스킬 처리

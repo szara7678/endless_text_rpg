@@ -341,6 +341,23 @@
 - **파일**: `src/components/life/LifePanel.tsx`
 - **결과**: 생활 스킬로 얻은 재료들이 실제 인벤토리의 materials에 추가되어 제작에 사용 가능
 
+### 🐛 **장비 해제 시 HP/MP 스탯 차감 문제 수정**
+- **문제**: 장비를 해제해도 HP, MP 등 스탯이 정상적으로 차감되지 않음
+- **원인**: recalculatePlayerStats 함수에서 maxHp, maxMp를 기본값으로 초기화하지 않고 누적만 했기 때문
+- **해결**: recalculatePlayerStats에서 maxHp, maxMp를 각각 100, 50으로 초기화 후 장비 스탯을 누적하도록 수정
+- **파일**: `src/utils/equipmentSystem.ts`
+- **결과**: 장비 해제 시 HP, MP 등 스탯이 정상적으로 차감되어 실제 캐릭터 스탯에 반영됨
+
+### 🐛 **장비 HP/MP/속도 등 스탯 일치 문제 완전 해결**
+- **문제**: 장비의 속도, HP, MP 등 일부 스탯이 상세 패널, 캐릭터 패널, 실제 전투 스탯에서 일치하지 않음
+- **원인**: 기본값(100, 50, 5 등)을 하드코딩하거나, baseSpeed 등과 실제 기본값이 다르게 관리됨
+- **해결**:
+  - PlayerState에 baseMaxHp, baseMaxMp를 추가하여 모든 스탯의 기준값을 명확히 관리
+  - recalculatePlayerStats에서 maxHp, maxMp, speed를 각각 baseMaxHp, baseMaxMp, baseSpeed로 초기화 후 장비 스탯 누적
+  - 캐릭터 패널에서 '장비 HP', '장비 MP', '장비 속도'를 각각 player.maxHp - player.baseMaxHp, player.maxMp - player.baseMaxMp, player.speed - player.baseSpeed로 계산
+- **파일**: `src/types/index.ts`, `src/utils/equipmentSystem.ts`, `src/components/character/CharacterPanel.tsx`
+- **결과**: 장비의 모든 스탯(공격력, 속도, HP, MP 등)이 상세 패널, 캐릭터 패널, 실제 전투 스탯에서 완전히 일치
+
 ---
 
 ## 2024-12-22
@@ -367,4 +384,139 @@
 ### 📋 **프로젝트 구조**
 - 모든 파일이 기존 분류대로 폴더별로 정리됨
 - README.md 파일에 각 파일의 목적과 구조 명시
-- TroubleShooting.md에 디버깅 및 수정 내역 기록 
+- TroubleShooting.md에 디버깅 및 수정 내역 기록
+
+---
+
+## 2024-12-23 (추가)
+
+### 🎯 **UI/UX 시스템 완전 개선 - 2차**
+- **문제**: 
+  - 장비 상세 모달에 불필요한 강화 정보와 요구사항 표시
+  - 캐릭터 장비 패널에 속성별 스탯 정보 부족
+  - 기본공격 발동률이 10%로 표시됨
+  - 플레이어 스킬이 전투 중 발동되지 않음
+  - 로그가 너무 길고 복잡함
+  - 상단 컨트롤 패널이 불필요함
+  - 장비 장착 시 모달이 닫히지 않음
+  - 장착하지 않은 장비에 강화 버튼 없음
+- **해결**: 
+  - 장비 상세 모달에서 강화 정보와 요구사항 섹션 완전 제거
+  - 캐릭터 장비 패널에 HP, MP, 속도, 속성별 공격/저항 스탯 추가
+  - 기본공격 발동률을 100%로 수정 (스킬 상세 모달)
+  - 전투 엔진에서 플레이어 스킬 발동 로직 구현
+  - 로그 메시지를 간결하게 수정 ("플레이어 기본 공격! 대미지 24" 형태)
+  - 상단 컨트롤 패널 완전 제거
+  - 파이어볼을 기본 스킬로 추가 (초기 스킬 설정)
+  - 장비 장착 시 자동으로 모달 닫기 기능 추가
+  - 장착하지 않은 장비에도 강화 버튼 표시
+- **파일**: 
+  - `src/components/common/ItemDetailModal.tsx`
+  - `src/components/character/CharacterPanel.tsx`
+  - `src/components/common/SkillDetailModal.tsx`
+  - `src/utils/combatEngine.ts`
+  - `src/stores/index.ts`
+  - `src/components/layout/MainView.tsx`
+  - `src/data/initial/skills.json`
+- **결과**: 
+  - 장비 상세 모달이 더 깔끔하고 직관적으로 개선됨
+  - 캐릭터 장비 패널에서 모든 스탯 정보를 한눈에 확인 가능
+  - 기본공격이 정확한 발동률로 표시됨
+  - 플레이어 스킬이 전투 중 정상적으로 발동됨
+  - 로그가 간결하고 읽기 쉬워짐
+  - UI가 더 깔끔하고 사용자 친화적으로 개선됨
+  - 장비 장착/강화 시스템이 더 편리해짐
+
+### 🎯 **전투 시스템 완전 개선 - 3차**
+- **문제**: 
+  - 로그에서 스킬을 쓰는 주체가 명확하지 않음
+  - 스킬 사용 시 수련치가 데이터에 정의된 조건에 따라 얻어지지 않음
+  - 전투 로그에 불필요한 상성 효과 로그가 표시됨
+- **해결**: 
+  - 스킬 로그에 주체 명시 ("플레이어 화염구 공격! 대미지 24" 형태)
+  - 스킬 사용 시 'cast' 조건으로 수련치 추가
+  - 몬스터 처치 시 'kill' 조건으로 수련치 추가
+  - 전투 로그에서 상성 효과 로그 제거
+  - CombatResult 타입에 skillsUsed 필드 추가
+- **파일**: 
+  - `src/utils/combatEngine.ts`
+  - `src/stores/index.ts`
+  - `src/types/index.ts`
+- **결과**: 
+  - 스킬 로그가 더 명확하고 읽기 쉬워짐
+  - 스킬 수련치가 정확한 조건에 따라 획득됨
+  - 전투 로그가 깔끔하고 핵심적인 정보만 표시됨
+
+### 🎯 **스킬 수련치 시스템 완전 개선**
+- **문제**: 
+  - 사용한 스킬 외의 모든 스킬에 수련치가 올라가는 문제
+  - 스킬 사용 시 'cast' 수련치가 올라가지 않는 문제
+  - 몬스터 처치 시 상성 체크가 없는 문제
+  - 마지막으로 사용된 스킬 추적이 안 되는 문제
+- **해결**: 
+  - 스킬 사용 시 해당 스킬만 'cast' 수련치 추가
+  - 몬스터 처치 시 마지막으로 사용된 스킬만 'kill' 수련치 추가
+  - 상성 몬스터 처치 시 'killWeak' 수련치 추가
+  - CombatResult와 TowerState에 lastUsedSkill 필드 추가
+  - 상성 체크 함수 구현 (checkMonsterWeakness)
+- **파일**: 
+  - `src/utils/combatEngine.ts`
+  - `src/stores/index.ts`
+  - `src/types/index.ts`
+- **결과**: 
+  - 스킬 수련치가 정확한 조건에 따라 올바르게 획득됨
+  - 상성 시스템이 스킬 수련에 반영됨
+  - 마지막 사용 스킬 추적으로 정확한 kill 수련치 제공
+
+### 🎯 **스킬 수련치 수치 시스템 완전 구현**
+- **문제**: 
+  - 스킬 수련치가 무조건 1씩만 추가되는 문제
+  - 스킬 데이터에 정의된 수치가 반영되지 않는 문제
+- **해결**: 
+  - 스킬 데이터에서 trainingRules의 xpGain 수치를 동적으로 가져오는 함수 구현
+  - cast, kill, killWeak 조건별로 정확한 수치만큼 수련치 추가
+  - 스킬 데이터 로드 실패 시 안전한 처리 (0 반환)
+- **파일**: 
+  - `src/stores/index.ts`
+- **결과**: 
+  - fireball: cast(2), kill(8), killWeak(25) 수치만큼 정확히 수련치 획득
+  - basic_attack: cast(1), kill(5), killWeak(20) 수치만큼 정확히 수련치 획득
+  - 모든 스킬이 데이터에 정의된 수치에 따라 정확한 수련치 획득
+
+### 🎯 **장비 스탯 일치 시스템 완전 구현**
+- **문제**: 
+  - 장비 상세 모달에 표시되는 스탯과 실제 캐릭터에 반영되는 스탯이 다른 문제
+  - JSON 파일의 baseStats와 equipmentSystem의 getBaseEquipmentStats 값이 불일치
+- **해결**: 
+  - 장비 상세 모달에서 JSON 파일의 baseStats 대신 getBaseEquipmentStats 함수 사용
+  - equipmentSystem의 장비 스탯을 JSON 파일과 일치하도록 수정
+  - HP, MP 스탯도 장비 상세 모달에 표시하도록 추가
+- **수정된 장비 스탯**:
+  - flame_armor: physicalDefense(15), magicalDefense(10), hp(50)
+  - toxic_armor: physicalDefense(12), magicalDefense(18), speed(5)
+  - verdant_armor: physicalDefense(25), magicalDefense(30), hp(80)
+  - flame_staff: magicalAttack(25), mp(30)
+  - toxic_staff: magicalAttack(23), mp(25)
+  - thunder_staff: magicalAttack(40), mp(40), speed(5)
+- **파일**: 
+  - `src/components/common/ItemDetailModal.tsx`
+  - `src/utils/equipmentSystem.ts`
+- **결과**: 
+  - 장비 상세 모달의 스탯과 실제 캐릭터 스탯이 완전히 일치
+  - 사용자가 장비의 실제 효과를 정확히 확인 가능
+  - HP, MP 스탯도 장비 상세 모달에서 확인 가능 
+
+### 🎯 **장비 상세 모달 UX 및 스탯 일치 개선**
+- **문제**: 
+  - 장비를 장착/해제해도 상세 모달이 닫히지 않음
+  - 미장착 장비의 상세 모달에 강화 버튼이 없음
+  - 상세 모달의 스탯(특히 속도 등)이 캐릭터 패널/실제 전투 스탯과 일치하지 않음
+- **해결**: 
+  - 장착/해제 시 항상 상세 모달이 자동으로 닫히도록 수정
+  - 미장착 장비에도 강화 버튼이 항상 노출되도록 조건 수정
+  - 상세 모달에서 장착된 인스턴스가 있으면 강화 수치까지 반영된 스탯을, 아니면 기본 스탯을 표시하도록 수정
+- **파일**: `src/components/common/ItemDetailModal.tsx`
+- **결과**: 
+  - 장비 장착/해제 시 상세 모달이 자동으로 닫힘
+  - 인벤토리 내 미장착 장비도 강화 가능
+  - 상세 모달의 모든 스탯(공격력, 속도 등)이 캐릭터 패널/전투 스탯과 완전히 일치 

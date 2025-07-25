@@ -5,6 +5,12 @@
       "level": 1,
       "experience": 0,
       "experienceNeeded": 100
+    },
+    {
+      "skillId": "fireball",
+      "level": 1,
+      "experience": 0,
+      "experienceNeeded": 100
     }
   ],
   "passiveSkills": [],

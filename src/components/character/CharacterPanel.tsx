@@ -66,6 +66,10 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
   // 해금 가능한 스킬 목록
   const unlockableSkills = ['fireball', 'ice_shard', 'flame_aura', 'frost_bite', 'ember_toss']
 
+  const baseHp = player.baseMaxHp ?? 100;
+  const baseMp = player.baseMaxMp ?? 50;
+  const formatStat = (value: number) => value > 0 ? `+${value}` : value < 0 ? `${value}` : '0';
+
   return (
     <>
       <div 
@@ -423,6 +427,103 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                       <div className="text-sm text-gray-400">장비 마법 방어</div>
                       <div className="text-lg font-bold text-cyan-400">
                         +{player.magicalDefense - player.baseMagicalDefense}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">장비 HP</div>
+                      <div className="text-lg font-bold text-red-300">
+                        {formatStat(player.maxHp - baseHp)}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">장비 MP</div>
+                      <div className="text-lg font-bold text-blue-300">
+                        {formatStat(player.maxMp - baseMp)}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">장비 속도</div>
+                      <div className="text-lg font-bold text-yellow-400">
+                        {formatStat(player.speed - player.baseSpeed)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 속성별 장비 효과 */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <h3 className="text-md font-semibold mb-3 text-purple-400">🔥 속성별 장비 효과</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">화염 공격</div>
+                      <div className="text-lg font-bold text-red-400">
+                        +{player.elementalStats?.flame?.attack || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">화염 저항</div>
+                      <div className="text-lg font-bold text-red-300">
+                        +{player.elementalStats?.flame?.resistance || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">빙결 공격</div>
+                      <div className="text-lg font-bold text-blue-400">
+                        +{player.elementalStats?.frost?.attack || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">빙결 저항</div>
+                      <div className="text-lg font-bold text-blue-300">
+                        +{player.elementalStats?.frost?.resistance || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">독성 공격</div>
+                      <div className="text-lg font-bold text-green-400">
+                        +{player.elementalStats?.toxic?.attack || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">독성 저항</div>
+                      <div className="text-lg font-bold text-green-300">
+                        +{player.elementalStats?.toxic?.resistance || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">암흑 공격</div>
+                      <div className="text-lg font-bold text-gray-400">
+                        +{player.elementalStats?.shadow?.attack || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">암흑 저항</div>
+                      <div className="text-lg font-bold text-gray-300">
+                        +{player.elementalStats?.shadow?.resistance || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">번개 공격</div>
+                      <div className="text-lg font-bold text-yellow-400">
+                        +{player.elementalStats?.thunder?.attack || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">번개 저항</div>
+                      <div className="text-lg font-bold text-yellow-300">
+                        +{player.elementalStats?.thunder?.resistance || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">자연 공격</div>
+                      <div className="text-lg font-bold text-emerald-400">
+                        +{player.elementalStats?.verdant?.attack || 0}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 rounded p-3">
+                      <div className="text-sm text-gray-400">자연 저항</div>
+                      <div className="text-lg font-bold text-emerald-300">
+                        +{player.elementalStats?.verdant?.resistance || 0}
                       </div>
                     </div>
                   </div>

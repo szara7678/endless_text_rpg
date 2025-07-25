@@ -30,7 +30,7 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
   const skillInfo = {
     name: skill.skillId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Unknown Skill',
     level: skill.level || 1,
-    triggerChance: skill.triggerChance || 0,
+    triggerChance: skill.skillId === 'basic_attack' ? 100 : (skill.triggerChance || 0),
     currentXp: skill.currentXp || 0,
     maxXp: skill.maxXp || 100,
     element: 'physical', // 기본값

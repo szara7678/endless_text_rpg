@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { X, Sword, Shield, Star, Zap } from 'lucide-react'
 import { useGameStore } from '../../stores'
-import { calculateEnhancementCost } from '../../utils/equipmentSystem'
+import { calculateEnhancementCost, getBaseEquipmentStats } from '../../utils/equipmentSystem'
 
 interface ItemDetailModalProps {
   isOpen: boolean
@@ -204,6 +204,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
         equipItem(item.itemId)
       }
     }
+    onClose() // 장착/해제 시 항상 모달 닫기
   }
 
   // 강화 모달 열기
@@ -264,90 +265,67 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
           </div>
 
           {/* 기본 스탯 */}
-          {item.baseStats && (
+          {isEquipment && (
             <div>
               <h4 className="text-white font-medium mb-2">기본 능력치</h4>
               <div className="space-y-1 text-sm">
-                {item.baseStats.physicalAttack && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">물리 공격력</span>
-                    <span className="text-red-400">+{item.baseStats.physicalAttack}</span>
-                  </div>
-                )}
-                {item.baseStats.magicalAttack && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">마법 공격력</span>
-                    <span className="text-blue-400">+{item.baseStats.magicalAttack}</span>
-                  </div>
-                )}
-                {item.baseStats.physicalDefense && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">물리 방어력</span>
-                    <span className="text-green-400">+{item.baseStats.physicalDefense}</span>
-                  </div>
-                )}
-                {item.baseStats.magicalDefense && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">마법 방어력</span>
-                    <span className="text-purple-400">+{item.baseStats.magicalDefense}</span>
-                  </div>
-                )}
-                {item.baseStats.speed && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">속도</span>
-                    <span className="text-yellow-400">+{item.baseStats.speed}</span>
-                  </div>
-                )}
+                {(() => {
+                  // 장착된 인스턴스가 있으면 강화 수치 포함, 아니면 기본값
+                  const actualStats = currentEquipment
+                    ? getBaseEquipmentStats(currentEquipment.itemId) // Assuming getBaseEquipmentStats can take an item object
+                    : getBaseEquipmentStats(item.itemId)
+                  return (
+                    <>
+                      {actualStats.physicalAttack && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">물리 공격력</span>
+                          <span className="text-red-400">+{actualStats.physicalAttack}</span>
+                        </div>
+                      )}
+                      {actualStats.magicalAttack && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">마법 공격력</span>
+                          <span className="text-blue-400">+{actualStats.magicalAttack}</span>
+                        </div>
+                      )}
+                      {actualStats.physicalDefense && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">물리 방어력</span>
+                          <span className="text-green-400">+{actualStats.physicalDefense}</span>
+                        </div>
+                      )}
+                      {actualStats.magicalDefense && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">마법 방어력</span>
+                          <span className="text-purple-400">+{actualStats.magicalDefense}</span>
+                        </div>
+                      )}
+                      {actualStats.hp && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">HP</span>
+                          <span className="text-red-300">+{actualStats.hp}</span>
+                        </div>
+                      )}
+                      {actualStats.mp && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">MP</span>
+                          <span className="text-blue-300">+{actualStats.mp}</span>
+                        </div>
+                      )}
+                      {actualStats.speed && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">속도</span>
+                          <span className="text-yellow-400">+{actualStats.speed}</span>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
               </div>
             </div>
           )}
 
-          {/* 강화 정보 (장비인 경우) */}
-          {isEquipment && currentEquipment && (
-            <div className="bg-gray-800 rounded-lg p-3">
-              <h4 className="text-white font-medium mb-2 flex items-center gap-2">
-                <Star className="text-yellow-400" size={16} />
-                강화 정보
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">강화 레벨</span>
-                  <span className="text-yellow-400">+{currentEquipment.enhancement || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">품질</span>
-                  <span className="text-purple-400">{currentEquipment.quality || 'Normal'}</span>
-                </div>
-                {currentEquipment.enhancement < 10 && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">다음 강화 비용</span>
-                      <span className="text-yellow-400">{getEnhancementCost(currentEquipment.enhancement || 0)} 골드</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">성공률</span>
-                      <span className="text-green-400">{getEnhancementRate(currentEquipment.enhancement || 0)}%</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
 
-          {/* 요구사항 */}
-          {item.requirements && (
-            <div>
-              <h4 className="text-white font-medium mb-2">요구사항</h4>
-              <div className="space-y-1 text-sm">
-                {item.requirements.level && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">필요 레벨</span>
-                    <span className="text-yellow-400">{item.requirements.level}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* 가격 정보 */}
           {item.sellPrice && (
@@ -376,7 +354,8 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
                 {isEquipped() ? '해제' : '장착'}
               </button>
               
-              {isEquipped() && currentEquipment && currentEquipment.enhancement < 10 && (
+              {/* 강화 버튼: 장착 여부와 관계없이 노출 */}
+              {item.enhanceable && (
                 <button
                   onClick={handleEnhance}
                   className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors flex items-center justify-center gap-1"
@@ -387,7 +366,8 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
               )}
             </div>
             
-            {isEquipped() && currentEquipment && currentEquipment.enhancement >= 10 && (
+            {/* 최대 강화 안내 */}
+            {currentEquipment && currentEquipment.enhancement >= 10 && (
               <div className="text-center text-yellow-400 text-sm mt-2">
                 ⭐ 최대 강화 달성!
               </div>

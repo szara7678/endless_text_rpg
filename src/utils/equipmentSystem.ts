@@ -185,6 +185,8 @@ export function recalculatePlayerStats(player: PlayerState): PlayerState {
   newPlayer.physicalDefense = newPlayer.basePhysicalDefense
   newPlayer.magicalDefense = newPlayer.baseMagicalDefense
   newPlayer.speed = newPlayer.baseSpeed
+  newPlayer.maxHp = newPlayer.baseMaxHp
+  newPlayer.maxMp = newPlayer.baseMaxMp
   
   // 각 장비의 스탯 적용
   Object.values(newPlayer.equipment).forEach(equipment => {
@@ -252,19 +254,17 @@ export function getBaseEquipmentStats(itemId: string): any {
       speed: 5
     },
     'flame_staff': {
-      magicalAttack: 35,
-      mp: 20,
-      speed: 1
+      magicalAttack: 25,
+      mp: 30
     },
     'toxic_staff': {
-      magicalAttack: 30,
-      mp: 15,
-      speed: 2
+      magicalAttack: 23,
+      mp: 25
     },
     'thunder_staff': {
       magicalAttack: 40,
-      mp: 25,
-      speed: 0
+      mp: 40,
+      speed: 5
     },
     
     // 방어구
@@ -274,22 +274,19 @@ export function getBaseEquipmentStats(itemId: string): any {
       hp: 10
     },
     'flame_armor': {
-      physicalDefense: 12,
-      magicalDefense: 8,
-      hp: 25,
-      speed: 1
-    },
-    'toxic_armor': {
-      physicalDefense: 10,
-      magicalDefense: 15,
-      hp: 20,
-      mp: 10
-    },
-    'verdant_armor': {
       physicalDefense: 15,
       magicalDefense: 10,
-      hp: 30,
-      speed: 2
+      hp: 50
+    },
+    'toxic_armor': {
+      physicalDefense: 12,
+      magicalDefense: 18,
+      speed: 5
+    },
+    'verdant_armor': {
+      physicalDefense: 25,
+      magicalDefense: 30,
+      hp: 80
     },
     
     // 액세서리

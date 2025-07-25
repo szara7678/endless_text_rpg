@@ -1,1 +1,13 @@
- 
+{
+    "materialId": "frost_crystal",
+    "name": "빙결 수정",
+    "description": "차가운 빙결의 힘이 응축된 수정입니다. 빙결 장비 제작에 사용됩니다.",
+    "type": "crystal",
+    "element": "frost",
+    "rarity": "Superior",
+    "baseLevel": 2,
+    "maxLevel": 5,
+    "sellPrice": 20,
+    "stackSize": 999,
+    "category": "crafting"
+  } 

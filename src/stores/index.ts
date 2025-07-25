@@ -94,6 +94,43 @@ interface GameStore {
 // 자동 전투 타이머
 let autoCombatInterval: NodeJS.Timeout | null = null
 
+// 상성 체크 함수
+const checkMonsterWeakness = (monster: Monster, skillId: string): boolean => {
+  // 스킬의 속성 확인
+  let skillElement = 'physical'
+  
+  if (skillId.includes('fireball') || skillId.includes('flame') || skillId.includes('ember')) {
+    skillElement = 'Flame'
+  } else if (skillId.includes('ice') || skillId.includes('frost')) {
+    skillElement = 'Frost'
+  } else if (skillId.includes('poison') || skillId.includes('toxic')) {
+    skillElement = 'Toxic'
+  } else if (skillId.includes('shadow') || skillId.includes('dark')) {
+    skillElement = 'Shadow'
+  } else if (skillId.includes('thunder') || skillId.includes('lightning')) {
+    skillElement = 'Thunder'
+  } else if (skillId.includes('nature') || skillId.includes('verdant')) {
+    skillElement = 'Verdant'
+  }
+  
+  // 몬스터의 약점 체크
+  return monster.weaknesses && monster.weaknesses.includes(skillElement as any)
+}
+
+// 스킬 수련치 수치 가져오기 함수
+const getSkillTrainingXp = async (skillId: string, condition: 'cast' | 'kill' | 'killWeak'): Promise<number> => {
+  try {
+    const skillData = await import(`../data/skills/${skillId}.json`)
+    if (skillData.default && skillData.default.trainingRules) {
+      const rule = skillData.default.trainingRules.find((r: any) => r.condition === condition)
+      return rule ? rule.xpGain : 0
+    }
+  } catch (error) {
+    console.error(`스킬 데이터 로드 실패: ${skillId}`, error)
+  }
+  return 0
+}
+
 export const useGameStore = create<GameStore>()(
   devtools(
     (set, get) => ({
@@ -441,12 +478,12 @@ export const useGameStore = create<GameStore>()(
 
       // 전투 액션 수행
       performCombatAction: async (action: 'attack' | 'skill' | 'defend') => {
-        const { player, tower } = get()
+        const { player, tower, skills } = get()
         if (!tower.currentMonster || !tower.isInCombat) return
         
         try {
           // 전투 한 턴 실행
-          const result = await processAutoCombatTurn(player, tower.currentMonster, tower.currentFloor)
+          const result = await processAutoCombatTurn(player, tower.currentMonster, tower.currentFloor, skills)
           
           // 상태 업데이트
           set((state: any) => ({
@@ -474,6 +511,27 @@ export const useGameStore = create<GameStore>()(
             }
           }))
 
+          // 스킬 수련치 추가
+          if (result.skillsUsed && result.skillsUsed.length > 0) {
+            for (const skillId of result.skillsUsed) {
+              const xpGain = await getSkillTrainingXp(skillId, 'cast')
+              if (xpGain > 0) {
+                get().addSkillTrainingXp(skillId, 'cast', xpGain)
+              }
+            }
+          }
+          
+          // 마지막 사용된 스킬 저장
+          if (result.lastUsedSkill) {
+            set((state: any) => ({
+              ...state,
+              tower: {
+                ...state.tower,
+                lastUsedSkill: result.lastUsedSkill
+              }
+            }))
+          }
+          
           // 전투 결과 처리
           if (result.isMonsterDefeated) {
             await get().handleMonsterDeath(tower.currentMonster)
@@ -488,7 +546,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       processCombatTurn: async () => {
-        const { player, tower } = get()
+        const { player, tower, skills } = get()
         if (!tower.currentMonster || !tower.isInCombat) return
 
         try {
@@ -496,7 +554,8 @@ export const useGameStore = create<GameStore>()(
           const result = await processAutoCombatTurn(
             player,
             tower.currentMonster,
-            tower.currentFloor
+            tower.currentFloor,
+            skills
           )
 
           // 상태 업데이트
@@ -524,6 +583,27 @@ export const useGameStore = create<GameStore>()(
             }
           }))
 
+          // 스킬 수련치 추가
+          if (result.skillsUsed && result.skillsUsed.length > 0) {
+            for (const skillId of result.skillsUsed) {
+              const xpGain = await getSkillTrainingXp(skillId, 'cast')
+              if (xpGain > 0) {
+                get().addSkillTrainingXp(skillId, 'cast', xpGain)
+              }
+            }
+          }
+          
+          // 마지막 사용된 스킬 저장
+          if (result.lastUsedSkill) {
+            set((state: any) => ({
+              ...state,
+              tower: {
+                ...state.tower,
+                lastUsedSkill: result.lastUsedSkill
+              }
+            }))
+          }
+          
           // 전투 결과 처리
           if (result.isMonsterDefeated) {
             await get().handleMonsterDeath(tower.currentMonster)
@@ -541,6 +621,27 @@ export const useGameStore = create<GameStore>()(
       handleMonsterDeath: async (monster: Monster) => {
         try {
           console.log(`💀 ${monster.name} 처치!`)
+          
+          // 스킬 수련치 추가 (kill 조건) - 마지막으로 사용된 스킬만
+          const { skills, tower: towerState } = get()
+          if (towerState.lastUsedSkill && skills && skills.activeSkills) {
+            const usedSkill = skills.activeSkills.find(s => s.skillId === towerState.lastUsedSkill)
+            if (usedSkill) {
+              // 상성 체크 (killWeak 조건)
+              const isWeakness = checkMonsterWeakness(monster, usedSkill.skillId)
+              if (isWeakness) {
+                const xpGain = await getSkillTrainingXp(usedSkill.skillId, 'killWeak')
+                if (xpGain > 0) {
+                  get().addSkillTrainingXp(usedSkill.skillId, 'killWeak', xpGain)
+                }
+              } else {
+                const xpGain = await getSkillTrainingXp(usedSkill.skillId, 'kill')
+                if (xpGain > 0) {
+                  get().addSkillTrainingXp(usedSkill.skillId, 'kill', xpGain)
+                }
+              }
+            }
+          }
           
           // 골드 획득
           const goldGain = Math.floor(Math.random() * 20) + 10
