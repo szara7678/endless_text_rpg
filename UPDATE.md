@@ -1,5 +1,32 @@
 # UPDATE.md
 
+## 최신 업데이트 내역
+
+### 장비 착용 시 HP/MP NaN 문제 완전 해결 - 2024년 12월 19일
+
+**문제**: 장비를 착용할 때 플레이어의 HP, MP가 NaN이 되는 문제가 발생했습니다.
+
+**원인**: 
+- `initialPlayerState`에서 `baseMaxHp`와 `baseMaxMp`가 정의되지 않음
+- `recalculatePlayerStats`에서 `newPlayer.maxHp = newPlayer.baseMaxHp`를 할 때 `undefined`가 할당되어 NaN 발생
+- 기존 저장된 게임 데이터에서도 `baseMaxHp`, `baseMaxMp` 필드가 없어서 문제 발생
+
+**해결 방법**:
+1. `src/stores/playerSlice.ts`의 `initialPlayerState`에 `baseMaxHp: 100`, `baseMaxMp: 50` 추가
+2. `src/stores/index.ts`의 `startNewGame` 함수에서 `baseMaxHp`, `baseMaxMp` 기본값 설정
+3. `src/stores/index.ts`의 `continueGame` 함수에서 기존 저장 데이터에 `baseMaxHp`, `baseMaxMp`가 없는 경우 기본값으로 설정
+
+**수정된 파일**:
+- `src/stores/playerSlice.ts`: `initialPlayerState`에 `baseMaxHp`, `baseMaxMp` 추가
+- `src/stores/index.ts`: `startNewGame`과 `continueGame`에서 `baseMaxHp`, `baseMaxMp` 기본값 처리
+
+**결과**: 
+- 장비 착용/해제 시 HP, MP가 정상적으로 계산됨
+- 기존 저장된 게임 데이터와 새로운 게임 모두에서 정상 작동
+- NaN 문제 완전 해결
+
+---
+
 ## 2024-12-23
 
 ### 🐛 **몬스터 데이터 구조 통일 및 슬롯머신 버그 수정**

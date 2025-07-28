@@ -291,6 +291,8 @@ export const useGameStore = create<GameStore>()(
               basePhysicalDefense: initialCharacter?.basePhysicalDefense || 8,
               baseMagicalDefense: initialCharacter?.baseMagicalDefense || 6,
               baseSpeed: initialCharacter?.baseSpeed || 12,
+              baseMaxHp: initialCharacter?.baseMaxHp || 100,
+              baseMaxMp: initialCharacter?.baseMaxMp || 50,
               
               // 계산된 스탯 (기본값은 base와 동일)
               physicalAttack: initialCharacter?.basePhysicalAttack || 15,
@@ -837,7 +839,9 @@ export const useGameStore = create<GameStore>()(
           const playerData = {
             ...data.player,
             baseElementalStats: data.player.baseElementalStats || initialPlayerState.baseElementalStats,
-            elementalStats: data.player.elementalStats || initialPlayerState.elementalStats
+            elementalStats: data.player.elementalStats || initialPlayerState.elementalStats,
+            baseMaxHp: data.player.baseMaxHp || 100,
+            baseMaxMp: data.player.baseMaxMp || 50
           }
           
           // 저장된 데이터로 상태 복원

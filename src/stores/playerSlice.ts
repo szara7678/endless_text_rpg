@@ -41,6 +41,8 @@ export const initialPlayerState: PlayerState = {
   basePhysicalDefense: 8,
   baseMagicalDefense: 6,
   baseSpeed: 12,
+  baseMaxHp: 100,
+  baseMaxMp: 50,
   
   // 계산된 전투 스탯 (초기값은 base와 동일)
   physicalAttack: 15,
