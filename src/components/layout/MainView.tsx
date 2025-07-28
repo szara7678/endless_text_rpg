@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useGameStore } from '../../stores'
 import { Play, Pause, RotateCcw } from 'lucide-react'
+import { CombatPhase } from '../../types'
 
 const MainView: React.FC = () => {
   const { 
@@ -51,6 +52,22 @@ const MainView: React.FC = () => {
         return 'bg-red-900/50 border-red-400 text-red-200'
       default:
         return 'bg-gray-900/30 border-gray-500 text-gray-300'
+    }
+  }
+
+  // 전투 상태 텍스트 가져오기
+  const getCombatPhaseText = (phase: string) => {
+    switch (phase) {
+      case 'player_turn':
+        return '플레이어 턴'
+      case 'monster_turn':
+        return '몬스터 턴'
+      case 'waiting':
+        return '턴 대기 중'
+      case 'complete':
+        return '전투 완료'
+      default:
+        return '알 수 없음'
     }
   }
 
@@ -147,6 +164,18 @@ const MainView: React.FC = () => {
               >
                 ⚡ {tower.autoSpeed || 1}x
               </button>
+            </div>
+            
+            {/* 전투 상태 표시 */}
+            <div className="mt-2 text-center">
+              <div className="inline-flex items-center gap-2 text-yellow-400 text-sm">
+                <div className={`w-2 h-2 rounded-full ${
+                  tower.combatState?.phase === 'player_turn' ? 'bg-blue-500' :
+                  tower.combatState?.phase === 'monster_turn' ? 'bg-red-500' :
+                  'bg-gray-500'
+                } animate-pulse`}></div>
+                <span>{getCombatPhaseText(tower.combatState?.phase || 'waiting')}</span>
+              </div>
             </div>
             
             {/* 자동 진행 상태 표시 */}

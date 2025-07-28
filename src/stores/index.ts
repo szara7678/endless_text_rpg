@@ -9,7 +9,7 @@ import { inventorySlice } from './inventorySlice'
 import { skillSlice } from './skillSlice'
 import { uiSlice } from './uiSlice'
 import { lifeSlice } from './lifeSlice'
-import { processAutoCombatTurn, generateNextMonster } from '../utils/combatEngine'
+import { processAutoCombatTurn, generateNextMonster, processPlayerTurn, processMonsterTurn, determineFirstAttacker } from '../utils/combatEngine'
 import { processItemDrops } from '../utils/dropSystem'
 import * as EquipmentSystem from '../utils/equipmentSystem'
 import { generateInitialItems } from '../utils/itemGenerator'
@@ -78,6 +78,7 @@ interface GameStore {
   purchaseItem: (item: any) => void
 
   // 자동 전투 시스템
+  getCombatDelay: (speed: number) => number
   startAutoCombat: (speed: number) => void
   stopAutoCombat: () => void
   setAutoMode: (autoMode: boolean) => void
@@ -402,42 +403,21 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
-      // 자동 전투 시스템
+      // 딜레이 계산 함수 (중앙 관리)
+      getCombatDelay: (speed: number) => {
+        return Math.max(200, 2000 / speed)
+      },
+
+      // 자동 전투 시스템 (턴제) - 단일 인터벌 사용
       startAutoCombat: (speed: number) => {
         const { tower } = get()
         if (autoCombatInterval) return
 
-        const interval = Math.max(500, 2000 / speed) // 속도에 따른 간격 조절
+        // 게임 속도에 따른 인터벌 계산 (게임 속도와 연동)
+        const baseInterval = 1500 // 기본 1.5초
+        const interval = Math.max(300, baseInterval / speed) // 최소 0.3초
 
-        autoCombatInterval = setInterval(async () => {
-          try {
-            const currentState = get()
-            // 전투 중이 아니고 몬스터가 없으면 새 몬스터 생성
-            if (!currentState.tower.isInCombat && !currentState.tower.currentMonster) {
-              const newMonster = await generateNextMonster(currentState.tower.currentFloor)
-              if (newMonster) {
-                set((state: any) => ({
-                  ...state,
-                  tower: {
-                    ...state.tower,
-                    currentMonster: newMonster,
-                    isInCombat: true
-                  }
-                }))
-                get().addCombatLog('combat', `👹 ${newMonster.name}이(가) 나타났습니다!`)
-              }
-            }
-            
-            // 전투 액션 수행
-            if (currentState.tower.isInCombat && currentState.tower.currentMonster) {
-              await get().performCombatAction('attack')
-            }
-          } catch (error) {
-            console.error('자동 전투 오류:', error)
-            get().stopAutoCombat()
-          }
-        }, interval)
-
+        // 자동 전투 상태 설정
         set((state: any) => ({
           ...state,
           tower: {
@@ -446,6 +426,57 @@ export const useGameStore = create<GameStore>()(
             autoSpeed: speed
           }
         }))
+
+        autoCombatInterval = setInterval(async () => {
+          try {
+            const currentState = get()
+            
+            // 몬스터가 없으면 새 몬스터 생성
+            if (!currentState.tower.isInCombat && !currentState.tower.currentMonster) {
+              const newMonster = await generateNextMonster(currentState.tower.currentFloor)
+              if (newMonster) {
+                set((state: any) => ({
+                  ...state,
+                  tower: {
+                    ...state.tower,
+                    currentMonster: newMonster,
+                    isInCombat: true,
+                    combatState: {
+                      phase: 'waiting',
+                      currentTurn: 0,
+                      playerTurnComplete: false,
+                      monsterTurnComplete: false,
+                      turnDelay: interval // 게임 속도와 연동된 지연 시간
+                    }
+                  }
+                }))
+                get().addCombatLog('combat', `👹 ${newMonster.name}이(가) 나타났습니다!`)
+              }
+            }
+            
+            // 전투 중이고 턴 대기 중이거나 플레이어 턴이 진행 중이면 액션 수행
+            if (currentState.tower.isInCombat && 
+                currentState.tower.currentMonster && 
+                (currentState.tower.combatState?.phase === 'waiting' || 
+                 currentState.tower.combatState?.phase === 'player_turn') &&
+                !currentState.tower.combatState.playerTurnComplete &&
+                !currentState.tower.combatState.monsterTurnComplete) {
+              await get().performCombatAction('attack')
+            }
+          } catch (error) {
+            console.error('자동 전투 오류:', error)
+            get().stopAutoCombat()
+          }
+        }, interval)
+
+        // 몬스터가 이미 있고 전투 중이면 즉시 첫 턴 시작
+        if (tower.currentMonster && tower.isInCombat && 
+            (!tower.combatState || tower.combatState.phase === 'waiting')) {
+          // 즉시 첫 턴 시작
+          setTimeout(() => {
+            get().performCombatAction('attack')
+          }, 100) // 0.1초 후 즉시 시작
+        }
 
         get().addCombatLog('combat', `⚡ 자동 전투 시작 (속도: ${speed}x)`)
       },
@@ -478,69 +509,178 @@ export const useGameStore = create<GameStore>()(
         }))
       },
 
-      // 전투 액션 수행
+      // 전투 액션 수행 (턴제 시스템)
       performCombatAction: async (action: 'attack' | 'skill' | 'defend') => {
         const { player, tower, skills } = get()
         if (!tower.currentMonster || !tower.isInCombat) return
         
-        try {
-          // 전투 한 턴 실행
-          const result = await processAutoCombatTurn(player, tower.currentMonster, tower.currentFloor, skills)
-          
-          // 상태 업데이트
-          set((state: any) => ({
-            ...state,
-            player: { 
-              ...state.player, 
-              hp: result.playerHpAfter
-            },
-            tower: {
-              ...state.tower,
-              currentMonster: result.monsterHpAfter > 0 ? {
-                ...state.tower.currentMonster,
-                hp: result.monsterHpAfter
-              } : null,
-              isInCombat: result.monsterHpAfter > 0 && result.playerHpAfter > 0,
-              combatLog: [
-                ...state.tower.combatLog.slice(-49), // 최근 50개만 유지
-                ...result.logs.map((log: any, index: number) => ({
-                  id: `${Date.now()}_${index}`,
-                  timestamp: Date.now() + index,
-                  type: log.type || 'combat',
-                  message: log.message || log
-                }))
-              ]
-            }
-          }))
+        const combatState = tower.combatState || {
+          phase: 'waiting' as any,
+          currentTurn: 0,
+          playerTurnComplete: false,
+          monsterTurnComplete: false,
+          turnDelay: 1000
+        }
 
-          // 스킬 수련치 추가
-          if (result.skillsUsed && result.skillsUsed.length > 0) {
-            for (const skillId of result.skillsUsed) {
-              const xpGain = await getSkillTrainingXp(skillId, 'cast')
-              if (xpGain > 0) {
-                get().addSkillTrainingXp(skillId, 'cast', xpGain)
-              }
-            }
-          }
-          
-          // 마지막 사용된 스킬 저장
-          if (result.lastUsedSkill) {
+        // 중복 실행 방지: 이미 턴이 완료되었으면 리턴
+        if (combatState.phase === 'player_turn' && combatState.playerTurnComplete) return
+        if (combatState.phase === 'monster_turn' && combatState.monsterTurnComplete) return
+
+        try {
+          // 첫 턴이면 선공 결정
+          if (combatState.phase === 'waiting') {
+            const firstAttacker = determineFirstAttacker(player, tower.currentMonster, tower.currentFloor)
             set((state: any) => ({
               ...state,
               tower: {
                 ...state.tower,
-                lastUsedSkill: result.lastUsedSkill
+                combatState: {
+                  ...combatState,
+                  phase: firstAttacker === 'player' ? 'player_turn' : 'monster_turn',
+                  currentTurn: 1
+                }
               }
             }))
           }
-          
-          // 전투 결과 처리
-          if (result.isMonsterDefeated) {
-            await get().handleMonsterDeath(tower.currentMonster)
-          } else if (result.isPlayerDefeated) {
-            await get().handlePlayerDeath()
+
+          // 현재 턴 처리
+          const currentState = get()
+          const currentCombatState = currentState.tower.combatState
+
+          if (currentCombatState.phase === 'player_turn' && !currentCombatState.playerTurnComplete) {
+            // 플레이어 턴 처리
+            const result = await processPlayerTurn(player, tower.currentMonster, tower.currentFloor, skills)
+            
+            // 상태 업데이트
+            set((state: any) => ({
+              ...state,
+              player: { ...state.player, hp: result.playerHpAfter },
+              tower: {
+                ...state.tower,
+                currentMonster: result.monsterHpAfter > 0 ? {
+                  ...state.tower.currentMonster,
+                  hp: result.monsterHpAfter
+                } : null,
+                combatState: {
+                  ...state.tower.combatState,
+                  playerTurnComplete: true,
+                  phase: result.monsterHpAfter > 0 ? 'monster_turn' : 'complete'
+                },
+                combatLog: [
+                  ...state.tower.combatLog.slice(-49),
+                  ...result.logs.map((log: any, index: number) => ({
+                    id: `${Date.now()}_${index}`,
+                    timestamp: Date.now() + index,
+                    type: log.type || 'combat',
+                    message: log.message || log
+                  }))
+                ]
+              }
+            }))
+
+            // 스킬 수련치 추가
+            if (result.skillsUsed && result.skillsUsed.length > 0) {
+              for (const skillId of result.skillsUsed) {
+                const xpGain = await getSkillTrainingXp(skillId, 'cast')
+                if (xpGain > 0) {
+                  get().addSkillTrainingXp(skillId, 'cast', xpGain)
+                }
+              }
+            }
+
+            // 마지막 사용된 스킬 저장
+            if (result.lastUsedSkill) {
+              set((state: any) => ({
+                ...state,
+                tower: {
+                  ...state.tower,
+                  lastUsedSkill: result.lastUsedSkill
+                }
+              }))
+            }
+
+            // 몬스터가 살아있으면 즉시 몬스터 턴으로 진행
+            if (result.monsterHpAfter > 0) {
+              // 몬스터 턴으로 즉시 전환
+              set((state: any) => ({
+                ...state,
+                tower: {
+                  ...state.tower,
+                  combatState: {
+                    ...state.tower.combatState,
+                    playerTurnComplete: false,
+                    monsterTurnComplete: false,
+                    phase: 'monster_turn',
+                    currentTurn: state.tower.combatState.currentTurn + 1
+                  }
+                }
+              }))
+              
+              // 게임 속도에 따른 지연 후 몬스터 턴 실행
+              const delay = get().getCombatDelay(currentState.tower.autoSpeed)
+              setTimeout(() => {
+                get().performCombatAction('attack')
+              }, delay)
+            } else {
+              // 몬스터 사망 처리
+              await get().handleMonsterDeath(tower.currentMonster)
+            }
+
+          } else if (currentCombatState.phase === 'monster_turn' && !currentCombatState.monsterTurnComplete) {
+            // 몬스터 턴 처리
+            const result = await processMonsterTurn(tower.currentMonster, player, tower.currentFloor)
+            
+            // 상태 업데이트
+            set((state: any) => ({
+              ...state,
+              player: { ...state.player, hp: result.playerHpAfter },
+              tower: {
+                ...state.tower,
+                combatState: {
+                  ...state.tower.combatState,
+                  monsterTurnComplete: true,
+                  phase: result.playerHpAfter > 0 ? 'waiting' : 'complete'
+                },
+                combatLog: [
+                  ...state.tower.combatLog.slice(-49),
+                  ...result.logs.map((log: any, index: number) => ({
+                    id: `${Date.now()}_${index}`,
+                    timestamp: Date.now() + index,
+                    type: log.type || 'combat',
+                    message: log.message || log
+                  }))
+                ]
+              }
+            }))
+
+            // 플레이어가 살아있으면 즉시 플레이어 턴으로 진행
+            if (result.playerHpAfter > 0) {
+              // 플레이어 턴으로 즉시 전환
+              set((state: any) => ({
+                ...state,
+                tower: {
+                  ...state.tower,
+                  combatState: {
+                    ...state.tower.combatState,
+                    playerTurnComplete: false,
+                    monsterTurnComplete: false,
+                    phase: 'player_turn',
+                    currentTurn: state.tower.combatState.currentTurn + 1
+                  }
+                }
+              }))
+              
+              // 게임 속도에 따른 지연 후 플레이어 턴 실행
+              const delay = get().getCombatDelay(currentState.tower.autoSpeed)
+              setTimeout(() => {
+                get().performCombatAction('attack')
+              }, delay)
+            } else {
+              // 플레이어 사망 처리
+              await get().handlePlayerDeath()
+            }
           }
-          
+
         } catch (error) {
           console.error('전투 액션 실패:', error)
           get().addCombatLog('combat', '⚠️ 전투 처리 중 오류가 발생했습니다.')
@@ -624,6 +764,24 @@ export const useGameStore = create<GameStore>()(
         try {
           console.log(`💀 ${monster.name} 처치!`)
           
+          // 전투 상태 초기화 (자동 전투 상태 유지)
+          const currentTower = get().tower
+          set((state: any) => ({
+            ...state,
+            tower: {
+              ...state.tower,
+              isInCombat: false,
+              currentMonster: null,
+              combatState: {
+                phase: 'waiting',
+                currentTurn: 0,
+                playerTurnComplete: false,
+                monsterTurnComplete: false,
+                turnDelay: get().getCombatDelay(currentTower.autoSpeed || 1) // 게임 속도와 연동
+              }
+            }
+          }))
+          
           // 스킬 수련치 추가 (kill 조건) - 마지막으로 사용된 스킬만
           const { skills, tower: towerState } = get()
           if (towerState.lastUsedSkill && skills && skills.activeSkills) {
@@ -706,7 +864,14 @@ export const useGameStore = create<GameStore>()(
             ...state.tower,
             currentFloor: newFloor,
             currentMonster: null,
-            isInCombat: false
+            isInCombat: false,
+            combatState: {
+              phase: 'waiting',
+              currentTurn: 0,
+              playerTurnComplete: false,
+              monsterTurnComplete: false,
+              turnDelay: 1000
+            }
           }
         }))
         
@@ -722,7 +887,14 @@ export const useGameStore = create<GameStore>()(
               tower: {
                 ...state.tower,
                 currentMonster: newMonster,
-                isInCombat: true
+                isInCombat: true,
+                combatState: {
+                  phase: 'waiting',
+                  currentTurn: 0,
+                  playerTurnComplete: false,
+                  monsterTurnComplete: false,
+                  turnDelay: 1000
+                }
               }
             }))
             
@@ -763,11 +935,20 @@ export const useGameStore = create<GameStore>()(
               tower: {
                 ...state.tower,
                 currentMonster: newMonster,
-                isInCombat: true
+                isInCombat: true,
+                combatState: {
+                  phase: 'waiting',
+                  currentTurn: 0,
+                  playerTurnComplete: false,
+                  monsterTurnComplete: false,
+                  turnDelay: get().getCombatDelay(get().tower.autoSpeed || 1) // 게임 속도와 연동
+                }
               }
             }))
             
             get().addCombatLog('combat', `⚔️ ${newMonster.name}이(가) 나타났습니다!`)
+            
+            // setInterval에서 첫 턴을 처리하도록 함 (setTimeout 제거)
           }
         } catch (error) {
           console.error('몬스터 생성 실패:', error)

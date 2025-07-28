@@ -393,6 +393,22 @@ export interface CraftingSession {
   qualityBonus: number
 }
 
+// === 전투 시스템 ===
+export enum CombatPhase {
+  PLAYER_TURN = 'player_turn',
+  MONSTER_TURN = 'monster_turn',
+  COMPLETE = 'complete',
+  WAITING = 'waiting'
+}
+
+export interface CombatState {
+  phase: CombatPhase
+  currentTurn: number
+  playerTurnComplete: boolean
+  monsterTurnComplete: boolean
+  turnDelay: number // 턴 간 지연 시간 (ms)
+}
+
 // === 탑 상태 ===
 export interface TowerState {
   currentFloor: number
@@ -402,6 +418,7 @@ export interface TowerState {
   autoSpeed: number // 1x, 2x, 4x 속도
   isInCombat: boolean
   lastUsedSkill?: string | null // 마지막으로 사용된 스킬 (kill 수련치용)
+  combatState?: CombatState // 턴제 전투 상태
 }
 
 export interface CombatLogEntry {

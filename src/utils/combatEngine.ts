@@ -1,4 +1,4 @@
-import { PlayerState, Monster, SkillInstance, CombatResult } from '../types'
+import { PlayerState, Monster, SkillInstance, CombatResult, CombatPhase } from '../types'
 import { calculateDamage, checkSkillTrigger, checkCriticalHit, calculatePlayerStats, calculateMonsterStats } from './effectCalculator'
 import { loadMonster, loadSkill } from './dataLoader'
 import { 
@@ -8,13 +8,20 @@ import {
   getElementalCombatLog 
 } from './elementalCombat'
 
-// 자동 전투 한 턴 처리
-export async function processAutoCombatTurn(
-    player: PlayerState,
-    monster: Monster,
-    floor: number,
-    skills?: any
-  ): Promise<CombatResult> {
+// 선공 결정 함수
+export function determineFirstAttacker(player: PlayerState, monster: Monster, floor: number): 'player' | 'monster' {
+  const calculatedPlayer = calculatePlayerStats(player)
+  const scaledMonster = calculateMonsterStats(monster, floor)
+  return calculatedPlayer.speed >= scaledMonster.speed ? 'player' : 'monster'
+}
+
+// 플레이어 턴만 처리
+export async function processPlayerTurn(
+  player: PlayerState,
+  monster: Monster,
+  floor: number,
+  skills?: any
+): Promise<CombatResult> {
   const result: CombatResult = {
     playerDamageDealt: 0,
     monsterDamageDealt: 0,
@@ -27,35 +34,34 @@ export async function processAutoCombatTurn(
     isMonsterDefeated: false,
     isPlayerDefeated: false
   }
+
+  // 플레이어 공격만 처리
+  await processPlayerAttack(player, monster, result, floor, skills)
   
-  // 스탯 계산
-  const calculatedPlayer = calculatePlayerStats(player)
-  const scaledMonster = calculateMonsterStats(monster, floor)
-  
-  // 속도로 선공 결정
-  const playerFirst = calculatedPlayer.speed >= scaledMonster.speed
-  
-  if (playerFirst) {
-    // 플레이어 공격
-    await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor, skills)
-    
-    // 몬스터가 살아있으면 반격
-    if (result.monsterHpAfter > 0) {
-      await processMonsterAttack(scaledMonster, calculatedPlayer, result, floor)
-    }
-  } else {
-    // 몬스터 선공
-    await processMonsterAttack(scaledMonster, calculatedPlayer, result, floor)
-    
-    // 플레이어가 살아있으면 공격
-    if (result.playerHpAfter > 0) {
-      await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor, skills)
-    }
+  return result
+}
+
+// 몬스터 턴만 처리
+export async function processMonsterTurn(
+  monster: Monster,
+  player: PlayerState,
+  floor: number
+): Promise<CombatResult> {
+  const result: CombatResult = {
+    playerDamageDealt: 0,
+    monsterDamageDealt: 0,
+    playerHpAfter: player.hp,
+    monsterHpAfter: monster.hp,
+    isPlayerTurn: false,
+    isCritical: false,
+    logs: [],
+    skillsTriggered: [],
+    isMonsterDefeated: false,
+    isPlayerDefeated: false
   }
-  
-  // 승부 판정
-  result.isMonsterDefeated = result.monsterHpAfter <= 0
-  result.isPlayerDefeated = result.playerHpAfter <= 0
+
+  // 몬스터 공격만 처리
+  await processMonsterAttack(monster, player, result, floor)
   
   return result
 }
@@ -334,4 +340,56 @@ export async function generateNextMonster(floor: number): Promise<Monster | null
     // 층수에 따른 스케일링 적용
     return calculateMonsterStats(monster, floor)
   }
+} 
+
+// 기존 함수 (하위 호환성을 위해 유지)
+export async function processAutoCombatTurn(
+    player: PlayerState,
+    monster: Monster,
+    floor: number,
+    skills?: any
+  ): Promise<CombatResult> {
+  const result: CombatResult = {
+    playerDamageDealt: 0,
+    monsterDamageDealt: 0,
+    playerHpAfter: player.hp,
+    monsterHpAfter: monster.hp,
+    isPlayerTurn: true,
+    isCritical: false,
+    logs: [],
+    skillsTriggered: [],
+    isMonsterDefeated: false,
+    isPlayerDefeated: false
+  }
+  
+  // 스탯 계산
+  const calculatedPlayer = calculatePlayerStats(player)
+  const scaledMonster = calculateMonsterStats(monster, floor)
+  
+  // 속도로 선공 결정
+  const playerFirst = calculatedPlayer.speed >= scaledMonster.speed
+  
+  if (playerFirst) {
+    // 플레이어 공격
+    await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor, skills)
+    
+    // 몬스터가 살아있으면 반격
+    if (result.monsterHpAfter > 0) {
+      await processMonsterAttack(scaledMonster, calculatedPlayer, result, floor)
+    }
+  } else {
+    // 몬스터 선공
+    await processMonsterAttack(scaledMonster, calculatedPlayer, result, floor)
+    
+    // 플레이어가 살아있으면 공격
+    if (result.playerHpAfter > 0) {
+      await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor, skills)
+    }
+  }
+  
+  // 승부 판정
+  result.isMonsterDefeated = result.monsterHpAfter <= 0
+  result.isPlayerDefeated = result.playerHpAfter <= 0
+  
+  return result
 } 
