@@ -5,12 +5,23 @@
   "type": "Active",
   "element": "Flame",
   "triggerChance": {
-    "base": 90,
-    "perLevel": 5,
-    "max": 90
+    "base": 8.5,
+    "perLevel": 2.3,
+    "max": 35.0
   },
+  "baseMaxExp": 100,
   "maxLevel": 0,
   "requiredPages": 3,
+  "damageCalculation": {
+    "baseMagicAtk": 120,
+    "basePhysicalAtk": 0,
+    "levelScaling": 15,
+    "elementalBonus": 1.5
+  },
+  "levelUpCost": {
+    "baseAp": 2,
+    "apScaling": 1.5
+  },
   "effects": [
     {
       "type": "damage",

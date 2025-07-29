@@ -5,12 +5,23 @@
   "type": "Passive",
   "element": "Flame",
   "triggerChance": {
-    "base": 10,
-    "perLevel": 6,
-    "max": 95
+    "base": 6.8,
+    "perLevel": 1.5,
+    "max": 22.0
   },
+  "baseMaxExp": 150,
   "maxLevel": 0,
   "requiredPages": 3,
+  "damageCalculation": {
+    "baseMagicAtk": 90,
+    "basePhysicalAtk": 0,
+    "levelScaling": 10,
+    "elementalBonus": 1.4
+  },
+  "levelUpCost": {
+    "baseAp": 3,
+    "apScaling": 1.6
+  },
   "effects": [
     {
       "type": "damage_over_time",

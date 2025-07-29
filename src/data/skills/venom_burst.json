@@ -5,12 +5,23 @@
   "type": "Active",
   "element": "Toxic",
   "triggerChance": {
-    "base": 25,
-    "perLevel": 7,
-    "max": 95
+    "base": 5.2,
+    "perLevel": 0.9,
+    "max": 14.5
   },
+  "baseMaxExp": 200,
   "maxLevel": 0,
   "requiredPages": 4,
+  "damageCalculation": {
+    "baseMagicAtk": 150,
+    "basePhysicalAtk": 0,
+    "levelScaling": 18,
+    "elementalBonus": 1.5
+  },
+  "levelUpCost": {
+    "baseAp": 3,
+    "apScaling": 1.7
+  },
   "effects": [
     {
       "type": "area_damage",

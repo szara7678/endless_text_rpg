@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
-import { X, Package, Hammer, Pill, ArrowUpDown, Flame, Snowflake, Skull, Moon, Zap, Leaf } from 'lucide-react'
+import { X, Package, Hammer, Pill, ArrowUpDown, Flame, Snowflake, Skull, Moon, Zap, Leaf, Trash2 } from 'lucide-react'
 import { useGameStore } from '../../stores'
 import ItemDetailModal from '../common/ItemDetailModal'
+import SellModal from './SellModal'
 import { loadItem } from '../../utils/dataLoader'
+import { calculateItemSellPrice } from '../../utils/itemSystem'
 
 interface InventoryPanelProps {
   isOpen: boolean
@@ -21,6 +23,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
   const [elementFilter, setElementFilter] = useState<ElementFilter>('all')
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [showItemModal, setShowItemModal] = useState(false)
+  const [showBulkSellModal, setShowBulkSellModal] = useState(false)
 
   if (!isOpen) return null
 
@@ -45,13 +48,33 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
 
   const handleItemClick = async (itemId: string) => {
     try {
-      // 인벤토리에서 해당 아이템 찾기
-      const inventoryItem = inventory.items.find(item => 
-        item.itemId === itemId || item.uniqueId === itemId
-      )
+      console.log('handleItemClick 호출:', { itemId, activeMainTab })
+      
+      let inventoryItem = null
+      
+      // 현재 탭에 따라 적절한 인벤토리에서 아이템 찾기
+      if (activeMainTab === 'materials') {
+        // 재료는 inventory.materials에서 찾기
+        inventoryItem = inventory.materials.find(mat => 
+          mat.materialId === itemId
+        )
+        console.log('재료 검색 결과:', inventoryItem)
+      } else if (activeMainTab === 'equipment') {
+        // 장비는 inventory.items에서 찾기
+        inventoryItem = inventory.items.find(item => 
+          item.itemId === itemId || item.uniqueId === itemId
+        )
+        console.log('장비 검색 결과:', inventoryItem)
+      } else if (activeMainTab === 'consumables') {
+        // 소모품은 inventory.consumables에서 찾기
+        inventoryItem = inventory.consumables.find(con => 
+          con.itemId === itemId
+        )
+        console.log('소모품 검색 결과:', inventoryItem)
+      }
       
       if (inventoryItem) {
-        // 인벤토리 아이템 정보를 사용 (강화 레벨 등 포함)
+        // 아이템 상세 모달 열기
         setSelectedItem(inventoryItem)
         setShowItemModal(true)
       } else {
@@ -341,8 +364,17 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        {/* 정렬 컨트롤 영역 */}
-        <div className="flex justify-end items-center p-3 bg-gray-800 border-b border-gray-600 flex-shrink-0">
+        {/* 정렬 및 판매 컨트롤 영역 */}
+        <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-600 flex-shrink-0">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowBulkSellModal(true)}
+              className="flex items-center gap-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+            >
+              <Trash2 size={14} />
+              <span>일괄 판매</span>
+            </button>
+          </div>
           <button
             onClick={toggleSortOrder}
             className="flex items-center gap-2 px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded text-sm transition-colors"
@@ -433,6 +465,8 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
                       </div>
                     )}
                   </div>
+                  
+
                 </div>
                 )
               })}
@@ -448,6 +482,15 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
         isOpen={showItemModal}
         onClose={() => setShowItemModal(false)}
         item={selectedItem}
+      />
+
+
+
+      {/* 일괄 판매 모달 */}
+      <SellModal
+        isOpen={showBulkSellModal}
+        onClose={() => setShowBulkSellModal(false)}
+        isBulkSell={true}
       />
     </>
   )

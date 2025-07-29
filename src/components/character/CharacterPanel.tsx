@@ -4,7 +4,7 @@ import { useGameStore } from '../../stores'
 import ItemDetailModal from '../common/ItemDetailModal'
 import SkillDetailModal from '../common/SkillDetailModal'
 import { loadItem } from '../../utils/dataLoader'
-// import { canUnlockSkill, canLevelUpSkill, calculateLevelUpCost, formatSkillInfo } from '../../utils/skillSystem'
+import { calculateLevelUpCost } from '../../utils/skillSystem'
 
 interface CharacterPanelProps {
   isOpen: boolean
@@ -119,19 +119,22 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
         !skills.activeSkills.some(s => s.skillId === skill.skillId) && 
         !skills.passiveSkills.some(s => s.skillId === skill.skillId)
       )
-    } else if (skillFilter === 'element') {
+    }
+    
+    // 속성 필터 적용 (모든 탭에서 사용 가능)
+    if (selectedElement && selectedElement !== 'All') {
       filtered = filtered.filter(skill => skill.element === selectedElement)
     }
     
-    // 미습득 스킬을 위로 정렬
+    // 습득한 스킬을 위로 정렬
     filtered.sort((a, b) => {
       const aLearned = skills.activeSkills.some(s => s.skillId === a.skillId) || 
                        skills.passiveSkills.some(s => s.skillId === a.skillId)
       const bLearned = skills.activeSkills.some(s => s.skillId === b.skillId) || 
                        skills.passiveSkills.some(s => s.skillId === b.skillId)
       
-      if (!aLearned && bLearned) return -1
-      if (aLearned && !bLearned) return 1
+      if (aLearned && !bLearned) return -1
+      if (!aLearned && bLearned) return 1
       return 0
     })
     
@@ -638,32 +641,33 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                     >
                       미습득 스킬
                     </button>
-                    <button
-                      onClick={() => setSkillFilter('element')}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                        skillFilter === 'element' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      속성별 스킬
-                    </button>
                   </div>
 
-                  {/* 속성별 필터 (속성별 스킬 선택 시) */}
-                  {skillFilter === 'element' && (
-                    <div className="flex space-x-2 mb-4">
-                      {['Flame', 'Frost', 'Thunder', 'Toxic', 'Shadow', 'Verdant', 'Physical'].map((element) => (
-                        <button
-                          key={element}
-                          onClick={() => setSelectedElement(element)}
-                          className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                            selectedElement === element ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                          }`}
-                        >
-                          {element}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {/* 속성별 필터 (모든 탭에서 사용 가능) */}
+                  <div className="flex space-x-1 mb-4">
+                    {[
+                      { element: 'All', emoji: '🌟', color: 'text-yellow-400' },
+                      { element: 'Flame', emoji: '🔥', color: 'text-red-400' },
+                      { element: 'Frost', emoji: '❄️', color: 'text-blue-400' },
+                      { element: 'Thunder', emoji: '⚡', color: 'text-yellow-400' },
+                      { element: 'Toxic', emoji: '☠️', color: 'text-green-400' },
+                      { element: 'Shadow', emoji: '🌑', color: 'text-purple-400' },
+                      { element: 'Verdant', emoji: '🌿', color: 'text-emerald-400' },
+                      { element: 'Physical', emoji: '⚔️', color: 'text-gray-400' }
+                    ].map(({ element, emoji, color }) => (
+                      <button
+                        key={element}
+                        onClick={() => setSelectedElement(element)}
+                        className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+                          selectedElement === element 
+                            ? 'bg-gray-700 text-white border border-gray-500' 
+                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        }`}
+                      >
+                        <span className="text-sm">{emoji}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* 스킬 목록 */}
@@ -679,21 +683,27 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                       const skillInfo = {
                         name: skill.name,
                         level: learnedSkill ? `Lv ${learnedSkill.level}` : '미습득',
-                        progress: learnedSkill ? `${learnedSkill.currentXp || 0}/${learnedSkill.maxXp || 0}` : '',
+                        progress: learnedSkill ? `${learnedSkill.currentXp || 0}/${learnedSkill.maxXp || 100}` : '',
                         type: skill.type,
                         element: skill.element,
                         requiredPages: skill.requiredPages || 0
                       }
                       
                       const levelUpCost = learnedSkill ? { 
-                        apCost: 1, 
-                        goldCost: Math.floor(100 * Math.pow(1.5, learnedSkill.level - 1)) 
+                        apCost: (() => {
+                          try {
+                            const skillData = require(`../../data/skills/${skill.skillId}.json`)
+                            return calculateLevelUpCost(skillData, learnedSkill.level)
+                          } catch {
+                            return 1
+                          }
+                        })(),
+                        goldCost: 0 // 골드 제거
                       } : null
                       
                       const canLevel = learnedSkill ? { 
                         canLevel: (learnedSkill.currentXp || 0) >= (learnedSkill.maxXp || 0) && 
-                                 player.rebirthLevel >= 1 && 
-                                 player.gold >= levelUpCost.goldCost 
+                                 player.rebirthLevel >= levelUpCost.apCost
                       } : null
                       
                                              const canUnlock = !isLearned && (skills.pagesOwned[skill.skillId] || 0) >= skillInfo.requiredPages
@@ -701,7 +711,7 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                       return (
                         <div 
                           key={skill.skillId} 
-                          className={`bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors ${
+                          className={`relative bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors ${
                             !isLearned ? 'border-l-4 border-yellow-500' : ''
                           }`}
                           onClick={() => handleSkillClick(skill.skillId)}
@@ -731,7 +741,7 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                                     e.stopPropagation()
                                     handleLevelUpSkill(skill.skillId)
                                   }}
-                                  className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
+                                  className="absolute top-2 right-2 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
                                 >
                                   <ArrowUp size={12} />
                                   레벨업
@@ -751,12 +761,12 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                                   className={`h-1 rounded-full transition-all duration-300 ${
                                     skillInfo.type === 'Active' ? 'bg-purple-500' : 'bg-blue-500'
                                   }`}
-                                  style={{ width: `${learnedSkill.maxXp ? ((learnedSkill.currentXp || 0) / learnedSkill.maxXp) * 100 : 0}%` }}
+                                  style={{ width: `${((learnedSkill.currentXp || 0) / (learnedSkill.maxXp || 100)) * 100}%` }}
                                 />
                               </div>
                               
                               <div className="text-xs text-gray-500">
-                                다음 레벨업: AP {levelUpCost.apCost}, 골드 {levelUpCost.goldCost}
+                                다음 레벨업: AP {levelUpCost.apCost}
                               </div>
                             </>
                           )}

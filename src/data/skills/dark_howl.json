@@ -5,12 +5,23 @@
   "type": "Active",
   "element": "Shadow",
   "triggerChance": {
-    "base": 20,
-    "perLevel": 6,
-    "max": 90
+    "base": 5.8,
+    "perLevel": 1.1,
+    "max": 17.5
   },
+  "baseMaxExp": 180,
   "maxLevel": 0,
   "requiredPages": 4,
+  "damageCalculation": {
+    "baseMagicAtk": 80,
+    "basePhysicalAtk": 0,
+    "levelScaling": 10,
+    "elementalBonus": 1.2
+  },
+  "levelUpCost": {
+    "baseAp": 3,
+    "apScaling": 1.6
+  },
   "effects": [
     {
       "type": "area_debuff",

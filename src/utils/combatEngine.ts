@@ -249,7 +249,7 @@ async function processPlayerSkills(player: PlayerState, monster: Monster, skills
             actualTriggerChance = Math.min(calculatedChance, max)
           }
           
-          // 스킬 발동 체크
+          // 스킬 발동 체크 (소수점 지원)
           if (Math.random() * 100 < actualTriggerChance) {
             for (const effect of skillData.default.effects) {
               if (effect.type === 'damage') {

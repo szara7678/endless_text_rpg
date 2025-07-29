@@ -5,12 +5,23 @@
   "type": "Active",
   "element": "Verdant",
   "triggerChance": {
-    "base": 25,
-    "perLevel": 4,
-    "max": 80
+    "base": 4.5,
+    "perLevel": 0.7,
+    "max": 11.5
   },
+  "baseMaxExp": 240,
   "maxLevel": 0,
   "requiredPages": 3,
+  "damageCalculation": {
+    "baseMagicAtk": 120,
+    "basePhysicalAtk": 0,
+    "levelScaling": 15,
+    "elementalBonus": 1.4
+  },
+  "levelUpCost": {
+    "baseAp": 2,
+    "apScaling": 1.6
+  },
   "effects": [
     {
       "type": "damage",

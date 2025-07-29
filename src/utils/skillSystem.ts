@@ -135,17 +135,61 @@ export function getTriggerChanceForLevel(level: number): number {
 }
 
 /**
- * 스킬 레벨업에 필요한 비용을 계산합니다
- * 기획안: AP + 골드 지불
+ * 스킬 대미지 계산
  */
-export function calculateLevelUpCost(currentLevel: number): {
-  apCost: number
-  goldCost: number
+export function calculateSkillDamage(skillData: any, playerLevel: number, playerStats: any, skillLevel: number = 1): {
+  magicDamage: number
+  physicalDamage: number
+  totalDamage: number
+  elementalBonus: number
 } {
-  return {
-    apCost: LEVEL_UP_COSTS.AP_PER_LEVEL,
-    goldCost: Math.floor(LEVEL_UP_COSTS.GOLD_BASE * Math.pow(LEVEL_UP_COSTS.GOLD_MULTIPLIER, currentLevel - 1))
+  const { damageCalculation } = skillData
+  
+  if (!damageCalculation) {
+    return {
+      magicDamage: 0,
+      physicalDamage: 0,
+      totalDamage: 0,
+      elementalBonus: 1.0
+    }
   }
+
+  const { baseMagicAtk, basePhysicalAtk, levelScaling, elementalBonus } = damageCalculation
+
+  // 마법 대미지 계산
+  const magicDamage = Math.floor(
+    (baseMagicAtk + (skillLevel - 1) * levelScaling) * 
+    (playerStats.magicalAttack / 100)
+  )
+
+  // 물리 대미지 계산
+  const physicalDamage = Math.floor(
+    (basePhysicalAtk + (skillLevel - 1) * levelScaling) * 
+    (playerStats.physicalAttack / 100)
+  )
+
+  const totalDamage = magicDamage + physicalDamage
+
+  return {
+    magicDamage,
+    physicalDamage,
+    totalDamage,
+    elementalBonus: elementalBonus || 1.0
+  }
+}
+
+/**
+ * 스킬 레벨업 비용 계산
+ */
+export function calculateLevelUpCost(skillData: any, currentLevel: number): number {
+  const { levelUpCost } = skillData
+  
+  if (!levelUpCost) {
+    return 1 // 기본값
+  }
+
+  const { baseAp, apScaling } = levelUpCost
+  return Math.floor(baseAp * Math.pow(apScaling, currentLevel - 1))
 }
 
 /**

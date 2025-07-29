@@ -5,12 +5,23 @@
   "type": "Active",
   "element": "Thunder",
   "triggerChance": {
-    "base": 15,
-    "perLevel": 7,
-    "max": 90
+    "base": 6.8,
+    "perLevel": 1.3,
+    "max": 21.5
   },
+  "baseMaxExp": 160,
   "maxLevel": 0,
   "requiredPages": 4,
+  "damageCalculation": {
+    "baseMagicAtk": 130,
+    "basePhysicalAtk": 0,
+    "levelScaling": 16,
+    "elementalBonus": 1.5
+  },
+  "levelUpCost": {
+    "baseAp": 3,
+    "apScaling": 1.6
+  },
   "effects": [
     {
       "type": "area_damage",

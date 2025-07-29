@@ -9,8 +9,19 @@
     "perLevel": 0,
     "max": 100
   },
+  "baseMaxExp": 80,
   "maxLevel": 0,
   "requiredPages": 0,
+  "damageCalculation": {
+    "baseMagicAtk": 0,
+    "basePhysicalAtk": 80,
+    "levelScaling": 8,
+    "elementalBonus": 1.0
+  },
+  "levelUpCost": {
+    "baseAp": 1,
+    "apScaling": 1.2
+  },
   "effects": [
     {
       "type": "damage",

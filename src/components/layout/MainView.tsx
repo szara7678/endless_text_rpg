@@ -191,27 +191,7 @@ const MainView: React.FC = () => {
               </button>
             </div>
             
-            {/* 전투 상태 표시 */}
-            <div className="mt-2 text-center">
-              <div className="inline-flex items-center gap-2 text-yellow-400 text-sm">
-                <div className={`w-2 h-2 rounded-full ${
-                  tower.combatState?.phase === 'player_turn' ? 'bg-blue-500' :
-                  tower.combatState?.phase === 'monster_turn' ? 'bg-red-500' :
-                  'bg-gray-500'
-                } animate-pulse`}></div>
-                <span>{getCombatPhaseText(tower.combatState?.phase || 'waiting')}</span>
-              </div>
-            </div>
-            
-            {/* 자동 진행 상태 표시 */}
-            {tower.autoMode && (
-              <div className="mt-2 text-center">
-                <div className="inline-flex items-center gap-2 text-green-400 text-sm">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>자동 전투 진행 중... ({tower.autoSpeed || 1}x 속도)</span>
-                </div>
-              </div>
-            )}
+
           </div>
         )}
 

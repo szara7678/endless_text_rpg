@@ -1,5 +1,6 @@
 import React from 'react'
 import { X, Zap, Target, Flame, Snowflake, Skull, Moon, Zap as Thunder, Leaf } from 'lucide-react'
+import { calculateSkillDamage, calculateLevelUpCost } from '../../utils/skillSystem'
 
 interface SkillDetailModalProps {
   isOpen: boolean
@@ -61,6 +62,39 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
     description: '스킬 설명이 여기에 표시됩니다.',
     type: 'Active'
   })
+  const [skillData, setSkillData] = React.useState<any>(null)
+
+  // 스킬 정보 업데이트 (경험치 포함)
+  React.useEffect(() => {
+    setSkillInfo(prev => ({
+      ...prev,
+      currentXp: skill.currentXp || 0,
+      maxXp: skill.maxXp || 100,
+      level: skill.level || 1
+    }))
+  }, [skill.currentXp, skill.maxXp, skill.level])
+
+  // 스킬 데이터 로드 및 정보 업데이트
+  React.useEffect(() => {
+    const loadSkillData = async () => {
+      try {
+        const skillData = await import(`../../data/skills/${skill.skillId}.json`)
+        if (skillData.default) {
+          setSkillInfo(prev => ({
+            ...prev,
+            name: skillData.default.name || prev.name,
+            element: skillData.default.element || prev.element,
+            type: skillData.default.type || prev.type,
+            description: skillData.default.description || prev.description
+          }))
+          setSkillData(skillData.default)
+        }
+      } catch (error) {
+        console.error(`스킬 데이터 로드 실패: ${skill.skillId}`, error)
+      }
+    }
+    loadSkillData()
+  }, [skill.skillId])
 
   // 실제 발동률 계산 (비동기 처리)
   React.useEffect(() => {
@@ -150,7 +184,7 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
             </div>
             <div className="text-center">
               <div className="text-sm text-gray-300">발동률</div>
-              <div className={`text-lg font-bold ${elementInfo.color}`}>{skillInfo.triggerChance}%</div>
+              <div className={`text-lg font-bold ${elementInfo.color}`}>{skillInfo.triggerChance.toFixed(1)}%</div>
             </div>
           </div>
 
@@ -183,12 +217,44 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
             <h4 className="text-sm font-medium text-gray-400 mb-2">⚡ 현재 효과</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-300">기본 피해</span>
-                <span className="text-white font-mono">{100 + (skillInfo.level - 1) * 20}%</span>
+                <span className="text-gray-300">마법 대미지</span>
+                <span className="text-white font-mono">
+                  {skillData && skillData.damageCalculation ? (
+                    (() => {
+                      const damage = calculateSkillDamage(skillData, 1, { magicalAttack: 100, physicalAttack: 50 }, skillInfo.level)
+                      return `${damage.magicDamage} (${skillData.damageCalculation.baseMagicAtk || 0} + ${skillData.damageCalculation.levelScaling || 0} × 레벨)`
+                    })()
+                  ) : (
+                    '로딩 중...'
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-300">물리 대미지</span>
+                <span className="text-white font-mono">
+                  {skillData && skillData.damageCalculation ? (
+                    (() => {
+                      const damage = calculateSkillDamage(skillData, 1, { magicalAttack: 100, physicalAttack: 50 }, skillInfo.level)
+                      return `${damage.physicalDamage} (${skillData.damageCalculation.basePhysicalAtk || 0} + ${skillData.damageCalculation.levelScaling || 0} × 레벨)`
+                    })()
+                  ) : (
+                    '로딩 중...'
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-300">속성 보너스</span>
+                <span className="text-white font-mono">
+                  {skillData && skillData.damageCalculation ? (
+                    `${(skillData.damageCalculation.elementalBonus || 1.0) * 100}%`
+                  ) : (
+                    '로딩 중...'
+                  )}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-300">발동률</span>
-                <span className="text-white font-mono">{skillInfo.triggerChance}%</span>
+                <span className="text-white font-mono">{skillInfo.triggerChance.toFixed(1)}%</span>
               </div>
               {skillInfo.type === 'Passive' && (
                 <div className="flex justify-between text-sm">
@@ -204,10 +270,31 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
              <h4 className="text-sm font-medium text-gray-400 mb-2">📈 다음 레벨 효과</h4>
              <div className="space-y-2">
                <div className="flex justify-between text-sm">
-                 <span className="text-gray-300">기본 피해</span>
+                 <span className="text-gray-300">마법 대미지</span>
                  <span className="text-green-400 font-mono">
-                   {100 + skillInfo.level * 20}% 
-                   <span className="text-green-500 ml-1">(+20%)</span>
+                   {skillData && skillData.damageCalculation ? (
+                     (() => {
+                       const currentDamage = calculateSkillDamage(skillData, 1, { magicalAttack: 100, physicalAttack: 50 }, skillInfo.level)
+                       const nextDamage = calculateSkillDamage(skillData, 1, { magicalAttack: 100, physicalAttack: 50 }, skillInfo.level + 1)
+                       return `${nextDamage.magicDamage} (+${nextDamage.magicDamage - currentDamage.magicDamage})`
+                     })()
+                   ) : (
+                     '로딩 중...'
+                   )}
+                 </span>
+               </div>
+               <div className="flex justify-between text-sm">
+                 <span className="text-gray-300">물리 대미지</span>
+                 <span className="text-green-400 font-mono">
+                   {skillData && skillData.damageCalculation ? (
+                     (() => {
+                       const currentDamage = calculateSkillDamage(skillData, 1, { magicalAttack: 100, physicalAttack: 50 }, skillInfo.level)
+                       const nextDamage = calculateSkillDamage(skillData, 1, { magicalAttack: 100, physicalAttack: 50 }, skillInfo.level + 1)
+                       return `${nextDamage.physicalDamage} (+${nextDamage.physicalDamage - currentDamage.physicalDamage})`
+                     })()
+                   ) : (
+                     '로딩 중...'
+                   )}
                  </span>
                </div>
                
@@ -232,8 +319,8 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
                            <div className="flex justify-between text-sm">
                              <span className="text-gray-300">발동률</span>
                              <span className="text-green-400 font-mono">
-                               {nextLevelFinalChance}%
-                               <span className="text-green-500 ml-1">(+{nextLevelFinalChance - skillInfo.triggerChance}%)</span>
+                               {nextLevelFinalChance.toFixed(1)}%
+                               <span className="text-green-500 ml-1">(+{(nextLevelFinalChance - skillInfo.triggerChance).toFixed(1)}%)</span>
                              </span>
                            </div>
                          )

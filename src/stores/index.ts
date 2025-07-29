@@ -1381,7 +1381,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       // 스킬 레벨업
-      levelUpSkill: (skillId: string) => {
+      levelUpSkill: async (skillId: string) => {
         const { skills, player } = get()
         
         // 스킬 찾기
@@ -1421,25 +1421,34 @@ export const useGameStore = create<GameStore>()(
           return
         }
 
-        // 레벨업 실행 - 스킬별 발동률 상승 레벨 적용
+        // 레벨업 실행 - 스킬 데이터 기반 발동률 및 경험치 계산
         const newLevel = targetSkill.level + 1
         
-        // 스킬 데이터에서 발동률 계산 (동기적으로 처리)
-        const skillTriggerMap: Record<string, number[]> = {
-          'basic_attack': [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100],
-          'fireball': [1, 3, 7, 12, 18, 25, 35, 45, 60, 80, 100],
-          'ice_shard': [1, 4, 8, 15, 22, 30, 40, 55, 70, 90],
-          'flame_aura': [1, 6, 12, 20, 30, 45, 60, 80, 100],
-          'frost_bite': [1, 5, 12, 20, 30, 45, 65, 85],
-          'ember_toss': [1, 2, 5, 10, 16, 24, 35, 50, 70, 95]
-        }
-        
-        const skillTriggerLevels = skillTriggerMap[skillId] || [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
-        
-        // 새 레벨이 발동률 증가 레벨인지 확인 (기본 공격은 항상 100% 유지)
+        // 스킬 데이터 로드 및 새 발동률 계산
         let newTriggerChance = targetSkill.triggerChance
-        if (skillId !== 'basic_attack' && skillTriggerLevels.includes(newLevel)) {
-          newTriggerChance = Math.min(95, targetSkill.triggerChance + 5)
+        let newMaxXp = targetSkill.maxXp
+        
+        try {
+          const skillData = await import(`../data/skills/${skillId}.json`)
+          if (skillData.default) {
+            // 발동률 계산 (소수점 지원)
+            if (skillId === 'basic_attack') {
+              newTriggerChance = 100
+            } else if (skillData.default.triggerChance) {
+              const { base, perLevel, max } = skillData.default.triggerChance
+              const calculatedChance = base + (newLevel - 1) * perLevel
+              newTriggerChance = Math.min(calculatedChance, max)
+            }
+            
+            // 최대 경험치 계산 (baseMaxExp 기반)
+            if (skillData.default.baseMaxExp) {
+              newMaxXp = Math.floor(skillData.default.baseMaxExp * Math.pow(1.2, newLevel - 1))
+            }
+          }
+        } catch (error) {
+          console.error(`스킬 데이터 로드 실패: ${skillId}`, error)
+          // 폴백: 기존 방식
+          newMaxXp = Math.floor(100 * Math.pow(1.8, newLevel - 1))
         }
         
         const newSkill = {
@@ -1447,7 +1456,7 @@ export const useGameStore = create<GameStore>()(
           level: newLevel,
           triggerChance: newTriggerChance,
           currentXp: 0,
-          maxXp: Math.floor(100 * Math.pow(1.8, newLevel - 1))
+          maxXp: newMaxXp
         }
         
         set((state: any) => ({
@@ -1490,13 +1499,13 @@ export const useGameStore = create<GameStore>()(
         // 스킬 찾기 및 수련치 추가
         const updatedActiveSkills = skills.activeSkills.map(skill => 
           skill.skillId === skillId 
-            ? { ...skill, currentXp: Math.min((skill.currentXp || 0) + xpGain, skill.maxXp || 0) }
+            ? { ...skill, currentXp: Math.min((skill.currentXp || 0) + xpGain, skill.maxXp || 100) }
             : skill
         )
         
         const updatedPassiveSkills = skills.passiveSkills.map(skill => 
           skill.skillId === skillId 
-            ? { ...skill, currentXp: Math.min((skill.currentXp || 0) + xpGain, skill.maxXp || 0) }
+            ? { ...skill, currentXp: Math.min((skill.currentXp || 0) + xpGain, skill.maxXp || 100) }
             : skill
         )
 

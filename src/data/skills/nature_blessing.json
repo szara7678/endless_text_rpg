@@ -5,12 +5,23 @@
   "type": "Active",
   "element": "Verdant",
   "triggerChance": {
-    "base": 20,
-    "perLevel": 5,
-    "max": 85
+    "base": 4.8,
+    "perLevel": 0.8,
+    "max": 13.0
   },
+  "baseMaxExp": 220,
   "maxLevel": 0,
   "requiredPages": 4,
+  "damageCalculation": {
+    "baseMagicAtk": 60,
+    "basePhysicalAtk": 0,
+    "levelScaling": 8,
+    "elementalBonus": 1.1
+  },
+  "levelUpCost": {
+    "baseAp": 3,
+    "apScaling": 1.8
+  },
   "effects": [
     {
       "type": "heal_all",

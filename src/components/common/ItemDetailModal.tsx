@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { X, Sword, Shield, Star, Zap } from 'lucide-react'
 import { useGameStore } from '../../stores'
 import { calculateEnhancementCost, getBaseEquipmentStats } from '../../utils/equipmentSystem'
+import { calculateItemSellPrice } from '../../utils/itemSystem'
 
 interface ItemDetailModalProps {
   isOpen: boolean
@@ -190,8 +191,10 @@ const EnhancementModal: React.FC<{
 }
 
 const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose }) => {
-  const { player, equipItem, unequipItem, enhanceEquipment } = useGameStore()
+  const { player, equipItem, unequipItem, enhanceEquipment, inventory, addCombatLog } = useGameStore()
   const [showEnhancementModal, setShowEnhancementModal] = useState(false)
+  const [showSellModal, setShowSellModal] = useState(false)
+  const [sellQuantity, setSellQuantity] = useState(1)
 
   if (!isOpen || !item) return null
 
@@ -261,6 +264,12 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
     setShowEnhancementModal(true)
   }
 
+  // 판매 모달 열기
+  const handleSell = () => {
+    setSellQuantity(1)
+    setShowSellModal(true)
+  }
+
   // 강화 비용 계산
   const getEnhancementCost = (currentLevel: number) => {
     return Math.floor(100 * Math.pow(1.5, currentLevel))
@@ -276,6 +285,143 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
                      item.itemId?.includes('sword') || item.itemId?.includes('staff') || 
                      item.itemId?.includes('armor') || item.itemId?.includes('ring') || 
                      item.itemId?.includes('necklace') || item.itemId?.includes('amulet')
+
+  // 판매 가능한 아이템인지 확인
+  const canSell = () => {
+    // 장착된 아이템만 판매 불가
+    return !isEquipped()
+  }
+
+  // 아이템 수량 확인
+  const getItemQuantity = () => {
+    console.log('getItemQuantity 호출:', {
+      itemId: item.itemId,
+      materialId: item.materialId,
+      type: item.type,
+      uniqueId: item.uniqueId
+    })
+    
+    // 장비 (inventory.items에서 찾기)
+    if (item.uniqueId) {
+      const inventoryItem = inventory.items.find(invItem => invItem.uniqueId === item.uniqueId)
+      if (inventoryItem) {
+        console.log('inventory.items에서 찾음 (uniqueId):', inventoryItem)
+        return inventoryItem.quantity || 1
+      }
+    }
+    
+    // 재료 (inventory.materials에서 찾기)
+    if (item.materialId) {
+      const materialItem = inventory.materials.find(mat => mat.materialId === item.materialId)
+      if (materialItem) {
+        console.log('inventory.materials에서 찾음:', materialItem)
+        return materialItem.count || 1
+      }
+    }
+    
+    // 소모품 (inventory.consumables에서 찾기)
+    if (item.itemId && !item.uniqueId) {
+      const consumableItem = inventory.consumables.find(con => con.itemId === item.itemId)
+      if (consumableItem) {
+        console.log('inventory.consumables에서 찾음:', consumableItem)
+        return consumableItem.quantity || 1
+      }
+    }
+    
+    // 일반 아이템 (inventory.items에서 찾기)
+    if (item.itemId) {
+      const inventoryItem = inventory.items.find(invItem => invItem.itemId === item.itemId)
+      if (inventoryItem) {
+        console.log('inventory.items에서 찾음 (itemId):', inventoryItem)
+        return inventoryItem.quantity || 1
+      }
+    }
+    
+    console.log('아이템을 찾을 수 없음')
+    return 1
+  }
+
+  // 아이템 판매 처리
+  const handleSellItem = () => {
+    if (!item) return
+    const sellPrice = calculateItemSellPrice(item) * sellQuantity
+    
+    console.log('판매할 아이템 정보:', {
+      itemId: item.itemId,
+      materialId: item.materialId,
+      uniqueId: item.uniqueId,
+      type: item.type,
+      sellQuantity
+    })
+    
+    // 장비 수량 감소 (inventory.items)
+    const updatedItems = inventory.items.map(invItem => {
+      let shouldUpdate = false
+      
+      if (item.uniqueId && invItem.uniqueId === item.uniqueId) shouldUpdate = true
+      else if (item.itemId && invItem.itemId === item.itemId && !item.uniqueId) shouldUpdate = true
+      
+      if (shouldUpdate) {
+        const currentCount = invItem.quantity || 1
+        const newCount = currentCount - sellQuantity
+        console.log('inventory.items 업데이트:', { currentCount, newCount, itemId: invItem.itemId })
+        return newCount > 0 ? { ...invItem, quantity: newCount } : null
+      }
+      return invItem
+    }).filter(Boolean)
+    
+    // 재료 수량 감소 (inventory.materials)
+    const updatedMaterials = inventory.materials.map(mat => {
+      if (item.materialId && mat.materialId === item.materialId) {
+        const currentCount = mat.count
+        const newCount = currentCount - sellQuantity
+        console.log('inventory.materials 업데이트:', { currentCount, newCount, materialId: mat.materialId })
+        return newCount > 0 ? { ...mat, count: newCount } : null
+      }
+      return mat
+    }).filter(Boolean)
+    
+    // 소모품 수량 감소 (inventory.consumables)
+    const updatedConsumables = inventory.consumables.map(con => {
+      if (item.itemId && con.itemId === item.itemId) {
+        const currentCount = con.quantity || 1
+        const newCount = currentCount - sellQuantity
+        console.log('inventory.consumables 업데이트:', { currentCount, newCount, itemId: con.itemId })
+        return newCount > 0 ? { ...con, quantity: newCount } : null
+      }
+      return con
+    }).filter(Boolean)
+    
+    // 골드 추가
+    const newGold = player.gold + sellPrice
+    
+    console.log('최종 업데이트:', {
+      items: updatedItems.length,
+      materials: updatedMaterials.length,
+      consumables: updatedConsumables.length,
+      newGold
+    })
+    
+    // 상태 업데이트
+    useGameStore.setState((state: any) => ({
+      ...state,
+      player: {
+        ...state.player,
+        gold: newGold
+      },
+      inventory: {
+        ...state.inventory,
+        items: updatedItems,
+        materials: updatedMaterials,
+        consumables: updatedConsumables,
+        usedSlots: updatedItems.length
+      }
+    }))
+    
+    addCombatLog('loot', `💰 ${(item.itemId ? item.itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : '')} ${sellQuantity}개 판매! +${sellPrice} 골드`)
+    setShowSellModal(false)
+    onClose()
+  }
   const itemType = item.type || (item.itemId?.includes('sword') || item.itemId?.includes('staff') ? 'weapon' : 
                                  item.itemId?.includes('armor') ? 'armor' : 
                                  item.itemId?.includes('ring') || item.itemId?.includes('necklace') || item.itemId?.includes('amulet') ? 'accessory' : null)
@@ -480,21 +626,20 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
 
 
           {/* 가격 정보 */}
-          {item.sellPrice && (
-            <div>
-              <h4 className="text-white font-medium mb-2">가격 정보</h4>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">판매 가격</span>
-                <span className="text-yellow-400">{item.sellPrice} 골드</span>
-              </div>
+          <div>
+            <h4 className="text-white font-medium mb-2">가격 정보</h4>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">판매 가격</span>
+              <span className="text-yellow-400">{calculateItemSellPrice(item)} 골드</span>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* 하단 버튼들 (장비인 경우만) */}
-        {isEquipment && (
-          <div className="border-t border-gray-700 p-4">
-            <div className="flex gap-2">
+        {/* 하단 버튼들 */}
+        <div className="border-t border-gray-700 p-4">
+          <div className="flex gap-2">
+            {/* 장비인 경우 장착/해제 버튼 */}
+            {isEquipment && (
               <button
                 onClick={handleEquipToggle}
                 className={`flex-1 py-2 px-4 rounded font-medium transition-colors ${
@@ -505,27 +650,37 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
               >
                 {isEquipped() ? '해제' : '장착'}
               </button>
-              
-              {/* 강화 버튼: 장착 여부와 관계없이 노출 */}
-              {isEquipment && (
-                <button
-                  onClick={handleEnhance}
-                  className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors flex items-center justify-center gap-1"
-                >
-                  <Zap size={16} />
-                  강화
-                </button>
-              )}
-            </div>
+            )}
             
-            {/* 최대 강화 안내 */}
-            {currentEquipment && currentEquipment.enhancement >= 10 && (
-              <div className="text-center text-yellow-400 text-sm mt-2">
-                ⭐ 최대 강화 달성!
-              </div>
+            {/* 강화 버튼: 장비인 경우만 */}
+            {isEquipment && (
+              <button
+                onClick={handleEnhance}
+                className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors flex items-center justify-center gap-1"
+              >
+                <Zap size={16} />
+                강화
+              </button>
+            )}
+
+            {/* 판매 버튼: 판매 가능한 아이템인 경우만 */}
+            {canSell() && (
+              <button
+                onClick={handleSell}
+                className="flex-1 py-2 px-4 bg-orange-600 hover:bg-orange-700 text-white rounded font-medium transition-colors"
+              >
+                💰 판매
+              </button>
             )}
           </div>
-        )}
+          
+          {/* 최대 강화 안내 */}
+          {isEquipment && currentEquipment && currentEquipment.enhancement >= 10 && (
+            <div className="text-center text-yellow-400 text-sm mt-2">
+              ⭐ 최대 강화 달성!
+            </div>
+          )}
+        </div>
 
         {/* 강화 모달 */}
         <EnhancementModal
@@ -534,6 +689,90 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
           equipment={item}
           equipmentType={itemType as 'weapon' | 'armor'}
         />
+
+        {/* 판매 모달 */}
+        {showSellModal && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setShowSellModal(false)}
+          >
+            <div 
+              className="bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-4 border-b border-gray-700">
+                <h3 className="text-lg font-bold text-white">💰 아이템 판매</h3>
+                <button
+                  onClick={() => setShowSellModal(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-4 space-y-4">
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <h4 className="text-md font-semibold mb-3 text-white">
+                    {item.itemId ? item.itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''}
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">레벨:</span>
+                      <span className="text-white">Lv {item.level || 1}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">품질:</span>
+                      <span className="text-white">{item.quality || 'Common'}</span>
+                    </div>
+                    {item.enhancement && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">강화:</span>
+                        <span className="text-white">+{item.enhancement}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">보유 수량:</span>
+                      <span className="text-white">{getItemQuantity()}개</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">판매 가격:</span>
+                      <span className="text-yellow-400 font-bold">
+                        {calculateItemSellPrice(item)} 골드
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm text-gray-300 mb-2">판매 수량:</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max={getItemQuantity()}
+                      value={sellQuantity}
+                      onChange={(e) => setSellQuantity(Math.max(1, Math.min(getItemQuantity(), parseInt(e.target.value) || 1)))}
+                      className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowSellModal(false)}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded font-medium transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleSellItem}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded font-medium transition-colors"
+                  >
+                    💰 {calculateItemSellPrice(item) * sellQuantity} 골드에 판매
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
