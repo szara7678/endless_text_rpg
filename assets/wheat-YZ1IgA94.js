@@ -1,1 +1,0 @@
-const t="wheat",a="밀",e="빵과 요리의 기본 재료가 되는 곡물",c="material",o="food",s="neutral",r=5,n="Common",l=!0,m=99,i={id:t,name:a,description:e,type:c,category:o,element:s,baseValue:5,rarity:n,stackable:!0,maxStack:99};export{r as baseValue,o as category,i as default,e as description,s as element,t as id,m as maxStack,a as name,n as rarity,l as stackable,c as type};

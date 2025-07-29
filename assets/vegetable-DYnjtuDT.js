@@ -1,0 +1,1 @@
+const e="vegetable",t="야채",a="신선한 야채",c="material",s="food",o="Physical",n="Common",l=2,i=!0,m=99,r={id:e,name:t,description:a,type:c,category:s,theme:o,tier:n,baseValue:2,stackable:!0,maxStack:99};export{l as baseValue,s as category,r as default,a as description,e as id,m as maxStack,t as name,i as stackable,o as theme,n as tier,c as type};

@@ -1,0 +1,1 @@
+const t="toxic_gem",e="독성 보석",a="강력한 독성의 힘이 깃든 보석",c="material",s="gem",o="Toxic",n="Epic",i=300,m=!0,r=99,l={id:t,name:e,description:a,type:c,category:s,theme:o,tier:n,baseValue:300,stackable:!0,maxStack:99};export{i as baseValue,s as category,l as default,a as description,t as id,r as maxStack,e as name,m as stackable,o as theme,n as tier,c as type};

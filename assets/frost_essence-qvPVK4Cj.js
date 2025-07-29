@@ -1,0 +1,1 @@
+const e="frost_essence",t="빙결 정수",s="정제된 얼음의 순수한 에너지",a="material",c="essence",o="Frost",n="Superior",r=120,i=!0,l=99,m={id:e,name:t,description:s,type:a,category:c,theme:o,tier:n,baseValue:120,stackable:!0,maxStack:99};export{r as baseValue,c as category,m as default,s as description,e as id,l as maxStack,t as name,i as stackable,o as theme,n as tier,a as type};

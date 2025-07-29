@@ -1,0 +1,1 @@
+const t="verdant_gem",e="자연 보석",a="강력한 자연의 힘이 깃든 보석",c="material",s="gem",n="Verdant",o="Epic",r=300,m=!0,i=99,d={id:t,name:e,description:a,type:c,category:s,theme:n,tier:o,baseValue:300,stackable:!0,maxStack:99};export{r as baseValue,s as category,d as default,a as description,t as id,i as maxStack,e as name,m as stackable,n as theme,o as tier,c as type};

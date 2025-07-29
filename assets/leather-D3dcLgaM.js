@@ -1,0 +1,1 @@
+const t="leather",e="가죽",a="기본적인 가죽 재료",c="material",s="leather",o="Physical",n="Common",l=5,r=!0,i=99,m={id:t,name:e,description:a,type:c,category:s,theme:o,tier:n,baseValue:5,stackable:!0,maxStack:99};export{l as baseValue,s as category,m as default,a as description,t as id,i as maxStack,e as name,r as stackable,o as theme,n as tier,c as type};

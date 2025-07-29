@@ -1,0 +1,1 @@
+const t="raw_meat",a="생고기",e="가공되지 않은 고기",c="material",s="food",o="Physical",n="Common",m=3,r=!0,i=99,l={id:t,name:a,description:e,type:c,category:s,theme:o,tier:n,baseValue:3,stackable:!0,maxStack:99};export{m as baseValue,s as category,l as default,e as description,t as id,i as maxStack,a as name,r as stackable,o as theme,n as tier,c as type};

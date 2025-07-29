@@ -1,0 +1,1 @@
+const e="red_herb",t="빨간 약초",a="체력 회복에 효과적인 빨간 약초",c="material",s="herb",o="Physical",n="Common",r=8,i=!0,m=99,b={id:e,name:t,description:a,type:c,category:s,theme:o,tier:n,baseValue:8,stackable:!0,maxStack:99};export{r as baseValue,s as category,b as default,a as description,e as id,m as maxStack,t as name,i as stackable,o as theme,n as tier,c as type};

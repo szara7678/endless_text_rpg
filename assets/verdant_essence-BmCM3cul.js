@@ -1,0 +1,1 @@
+const e="verdant_essence",t="자연 정수",a="정제된 자연의 순수한 에너지",s="material",c="essence",n="Verdant",o="Superior",r=120,i=!0,d=99,l={id:e,name:t,description:a,type:s,category:c,theme:n,tier:o,baseValue:120,stackable:!0,maxStack:99};export{r as baseValue,c as category,l as default,a as description,e as id,d as maxStack,t as name,i as stackable,n as theme,o as tier,s as type};

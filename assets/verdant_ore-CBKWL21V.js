@@ -1,0 +1,1 @@
+const t="verdant_ore",e="자연석",a="자연의 힘이 깃든 초록 광석",c="material",o="ore",s="Verdant",n="Common",r=15,m=!0,i=99,d={id:t,name:e,description:a,type:c,category:o,theme:s,tier:n,baseValue:15,stackable:!0,maxStack:99};export{r as baseValue,o as category,d as default,a as description,t as id,i as maxStack,e as name,m as stackable,s as theme,n as tier,c as type};

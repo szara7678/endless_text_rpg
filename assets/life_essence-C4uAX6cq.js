@@ -1,0 +1,1 @@
+const e="life_essence",t="생명 정수",a="생명의 힘이 담긴 신성한 정수",c="material",s="herb",n="Physical",o="Epic",i=180,l=!0,r=99,m={id:e,name:t,description:a,type:c,category:s,theme:n,tier:o,baseValue:180,stackable:!0,maxStack:99};export{i as baseValue,s as category,m as default,a as description,e as id,r as maxStack,t as name,l as stackable,n as theme,o as tier,c as type};

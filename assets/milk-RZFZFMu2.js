@@ -1,1 +1,0 @@
-const t="milk",a="우유",e="신선한 우유, 요리와 물약에 사용됩니다",c="material",o="food",s="neutral",l=8,n="Common",m=!0,r=50,i={id:t,name:a,description:e,type:c,category:o,element:s,baseValue:8,rarity:n,stackable:!0,maxStack:50};export{l as baseValue,o as category,i as default,e as description,s as element,t as id,r as maxStack,a as name,n as rarity,m as stackable,c as type};

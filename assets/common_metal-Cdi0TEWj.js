@@ -1,0 +1,1 @@
+const t="common_metal",a="일반 금속",e="기본적인 금속 재료",c="material",o="metal",s="Physical",n="Common",m=8,l=!0,i=99,r={id:t,name:a,description:e,type:c,category:o,theme:s,tier:n,baseValue:8,stackable:!0,maxStack:99};export{m as baseValue,o as category,r as default,e as description,t as id,i as maxStack,a as name,l as stackable,s as theme,n as tier,c as type};

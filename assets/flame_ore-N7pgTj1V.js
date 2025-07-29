@@ -1,0 +1,1 @@
+const e="flame_ore",t="화염석",a="뜨거운 열기를 내뿜는 붉은 광석",c="material",o="ore",s="Flame",n="Common",m=15,r=!0,l=99,i={id:e,name:t,description:a,type:c,category:o,theme:s,tier:n,baseValue:15,stackable:!0,maxStack:99};export{m as baseValue,o as category,i as default,a as description,e as id,l as maxStack,t as name,r as stackable,s as theme,n as tier,c as type};

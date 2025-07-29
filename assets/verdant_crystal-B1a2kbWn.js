@@ -1,0 +1,1 @@
+const t="verdant_crystal",a="자연 수정",e="자연의 힘이 깃든 초록 수정",c="material",s="crystal",n="Verdant",o="Fine",r=45,l=!0,i=99,d={id:t,name:a,description:e,type:c,category:s,theme:n,tier:o,baseValue:45,stackable:!0,maxStack:99};export{r as baseValue,s as category,d as default,e as description,t as id,i as maxStack,a as name,l as stackable,n as theme,o as tier,c as type};

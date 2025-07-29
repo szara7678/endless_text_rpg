@@ -1,0 +1,1 @@
+const t="shadow_ore",e="암흑석",a="어둠의 힘이 깃든 검은 광석",o="material",s="ore",c="Shadow",n="Common",r=15,m=!0,i=99,d={id:t,name:e,description:a,type:o,category:s,theme:c,tier:n,baseValue:15,stackable:!0,maxStack:99};export{r as baseValue,s as category,d as default,a as description,t as id,i as maxStack,e as name,m as stackable,c as theme,n as tier,o as type};

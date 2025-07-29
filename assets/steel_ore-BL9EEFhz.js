@@ -1,0 +1,1 @@
+const e="steel_ore",t="강철 광석",a="정제된 강철 광석",s="material",c="ore",o="Physical",n="Fine",r=30,i=!0,l=99,m={id:e,name:t,description:a,type:s,category:c,theme:o,tier:n,baseValue:30,stackable:!0,maxStack:99};export{r as baseValue,c as category,m as default,a as description,e as id,l as maxStack,t as name,i as stackable,o as theme,n as tier,s as type};

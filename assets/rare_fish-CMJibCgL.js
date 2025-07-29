@@ -1,0 +1,1 @@
+const t="rare_fish",a="희귀한 물고기",e="매우 희귀한 물고기",s="material",c="fish",o="Physical",n="Epic",i=100,r=!0,l=99,m={id:t,name:a,description:e,type:s,category:c,theme:o,tier:n,baseValue:100,stackable:!0,maxStack:99};export{i as baseValue,c as category,m as default,e as description,t as id,l as maxStack,a as name,r as stackable,o as theme,n as tier,s as type};

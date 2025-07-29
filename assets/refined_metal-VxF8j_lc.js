@@ -1,1 +1,0 @@
-const e="refined_metal",t="정제된 금속",a="순도가 높은 고급 금속 재료",c="material",n="metal",s="neutral",l=15,o="Fine",r=!0,i=99,m={id:e,name:t,description:a,type:c,category:n,element:s,baseValue:15,rarity:o,stackable:!0,maxStack:99};export{l as baseValue,n as category,m as default,a as description,s as element,e as id,i as maxStack,t as name,o as rarity,r as stackable,c as type};

@@ -1,1 +1,0 @@
-const e="blue_herb",t="파란 약초",a="마나 회복에 효과적인 파란색 약초",c="material",s="herb",o="Frost",r=12,n="Common",l=!0,b=99,m={id:e,name:t,description:a,type:c,category:s,element:o,baseValue:12,rarity:n,stackable:!0,maxStack:99};export{r as baseValue,s as category,m as default,a as description,o as element,e as id,b as maxStack,t as name,n as rarity,l as stackable,c as type};

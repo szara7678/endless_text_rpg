@@ -1,0 +1,1 @@
+const t="thunder_stone",e="번개 돌",a="번개의 힘이 깃든 돌",s="material",n="stone",c="Thunder",o="Common",r=10,m=!0,i=99,d={id:t,name:e,description:a,type:s,category:n,theme:c,tier:o,baseValue:10,stackable:!0,maxStack:99};export{r as baseValue,n as category,d as default,a as description,t as id,i as maxStack,e as name,m as stackable,c as theme,o as tier,s as type};

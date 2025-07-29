@@ -1,1 +1,0 @@
-const t="toxic_shard",a="독성 파편",e="독성 기운이 스며든 위험한 파편",c="material",s="shard",o="Toxic",r=18,n="Fine",i=!0,l=99,d={id:t,name:a,description:e,type:c,category:s,element:o,baseValue:18,rarity:n,stackable:!0,maxStack:99};export{r as baseValue,s as category,d as default,e as description,o as element,t as id,l as maxStack,a as name,n as rarity,i as stackable,c as type};

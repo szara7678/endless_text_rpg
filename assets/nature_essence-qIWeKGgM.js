@@ -1,0 +1,1 @@
+const e="nature_essence",t="자연 정수",a="자연의 치유 에너지가 담긴 정수",s="material",c="herb",n="Physical",o="Superior",r=70,i=!0,l=99,m={id:e,name:t,description:a,type:s,category:c,theme:n,tier:o,baseValue:70,stackable:!0,maxStack:99};export{r as baseValue,c as category,m as default,a as description,e as id,l as maxStack,t as name,i as stackable,n as theme,o as tier,s as type};

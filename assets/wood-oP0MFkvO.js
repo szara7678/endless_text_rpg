@@ -1,0 +1,1 @@
+const t="wood",a="나무",e="기본적인 나무 재료",o="material",c="wood",s="Physical",n="Common",i=1,m=!0,l=99,r={id:t,name:a,description:e,type:o,category:c,theme:s,tier:n,baseValue:1,stackable:!0,maxStack:99};export{i as baseValue,c as category,r as default,e as description,t as id,l as maxStack,a as name,m as stackable,s as theme,n as tier,o as type};

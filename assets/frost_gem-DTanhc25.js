@@ -1,0 +1,1 @@
+const t="frost_gem",e="빙결 보석",a="강력한 얼음의 힘이 깃든 보석",s="material",c="gem",o="Frost",n="Epic",r=300,m=!0,i=99,l={id:t,name:e,description:a,type:s,category:c,theme:o,tier:n,baseValue:300,stackable:!0,maxStack:99};export{r as baseValue,c as category,l as default,a as description,t as id,i as maxStack,e as name,m as stackable,o as theme,n as tier,s as type};

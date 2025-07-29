@@ -1,0 +1,1 @@
+const t="toxic_crystal",a="독성 수정",e="독성을 머금은 녹색 수정",c="material",s="crystal",o="Toxic",n="Fine",i=45,r=!0,l=99,m={id:t,name:a,description:e,type:c,category:s,theme:o,tier:n,baseValue:45,stackable:!0,maxStack:99};export{i as baseValue,s as category,m as default,e as description,t as id,l as maxStack,a as name,r as stackable,o as theme,n as tier,c as type};

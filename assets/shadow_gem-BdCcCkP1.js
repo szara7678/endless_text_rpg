@@ -1,0 +1,1 @@
+const t="shadow_gem",e="암흑 보석",a="강력한 어둠의 힘이 깃든 보석",c="material",s="gem",o="Shadow",n="Epic",m=300,i=!0,r=99,d={id:t,name:e,description:a,type:c,category:s,theme:o,tier:n,baseValue:300,stackable:!0,maxStack:99};export{m as baseValue,s as category,d as default,a as description,t as id,r as maxStack,e as name,i as stackable,o as theme,n as tier,c as type};

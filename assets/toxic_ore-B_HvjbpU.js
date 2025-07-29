@@ -1,0 +1,1 @@
+const t="toxic_ore",e="독성석",a="독성을 머금은 녹색 광석",c="material",o="ore",s="Toxic",n="Common",i=15,r=!0,m=99,l={id:t,name:e,description:a,type:c,category:o,theme:s,tier:n,baseValue:15,stackable:!0,maxStack:99};export{i as baseValue,o as category,l as default,a as description,t as id,m as maxStack,e as name,r as stackable,s as theme,n as tier,c as type};

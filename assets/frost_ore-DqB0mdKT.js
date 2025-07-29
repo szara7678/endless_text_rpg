@@ -1,0 +1,1 @@
+const t="frost_ore",e="빙결석",a="차가운 얼음이 깃든 푸른 광석",o="material",s="ore",c="Frost",n="Common",r=15,m=!0,i=99,l={id:t,name:e,description:a,type:o,category:s,theme:c,tier:n,baseValue:15,stackable:!0,maxStack:99};export{r as baseValue,s as category,l as default,a as description,t as id,i as maxStack,e as name,m as stackable,c as theme,n as tier,o as type};

@@ -1,0 +1,1 @@
+const t="flame_crystal",a="화염 수정",e="영원히 타오르는 화염이 담긴 수정",c="material",s="crystal",n="Flame",o="Fine",l=45,r=!0,m=99,i={id:t,name:a,description:e,type:c,category:s,theme:n,tier:o,baseValue:45,stackable:!0,maxStack:99};export{l as baseValue,s as category,i as default,e as description,t as id,m as maxStack,a as name,r as stackable,n as theme,o as tier,c as type};

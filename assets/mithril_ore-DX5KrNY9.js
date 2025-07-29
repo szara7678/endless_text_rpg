@@ -1,0 +1,1 @@
+const t="mithril_ore",e="미스릴 광석",a="희귀한 미스릴 광석",c="material",s="ore",o="Physical",r="Superior",i=80,n=!0,l=99,m={id:t,name:e,description:a,type:c,category:s,theme:o,tier:r,baseValue:80,stackable:!0,maxStack:99};export{i as baseValue,s as category,m as default,a as description,t as id,l as maxStack,e as name,n as stackable,o as theme,r as tier,c as type};

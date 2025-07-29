@@ -1,0 +1,1 @@
+const t="medium_fish",e="중간 물고기",a="중간 크기의 물고기",s="material",c="fish",i="Physical",n="Fine",o=15,m=!0,l=99,r={id:t,name:e,description:a,type:s,category:c,theme:i,tier:n,baseValue:15,stackable:!0,maxStack:99};export{o as baseValue,c as category,r as default,a as description,t as id,l as maxStack,e as name,m as stackable,i as theme,n as tier,s as type};

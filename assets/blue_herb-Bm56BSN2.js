@@ -1,0 +1,1 @@
+const e="blue_herb",t="파란 약초",a="마나 회복에 효과적인 파란 약초",c="material",s="herb",o="Physical",n="Common",r=8,b=!0,l=99,i={id:e,name:t,description:a,type:c,category:s,theme:o,tier:n,baseValue:8,stackable:!0,maxStack:99};export{r as baseValue,s as category,i as default,a as description,e as id,l as maxStack,t as name,b as stackable,o as theme,n as tier,c as type};

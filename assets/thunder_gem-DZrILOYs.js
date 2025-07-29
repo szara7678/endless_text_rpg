@@ -1,1 +1,0 @@
-const e="thunder_gem",t="번개 보석",a="번개의 에너지가 담긴 전기를 띤 보석",c="material",n="gem",s="Thunder",r=25,o="Superior",m=!0,i=99,l={id:e,name:t,description:a,type:c,category:n,element:s,baseValue:25,rarity:o,stackable:!0,maxStack:99};export{r as baseValue,n as category,l as default,a as description,s as element,e as id,i as maxStack,t as name,o as rarity,m as stackable,c as type};

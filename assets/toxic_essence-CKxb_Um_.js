@@ -1,0 +1,1 @@
+const e="toxic_essence",t="독성 정수",c="정제된 독성의 순수한 에너지",a="material",s="essence",o="Toxic",n="Superior",i=120,r=!0,l=99,m={id:e,name:t,description:c,type:a,category:s,theme:o,tier:n,baseValue:120,stackable:!0,maxStack:99};export{i as baseValue,s as category,m as default,c as description,e as id,l as maxStack,t as name,r as stackable,o as theme,n as tier,a as type};

@@ -1,0 +1,1 @@
+const a="mana_flower",e="마나 꽃",t="마나 회복에 특화된 꽃",c="material",s="herb",n="Physical",o="Fine",r=25,i=!0,l=99,m={id:a,name:e,description:t,type:c,category:s,theme:n,tier:o,baseValue:25,stackable:!0,maxStack:99};export{r as baseValue,s as category,m as default,t as description,a as id,l as maxStack,e as name,i as stackable,n as theme,o as tier,c as type};

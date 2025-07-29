@@ -1,0 +1,1 @@
+const e="thunder_ore",t="번개석",a="전기를 머금은 노란 광석",c="material",o="ore",s="Thunder",n="Common",r=15,m=!0,i=99,d={id:e,name:t,description:a,type:c,category:o,theme:s,tier:n,baseValue:15,stackable:!0,maxStack:99};export{r as baseValue,o as category,d as default,a as description,e as id,i as maxStack,t as name,m as stackable,s as theme,n as tier,c as type};

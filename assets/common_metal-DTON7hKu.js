@@ -1,1 +1,0 @@
-const t="common_metal",a="일반 금속",e="모든 장비 제작에 필요한 기본 금속",c="material",o="metal",n="neutral",m=8,s="Common",l=!0,r=99,i={id:t,name:a,description:e,type:c,category:o,element:n,baseValue:8,rarity:s,stackable:!0,maxStack:99};export{m as baseValue,o as category,i as default,e as description,n as element,t as id,r as maxStack,a as name,s as rarity,l as stackable,c as type};

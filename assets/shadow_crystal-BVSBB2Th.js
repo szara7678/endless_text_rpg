@@ -1,0 +1,1 @@
+const t="shadow_crystal",a="암흑 수정",e="어둠의 힘이 깃든 검은 수정",s="material",c="crystal",o="Shadow",n="Fine",r=45,l=!0,i=99,d={id:t,name:a,description:e,type:s,category:c,theme:o,tier:n,baseValue:45,stackable:!0,maxStack:99};export{r as baseValue,c as category,d as default,e as description,t as id,i as maxStack,a as name,l as stackable,o as theme,n as tier,s as type};

@@ -1,0 +1,1 @@
+const t="large_fish",e="큰 물고기",a="큰 물고기",s="material",c="fish",o="Physical",n="Superior",i=40,r=!0,l=99,m={id:t,name:e,description:a,type:s,category:c,theme:o,tier:n,baseValue:40,stackable:!0,maxStack:99};export{i as baseValue,c as category,m as default,a as description,t as id,l as maxStack,e as name,r as stackable,o as theme,n as tier,s as type};

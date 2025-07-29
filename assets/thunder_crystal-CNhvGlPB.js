@@ -1,0 +1,1 @@
+const t="thunder_crystal",e="번개 수정",a="전기를 머금은 노란 수정",c="material",s="crystal",n="Thunder",o="Fine",r=45,l=!0,i=99,d={id:t,name:e,description:a,type:c,category:s,theme:n,tier:o,baseValue:45,stackable:!0,maxStack:99};export{r as baseValue,s as category,d as default,a as description,t as id,i as maxStack,e as name,l as stackable,n as theme,o as tier,c as type};

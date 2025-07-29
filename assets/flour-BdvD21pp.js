@@ -1,0 +1,1 @@
+const t="flour",a="밀가루",e="기본적인 밀가루",c="material",o="food",s="Physical",n="Common",l=2,r=!0,i=99,m={id:t,name:a,description:e,type:c,category:o,theme:s,tier:n,baseValue:2,stackable:!0,maxStack:99};export{l as baseValue,o as category,m as default,e as description,t as id,i as maxStack,a as name,r as stackable,s as theme,n as tier,c as type};

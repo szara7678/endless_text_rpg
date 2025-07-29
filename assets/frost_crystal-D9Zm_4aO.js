@@ -1,0 +1,1 @@
+const t="frost_crystal",a="빙결 수정",e="영원히 얼어있는 얼음이 담긴 수정",s="material",c="crystal",o="Frost",n="Fine",r=45,l=!0,i=99,m={id:t,name:a,description:e,type:s,category:c,theme:o,tier:n,baseValue:45,stackable:!0,maxStack:99};export{r as baseValue,c as category,m as default,e as description,t as id,i as maxStack,a as name,l as stackable,o as theme,n as tier,s as type};

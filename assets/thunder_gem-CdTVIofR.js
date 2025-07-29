@@ -1,0 +1,1 @@
+const e="thunder_gem",t="번개 보석",a="강력한 번개의 힘이 깃든 보석",c="material",s="gem",n="Thunder",o="Epic",r=300,m=!0,i=99,d={id:e,name:t,description:a,type:c,category:s,theme:n,tier:o,baseValue:300,stackable:!0,maxStack:99};export{r as baseValue,s as category,d as default,a as description,e as id,i as maxStack,t as name,m as stackable,n as theme,o as tier,c as type};

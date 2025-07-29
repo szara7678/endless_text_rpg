@@ -1,0 +1,1 @@
+const e="thunder_essence",t="번개 정수",a="정제된 번개의 순수한 에너지",s="material",c="essence",n="Thunder",o="Superior",r=120,i=!0,u=99,d={id:e,name:t,description:a,type:s,category:c,theme:n,tier:o,baseValue:120,stackable:!0,maxStack:99};export{r as baseValue,c as category,d as default,a as description,e as id,u as maxStack,t as name,i as stackable,n as theme,o as tier,s as type};

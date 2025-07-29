@@ -1,0 +1,1 @@
+const e="healing_herb",t="치유 약초",a="강력한 치유 효과가 있는 약초",c="material",s="herb",n="Physical",o="Fine",i=25,r=!0,l=99,b={id:e,name:t,description:a,type:c,category:s,theme:n,tier:o,baseValue:25,stackable:!0,maxStack:99};export{i as baseValue,s as category,b as default,a as description,e as id,l as maxStack,t as name,r as stackable,n as theme,o as tier,c as type};

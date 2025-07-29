@@ -1,0 +1,1 @@
+const t="toxic_shard",a="독성 파편",e="독성 에너지가 응축된 파편",c="material",s="shard",o="Toxic",n="Common",i=8,r=!0,m=99,d={id:t,name:a,description:e,type:c,category:s,theme:o,tier:n,baseValue:8,stackable:!0,maxStack:99};export{i as baseValue,s as category,d as default,e as description,t as id,m as maxStack,a as name,r as stackable,o as theme,n as tier,c as type};

@@ -1,0 +1,1 @@
+const e="green_herb",t="초록 약초",a="독성 해독에 효과적인 초록 약초",c="material",s="herb",n="Physical",o="Common",r=8,i=!0,m=99,b={id:e,name:t,description:a,type:c,category:s,theme:n,tier:o,baseValue:8,stackable:!0,maxStack:99};export{r as baseValue,s as category,b as default,a as description,e as id,m as maxStack,t as name,i as stackable,n as theme,o as tier,c as type};

@@ -1,0 +1,1 @@
+const t="verdant_sap",a="자연 수액",e="자연의 생명력이 담긴 수액",s="material",c="sap",n="Verdant",o="Common",r=12,m=!0,i=99,d={id:t,name:a,description:e,type:s,category:c,theme:n,tier:o,baseValue:12,stackable:!0,maxStack:99};export{r as baseValue,c as category,d as default,e as description,t as id,i as maxStack,a as name,m as stackable,n as theme,o as tier,s as type};

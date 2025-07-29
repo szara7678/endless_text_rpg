@@ -1,0 +1,1 @@
+const t="small_fish",a="작은 물고기",e="작은 민물고기",s="material",c="fish",o="Physical",n="Common",i=5,l=!0,m=99,r={id:t,name:a,description:e,type:s,category:c,theme:o,tier:n,baseValue:5,stackable:!0,maxStack:99};export{i as baseValue,c as category,r as default,e as description,t as id,m as maxStack,a as name,l as stackable,o as theme,n as tier,s as type};

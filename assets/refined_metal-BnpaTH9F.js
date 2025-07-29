@@ -1,0 +1,1 @@
+const e="refined_metal",t="정제된 금속",a="정제된 금속 재료",c="material",s="metal",n="Physical",o="Fine",i=25,l=!0,m=99,r={id:e,name:t,description:a,type:c,category:s,theme:n,tier:o,baseValue:25,stackable:!0,maxStack:99};export{i as baseValue,s as category,r as default,a as description,e as id,m as maxStack,t as name,l as stackable,n as theme,o as tier,c as type};

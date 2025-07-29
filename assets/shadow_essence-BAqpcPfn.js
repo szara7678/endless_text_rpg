@@ -1,0 +1,1 @@
+const e="shadow_essence",t="암흑 정수",a="정제된 어둠의 순수한 에너지",s="material",c="essence",o="Shadow",n="Superior",r=120,i=!0,d=99,l={id:e,name:t,description:a,type:s,category:c,theme:o,tier:n,baseValue:120,stackable:!0,maxStack:99};export{r as baseValue,c as category,l as default,a as description,e as id,d as maxStack,t as name,i as stackable,o as theme,n as tier,s as type};

@@ -1,0 +1,1 @@
+const t="dragon_ore",e="드래곤 광석",a="전설적인 드래곤 광석",c="material",o="ore",s="Physical",n="Epic",r=200,i=!0,l=99,m={id:t,name:e,description:a,type:c,category:o,theme:s,tier:n,baseValue:200,stackable:!0,maxStack:99};export{r as baseValue,o as category,m as default,a as description,t as id,l as maxStack,e as name,i as stackable,s as theme,n as tier,c as type};
