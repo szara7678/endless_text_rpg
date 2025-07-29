@@ -48,8 +48,8 @@ export function equipItem(
     itemId: item.itemId,
     uniqueId: item.uniqueId, // uniqueId 추가
     level: item.level || 1,
-    quality: getItemQuality(item.itemId) as 'Common' | 'Fine' | 'Superior' | 'Epic' | 'Legendary',
-    enhancement: 0,
+    quality: item.quality || getItemQuality(item.itemId) as 'Common' | 'Fine' | 'Superior' | 'Epic' | 'Legendary',
+    enhancement: item.enhancement || 0,
     traits: []
   }
   
@@ -211,15 +211,29 @@ export function recalculatePlayerStats(player: PlayerState): PlayerState {
 }
 
 /**
- * 장비의 스탯을 계산합니다 (강화 보너스 포함)
+ * 장비의 스탯을 계산합니다 (레벨, 품질, 강화 보너스 포함)
  */
 export function getEquipmentStats(equipment: EquipmentInstance): any {
   const baseStats = getBaseEquipmentStats(equipment.itemId)
-  const enhancementMultiplier = 1 + (equipment.enhancement * ENHANCEMENT_MULTIPLIER)
+  
+  // 품질별 배수
+  const qualityMultipliers: Record<string, number> = {
+    'Common': 1.0,
+    'Fine': 1.2,
+    'Superior': 1.5,
+    'Epic': 2.0,
+    'Legendary': 3.0
+  }
+  
+  const qualityMultiplier = qualityMultipliers[equipment.quality] || 1.0
+  const levelMultiplier = 1 + (equipment.level - 1) * 0.05  // 레벨당 5% 증가 (줄임)
+  const enhancementMultiplier = 1 + (equipment.enhancement * 0.08)  // 강화당 8% 증가 (높임)
   
   const enhancedStats: any = {}
   Object.keys(baseStats).forEach(stat => {
-    enhancedStats[stat] = Math.floor(baseStats[stat] * enhancementMultiplier)
+    const baseStat = baseStats[stat]
+    const finalStat = Math.floor(baseStat * qualityMultiplier * levelMultiplier * enhancementMultiplier)
+    enhancedStats[stat] = Math.max(1, finalStat)
   })
   
   return enhancedStats

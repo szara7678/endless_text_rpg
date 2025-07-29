@@ -1,0 +1,18 @@
+{
+  "id": "verdant_boar",
+  "name": "버던트 보어",
+  "description": "숲의 힘을 지닌 멧돼지.",
+  "level": 1,
+  "hp": 25,
+  "maxHp": 25,
+  "attack": 9,
+  "defense": 4,
+  "speed": 17,
+  "theme": "Verdant",
+  "tier": "normal",
+  "dropTable": "verdant_normal",
+  "xpReward": 2,
+  "goldReward": 5,
+  "skills": ["verdant_charge"],
+  "traits": ["verdant_resistance"]
+} 

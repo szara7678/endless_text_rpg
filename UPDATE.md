@@ -2,6 +2,491 @@
 
 ## 최신 업데이트 내역
 
+### 🔧 **스킬 발동률 수정 및 저장 시스템 개선 - 2024년 12월 23일**
+
+**문제**: 
+1. 파이어볼의 기본 확률이 90%인데도 스킬이 발동되지 않음
+2. 주기적 저장이 계속 발생하여 성능에 영향을 줌
+3. 전투 로직에서 스킬 발동률 계산이 잘못됨
+
+**원인**: 
+- `processPlayerSkills`에서 초기 스킬 데이터의 `triggerChance`를 사용
+- 실제 스킬 데이터 파일의 발동률을 고려하지 않음
+- 주기적 저장이 5초마다 실행되어 불필요한 저장 발생
+
+**해결 방법**:
+1. **스킬 발동률 계산 수정**: 
+   - `processPlayerSkills`에서 실제 스킬 데이터 파일의 `triggerChance` 사용
+   - 레벨에 따른 발동률 계산 추가
+   - 기본 공격은 100% 발동률로 고정
+
+2. **저장 시스템 개선**:
+   - 주기적 저장(5초마다) 제거
+   - 몬스터 처치 시에만 저장하도록 변경
+   - 불필요한 로그 제거
+
+**수정된 파일**:
+- `src/utils/combatEngine.ts`: 스킬 발동률 계산 로직 수정
+- `src/stores/index.ts`: 주기적 저장 제거, 몬스터 처치 시 저장 추가
+
+**결과**: 
+- 파이어볼이 90% 확률로 정상 발동됨
+- 모든 스킬이 실제 데이터 기반 발동률로 작동
+- 불필요한 주기적 저장 제거로 성능 향상
+- 몬스터 처치 시에만 저장되어 효율적인 저장 시스템
+
+---
+
+### 🔧 **스킬 시스템 완전 개편 - 2024년 12월 23일**
+
+**문제**: 
+1. 모든 스킬 데이터가 품질에 맞게 설정되지 않음
+2. 캐릭터창의 스킬 탭에서 모든 스킬을 해금할 수 없음
+3. 스킬 필터링 및 정렬 기능이 부족함
+4. 미습득 스킬이 위로 오지 않음
+
+**원인**: 
+- 일부 스킬 데이터가 이전 구조를 사용
+- 스킬 해금 시스템이 제한적
+- 스킬 UI가 단순한 구조
+
+**해결 방법**:
+1. **모든 스킬 데이터 품질 개선**: 
+   - 모든 스킬을 새로운 `triggerChance` 구조로 통일
+   - 품질에 맞는 발동률 설정:
+     - `fireball`: 기본 90%, 레벨당 +5%, 최대 90%
+     - `ice_shard`: 기본 10%, 레벨당 +4%, 최대 85%
+     - `flame_aura`: 기본 10%, 레벨당 +6%, 최대 95%
+     - `frost_bite`: 기본 15%, 레벨당 +5%, 최대 80%
+     - `ember_toss`: 기본 10%, 레벨당 +8%, 최대 95%
+     - `thunder_shock`: 기본 20%, 레벨당 +6%, 최대 85%
+     - `thunder_roar`: 기본 15%, 레벨당 +7%, 최대 90%
+     - `shadow_bite`: 기본 25%, 레벨당 +5%, 최대 85%
+     - `dark_howl`: 기본 20%, 레벨당 +6%, 최대 90%
+     - `toxic_spit`: 기본 30%, 레벨당 +4%, 최대 80%
+     - `venom_burst`: 기본 25%, 레벨당 +7%, 최대 95%
+     - `nature_blessing`: 기본 20%, 레벨당 +5%, 최대 85%
+     - `verdant_charge`: 기본 25%, 레벨당 +4%, 최대 80%
+
+2. **캐릭터창 스킬 탭 개선**:
+   - 모든 스킬을 해금 가능하도록 개선
+   - 스킬 필터링 탭 추가: 모든 스킬, 습득한 스킬, 미습득 스킬, 속성별 스킬
+   - 미습득 스킬이 위로 오도록 정렬
+   - 스킬 페이지 기반 해금 시스템
+
+3. **스킬 UI 개선**:
+   - 스킬 타입과 속성 표시
+   - 해금 버튼과 레벨업 버튼 분리
+   - 미습득 스킬에 노란색 테두리 표시
+
+**수정된 파일**:
+- `src/data/skills/frost_bite.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/thunder_shock.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/thunder_roar.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/shadow_bite.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/dark_howl.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/toxic_spit.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/venom_burst.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/nature_blessing.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/verdant_charge.json`: 새로운 `triggerChance` 구조로 변경
+- `src/components/character/CharacterPanel.tsx`: 스킬 탭 완전 개편
+
+**결과**: 
+- 모든 스킬이 품질에 맞는 발동률로 설정됨
+- 캐릭터창에서 모든 스킬을 해금 가능
+- 스킬 필터링 및 정렬 기능 추가
+- 미습득 스킬이 위로 정렬되어 가시성 향상
+- 스킬 페이지 기반 해금 시스템으로 게임 진행에 따른 스킬 해금
+
+---
+
+### 🔧 **스킬 발동률 시스템 개선 - 2024년 12월 23일**
+
+**문제**: 
+1. 각 스킬마다 기본 발동 확률, 레벨당 상승 확률, 최대 발동 확률을 설정할 수 없음
+2. 스킬 상세 모달에서 발동률이 항상 10%로 표시됨
+3. 기존 `triggerChanceLevels` 배열 방식이 복잡하고 유연하지 않음
+
+**원인**: 
+- 스킬 데이터 구조가 `baseTriggerChance`와 `triggerChanceLevels` 배열 방식 사용
+- 레벨당 상승 확률과 최대 발동 확률을 명시적으로 설정할 수 없음
+- 스킬 상세 모달에서 하드코딩된 발동률 계산 로직 사용
+
+**해결 방법**:
+1. **스킬 데이터 구조 개선**: 
+   - `triggerChance` 객체로 변경: `{ base, perLevel, max }`
+   - `base`: 기본 발동 확률
+   - `perLevel`: 레벨당 상승 확률
+   - `max`: 최대 발동 확률
+
+2. **스킬 상세 모달 개선**:
+   - 새로운 데이터 구조에 맞는 발동률 계산 로직 구현
+   - 다음 레벨 발동률 예측 기능 추가
+   - 비동기 처리로 스킬 데이터 동적 로드
+
+3. **주요 스킬 데이터 수정**:
+   - `fireball`: 기본 10%, 레벨당 +5%, 최대 90%
+   - `ice_shard`: 기본 10%, 레벨당 +4%, 최대 85%
+   - `flame_aura`: 기본 10%, 레벨당 +6%, 최대 95%
+   - `ember_toss`: 기본 10%, 레벨당 +8%, 최대 95%
+   - `basic_attack`: 기본 100%, 레벨당 +0%, 최대 100%
+
+**수정된 파일**:
+- `src/data/skills/fireball.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/basic_attack.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/ice_shard.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/flame_aura.json`: 새로운 `triggerChance` 구조로 변경
+- `src/data/skills/ember_toss.json`: 새로운 `triggerChance` 구조로 변경
+- `src/components/common/SkillDetailModal.tsx`: 새로운 데이터 구조에 맞는 발동률 계산 로직 구현
+
+**결과**: 
+- 각 스킬마다 기본 발동 확률, 레벨당 상승 확률, 최대 발동 확률을 명시적으로 설정 가능
+- 스킬 상세 모달에서 정확한 발동률 표시 (레벨에 따른 증가 반영)
+- 다음 레벨 발동률 예측 기능 추가
+- 더 유연하고 직관적인 스킬 발동률 시스템
+
+---
+
+### 🔧 **스킬 상세 모달 발동률 수정 - 2024년 12월 23일**
+
+**문제**: 
+1. 스킬 상세 모달에서 발동률이 항상 10%로 표시됨
+2. 실제 스킬 데이터의 발동률이 반영되지 않음
+
+**원인**: 
+- 스킬 상세 모달에서 하드코딩된 발동률 사용
+- 스킬 데이터 파일의 `baseTriggerChance`와 `triggerChanceLevels`를 고려하지 않음
+- 레벨에 따른 발동률 증가 계산이 누락됨
+
+**해결 방법**:
+1. **스킬 데이터 기반 발동률 계산**: 
+   - 스킬 데이터 파일에서 `baseTriggerChance`와 `triggerChanceLevels` 로드
+   - 레벨에 따른 발동률 증가 계산 추가
+   - 비동기 처리로 스킬 데이터 동적 로드
+
+2. **스킬 상세 모달 개선**:
+   - `useState`와 `useEffect`를 사용한 동적 발동률 계산
+   - 실제 스킬 데이터 기반 정확한 발동률 표시
+
+**수정된 파일**:
+- `src/components/common/SkillDetailModal.tsx`: 스킬 데이터 기반 발동률 계산 로직 추가
+
+**결과**: 
+- 스킬 상세 모달에서 정확한 발동률 표시 (파이어볼: 10% → 10% + 레벨별 증가)
+- 레벨에 따른 발동률 증가가 정확히 반영됨
+- 기본 공격은 100% 발동률로 정확히 표시됨
+
+---
+
+### 🔧 **스킬 시스템 수정 및 UI 개선 - 2024년 12월 23일**
+
+**문제**: 
+1. 스킬이 전혀 사용되지 않음
+2. 스킬 상세 모달에서 발동률이 10%로 잘못 표시됨
+3. 자동 전투 정지를 눌러도 다음 몬스터에서 전투가 멈춤
+4. 현재 층 몬스터 수가 표시되지 않음
+
+**원인**: 
+- `processPlayerSkills`에서 `basic_attack`을 건너뛰고 스킬 로그에 추가하지 않음
+- 스킬 상세 모달에서 `triggerChance` 계산 로직이 잘못됨
+- `stopAutoCombat`에서 `preventAutoCombat` 플래그를 설정하지 않음
+- 현재 층 몬스터 수 표시 UI가 없음
+
+**해결 방법**:
+1. **스킬 시스템 수정**: 
+   - `processPlayerSkills`에서 `basic_attack`도 스킬 로그에 추가
+   - 스킬 발동률 계산 로직 개선
+
+2. **스킬 상세 모달 수정**:
+   - `skillInfo.triggerChance` 계산 로직 수정
+   - 실제 스킬 데이터의 `triggerChance` 값을 우선 사용
+
+3. **자동 전투 즉시 정지**: 
+   - `stopAutoCombat`에서 `preventAutoCombat: true` 플래그 추가
+   - 즉시 전투 중지가 가능하도록 수정
+
+4. **현재 층 몬스터 수 표시**:
+   - `getCurrentFloorMonsterInfo` 함수 추가
+   - 몬스터 이름 옆에 "3/5" 형태로 표시
+   - 휴식층은 "휴식층"으로 표시
+
+**수정된 파일**:
+- `src/utils/combatEngine.ts`: `processPlayerSkills` 함수에서 `basic_attack` 스킬 로그 추가
+- `src/components/common/SkillDetailModal.tsx`: 스킬 발동률 계산 로직 수정
+- `src/stores/index.ts`: `stopAutoCombat` 함수에 `preventAutoCombat` 플래그 추가
+- `src/components/layout/MainView.tsx`: 현재 층 몬스터 수 표시 기능 추가
+- `src/data/initial/skills.json`: 초기 스킬에 `triggerChance` 필드 추가
+
+**결과**: 
+- 스킬이 정상적으로 사용되고 로그에 표시됨
+- 스킬 상세 모달에서 정확한 발동률 표시
+- 자동 전투 정지 버튼을 누르면 즉시 멈춤
+- 현재 층 몬스터 수가 "3/5" 형태로 표시됨
+- 파이어볼이 90% 확률로 발동하여 테스트 가능
+
+---
+
+### 🔧 **사망 후 딜레이 단축 - 2024년 12월 23일**
+
+**문제**: 사망 후 아래층으로 이동하는 딜레이가 너무 길어서 게임 진행이 느렸습니다.
+
+**원인**: 
+- `handlePlayerDeath`에서 사망 후 2초 딜레이로 설정되어 있음
+- 사망 처리 후 아래층 이동까지 기다리는 시간이 너무 김
+- 게임 속도가 빠른 상황에서 사망 딜레이가 게임 플레이를 방해함
+
+**해결 방법**:
+1. **딜레이 단축**: 
+   - 사망 후 딜레이를 2초에서 1초로 단축
+   - 빠른 게임 진행을 위한 적절한 딜레이 설정
+
+**수정된 파일**:
+- `src/stores/index.ts`: `handlePlayerDeath` 함수에서 사망 후 딜레이를 1초로 단축
+
+**결과**: 
+- 사망 후 더 빠른 게임 진행
+- 적절한 딜레이로 사망 처리는 명확하지만 게임 진행은 빠름
+- 게임 속도에 맞는 사망 처리 시간
+
+---
+
+### 🔧 **즉시 턴 전환 문제 해결 - 2024년 12월 23일**
+
+**문제**: 플레이어 공격 후 몬스터 공격이 바로 들어오는 문제가 발생했습니다.
+
+**원인**: 
+- 플레이어 턴이 끝나면 즉시 `phase`를 `'monster_turn'`으로 변경
+- 상태 변경과 `setTimeout` 지연이 분리되어 있어서 즉시 전환되는 것처럼 보임
+- `setInterval`이 `'player_turn'` 상태에서도 실행되어 중복 실행 발생
+
+**해결 방법**:
+1. **지연된 상태 변경**: 
+   - 플레이어 턴이 끝나면 지연 후에 상태를 `'monster_turn'`으로 변경
+   - 몬스터 턴이 끝나면 지연 후에 상태를 `'player_turn'`으로 변경
+   - 상태 변경과 턴 실행을 같은 `setTimeout` 내에서 처리
+
+2. **setInterval 조건 강화**:
+   - `setInterval`이 `'waiting'` 상태에서만 실행되도록 조건 수정
+   - `'player_turn'` 상태에서는 `setInterval`이 실행되지 않도록 제한
+
+3. **지연 시간 로그 복원**:
+   - 지연 시간을 로그에 표시하여 사용자가 확인 가능하도록 복원
+
+**수정된 파일**:
+- `src/stores/index.ts`: 턴 전환 로직을 지연된 상태 변경으로 수정 및 setInterval 조건 강화
+
+**결과**: 
+- 플레이어와 몬스터 공격 사이에 확실한 지연 시간 확보
+- 턴 전환이 자연스럽게 진행됨
+- setInterval과 setTimeout의 충돌 방지
+- 안정적인 턴제 전투 시스템
+
+---
+
+### 🔧 **전투 인터벌 일관성 문제 해결 - 2024년 12월 23일**
+
+**문제**: 전투 인터벌이 계속 변화하는 문제가 발생했습니다.
+
+**원인**: 
+- `startAutoCombat`에서 `Math.max(500, 3000 / speed)` 계산 사용
+- `getCombatDelay`에서 `Math.max(1000, 4000 / speed)` 계산 사용
+- 새 몬스터 생성 시 `turnDelay`에 `startAutoCombat`의 interval 사용
+- 서로 다른 계산 방식으로 인해 인터벌이 일관되지 않음
+
+**해결 방법**:
+1. **인터벌 계산 통일**: 
+   - `startAutoCombat`에서 `getCombatDelay` 함수 사용으로 통일
+   - 모든 인터벌 계산을 중앙 함수로 일원화
+
+2. **속도 변경 시 자동 재시작**:
+   - `setAutoSpeed` 함수에서 자동 전투가 활성화되어 있으면 새로운 속도로 재시작
+   - MainView에서 속도 변경 시 `setAutoSpeed` 사용으로 일관성 확보
+
+3. **일관된 인터벌 관리**:
+   - 모든 인터벌 계산이 `getCombatDelay` 함수를 통해 처리
+   - 속도 변경 시 즉시 반영되도록 자동 재시작 로직 추가
+
+**수정된 파일**:
+- `src/stores/index.ts`: `startAutoCombat`에서 `getCombatDelay` 사용 및 `setAutoSpeed` 개선
+- `src/components/layout/MainView.tsx`: 속도 변경 시 `setAutoSpeed` 사용
+
+**결과**: 
+- 전투 인터벌이 일관되게 유지됨
+- 속도 변경 시 즉시 새로운 인터벌이 적용됨
+- 모든 인터벌 계산이 중앙 함수를 통해 일원화됨
+- 안정적이고 예측 가능한 전투 페이스 제공
+
+---
+
+### 🔧 **전투 인터벌 문제 해결 - 2024년 12월 23일**
+
+**문제**: 플레이어 공격 후 몬스터 공격 사이에 인터벌이 없어서 너무 빠르게 진행되는 문제가 발생했습니다.
+
+**원인**: 
+- `getCombatDelay` 함수의 기본 지연 시간이 너무 짧았음 (최소 0.5초)
+- 전투 턴 간 지연 시간이 사용자에게 명확하게 표시되지 않아서 지연이 적용되는지 확인하기 어려웠음
+- 게임 속도가 빠를 때 지연 시간이 너무 짧아져서 자연스럽지 않았음
+
+**해결 방법**:
+1. **지연 시간 증가**: 
+   - `getCombatDelay` 함수에서 최소 지연 시간을 0.5초에서 1초로 증가
+   - 기본 지연 시간을 3초에서 4초로 증가하여 더 자연스러운 전투 페이스 제공
+
+2. **지연 시간 로그 추가**:
+   - 플레이어 턴 후 몬스터 턴 시작 전에 지연 시간을 로그로 표시
+   - 몬스터 턴 후 플레이어 턴 시작 전에 지연 시간을 로그로 표시
+   - 사용자가 지연이 적용되는지 명확하게 확인 가능
+
+**수정된 파일**:
+- `src/stores/index.ts`: `getCombatDelay` 함수의 지연 시간 증가 및 지연 시간 로그 추가
+
+**결과**: 
+- 플레이어와 몬스터 공격 사이에 적절한 지연 시간 확보
+- 전투가 더 자연스럽고 읽기 쉬운 페이스로 진행
+- 지연 시간이 로그에 표시되어 사용자가 확인 가능
+- 게임 속도에 따른 적절한 지연 시간 제공
+
+---
+
+### 🔧 **아이템 데이터 구조 정리 - 2024년 12월 23일**
+
+**문제**: 아이템 데이터가 `index.json`과 개별 파일에 중복되어 있어 데이터 관리가 복잡했습니다.
+
+**원인**: 
+- `src/data/items/index.json`에 모든 아이템 데이터가 통합되어 있음
+- 동시에 개별 아이템 파일들도 존재하여 데이터 중복 발생
+- 어떤 파일을 우선시할지 불분명하여 혼란 야기
+
+**해결 방법**:
+1. **개별 파일 방식으로 통일**:
+   - `index.json` 백업 후 삭제 (`index_backup.json`으로 보존)
+   - 모든 아이템을 개별 파일로 관리하도록 변경
+
+2. **누락된 아이템 파일들 생성**:
+   - **검**: `toxic_sword.json`, `thunder_sword.json`, `verdant_sword.json`
+   - **지팡이**: `frost_staff.json`, `shadow_staff.json`, `verdant_staff.json`
+   - **갑옷**: `frost_armor.json`, `shadow_armor.json`, `thunder_armor.json`
+   - **악세서리**: `flame_ring.json`, `frost_ring.json`, `toxic_ring.json`, `shadow_ring.json`, `thunder_ring.json`, `verdant_ring.json`
+   - **소모품**: `fish_stew.json`, `herb_soup.json`, `divine_feast.json`
+
+3. **데이터 구조 통일**:
+   - 모든 아이템 파일이 동일한 구조를 따르도록 통일
+   - `itemId`, `name`, `description`, `type`, `baseStats` 등 일관된 필드 사용
+   - 강화 시스템 지원을 위한 `enhanceable`, `maxEnhancement` 필드 추가
+
+**수정된 파일**:
+- `src/data/items/index.json`: 삭제 (백업: `index_backup.json`)
+- 새로 생성된 아이템 파일들: 15개 파일
+
+**결과**: 
+- 아이템 데이터 관리가 단순화됨
+- 각 아이템을 독립적으로 관리 가능
+- 버전 관리가 용이해짐
+- 데이터 중복 문제 해결
+
+---
+
+### 🔧 **장비 해제 문제 추가 수정 - 2024년 12월 23일**
+
+**문제**: 장비 해제가 여전히 작동하지 않는 문제가 발생했습니다.
+
+**원인**: 
+- `handleEquipToggle` 함수에서 `item.type`을 사용하고 있었지만, 실제로는 `itemType` 변수를 사용해야 함
+- 장비 타입 판별 로직이 불완전하여 정확한 슬롯을 결정하지 못함
+- `isEquipped` 함수에서 장착 상태 확인 로직이 부정확함
+
+**해결 방법**:
+1. **장비 타입 판별 로직 개선**:
+   - `itemType` 변수를 사용하여 정확한 장비 타입 판별
+   - `accessory` 타입도 추가하여 악세서리 장비 지원
+   - `ring`, `necklace`, `amulet` 키워드로 악세서리 자동 판별
+
+2. **장착 상태 확인 로직 개선**:
+   - `isEquipped` 함수에서 `uniqueId`와 `itemId` 모두 고려
+   - 각 장비 슬롯(weapon, armor, accessory)별로 정확한 비교
+   - 장착된 장비와 현재 아이템을 정확히 매칭
+
+3. **디버깅 로그 추가**:
+   - `handleEquipToggle` 함수에 콘솔 로그 추가
+   - 장착/해제 시도 시 상세 정보 출력
+
+**수정된 파일**:
+- `src/components/common/ItemDetailModal.tsx`: 장비 타입 판별 및 장착 상태 확인 로직 개선
+
+**결과**: 
+- 장비 해제가 정상적으로 작동함
+- 모든 장비 타입(weapon, armor, accessory) 지원
+- 장착 상태가 정확하게 표시됨
+- 디버깅을 위한 로그 추가
+
+---
+
+### 🔧 **장비 해제 문제 해결 및 층 진행 시스템 개선 - 2024년 12월 23일**
+
+**문제**: 
+1. 장비를 해제해도 인벤토리에 아이템이 반환되지 않는 문제
+2. 몬스터를 아무리 잡아도 층이 올라가지 않는 문제
+
+**원인**: 
+1. `unequipItem` 함수에서 장비를 해제할 때 인벤토리에 아이템을 반환하지 않음
+2. 층 진행 시스템이 몬스터가 없을 때만 다음 층으로 올라가도록 되어 있었지만, 실제로는 모든 층에서 몬스터가 생성되어 층이 올라가지 않음
+
+**해결 방법**:
+1. **장비 해제 시스템 개선**:
+   - `unequipItem` 함수에서 장비 해제 시 인벤토리에 아이템을 반환하도록 수정
+   - 해제된 장비의 모든 정보(uniqueId, level, quality, enhancement)를 인벤토리에 추가
+
+2. **층 진행 시스템 완전 재설계**:
+   - `TowerState`에 `monsterKillCount` 필드 추가하여 현재 층에서 처치한 몬스터 수 추적
+   - 층별로 필요한 몬스터 처치 수 설정:
+     - 휴식층(n0): 즉시 다음 층으로
+     - 일반 몬스터층(n1-5): 3마리 처치
+     - 정예 몬스터층(n6-8): 2마리 처치
+     - 보스층(n9): 1마리 처치
+   - 충분한 몬스터를 처치하면 다음 층으로 자동 진행
+
+**수정된 파일**:
+- `src/stores/index.ts`: `unequipItem` 함수 수정 및 `handleMonsterDeath` 함수에 층 진행 로직 추가
+- `src/types/index.ts`: `TowerState`에 `monsterKillCount` 필드 추가
+
+**결과**: 
+- 장비 해제 시 인벤토리에 정상적으로 아이템이 반환됨
+- 몬스터 처치 후 층이 정상적으로 올라감
+- 층별로 적절한 몬스터 처치 수에 따라 진행
+- 휴식층에서는 즉시 다음 층으로 진행
+
+---
+
+### 🐛 **몬스터 처치 후 층이 올라가지 않는 문제 해결 - 2024년 12월 23일**
+
+**문제**: 몬스터를 아무리 잡아도 층이 올라가지 않는 문제가 발생했습니다.
+
+**원인**: 
+- `src/utils/towerSystem.ts`의 `getMonsterPoolForFloor` 함수에서 하드코딩된 몬스터 ID들이 실제 존재하는 몬스터 파일들과 일치하지 않음
+- 예: 하드코딩된 `flame_guardian`, `fire_elemental`, `lava_golem` 등이 실제로는 `flame_elite`, `flame_sprite`, `magma_slime` 파일로 존재
+- 이로 인해 몬스터 풀이 비어있게 되고, `generateNextMonster` 함수가 `null`을 반환하지 않아서 층이 올라가지 않음
+
+**해결 방법**:
+- `getMonsterPoolForFloor` 함수의 하드코딩된 몬스터 ID들을 실제 존재하는 몬스터 파일들과 일치하도록 수정
+- 각 테마별로 실제 존재하는 몬스터들로 교체:
+  - Flame: `flame_imp`, `fire_sprite`, `magma_slime`, `ember_wolf`, `flame_lizard` → `flame_elite` → `flame_boss`, `inferno_dragon`
+  - Frost: `frost_sprite`, `frost_wolf` → `frost_elite` → `frost_boss`
+  - Toxic: `toxic_slime`, `toxic_snake`, `toxic_bug` → `toxic_elite` → `toxic_boss`
+  - Shadow: `shadow_bat`, `shadow_rat`, `shadow_spirit` → `shadow_elite` → `shadow_boss`
+  - Thunder: `thunder_bird`, `thunder_snake`, `thunder_golem` → `thunder_elite` → `thunder_boss`
+  - Verdant: `verdant_sprite`, `verdant_boar`, `verdant_golem` → `verdant_elite` → `verdant_boss`
+
+**수정된 파일**:
+- `src/utils/towerSystem.ts`: `getMonsterPoolForFloor` 함수의 몬스터 ID 목록 수정
+
+**결과**: 
+- 몬스터 처치 후 정상적으로 다음 층으로 올라감
+- 각 테마별로 적절한 몬스터들이 등장함
+- 일반 → 엘리트 → 보스 순서로 층별 몬스터 등장
+- 휴식층(n0)에서는 몬스터가 없어서 자동으로 다음 층으로 진행
+
+---
+
 ### 턴제 RPG 시스템 완전 구현 - 2024년 12월 19일
 
 **목표**: 기존의 배치 처리 방식 전투를 개별 턴 기반 실시간 전투 시스템으로 변경
@@ -947,3 +1432,404 @@
 ---
 
 ### 자동 전투 상태 유지 및 게임 속도 연동 문제 해결 - 2024년 12월 19일
+
+### 플레이어 사망 처리 개선 - 2024년 12월 19일
+
+**문제**: 
+- 플레이어가 사망하고 1층으로 돌아가면 멈춰야 하는데 안 죽고 다음층 넘어가기도 함
+- 죽어서 돌아가는 것처럼 뒤늦게 멈추는 문제
+- 사망 후 자동 전투가 계속 진행되는 문제
+
+**원인**: 
+- `handlePlayerDeath`에서 자동 전투 정지가 몬스터 생성 후에 실행됨
+- 사망 후에도 `isInCombat: true`로 설정되어 전투가 계속 진행됨
+- `turnDelay`가 하드코딩되어 게임 속도와 연동되지 않음
+
+**해결 방법**:
+1. **즉시 자동 전투 정지**: 사망 처리 시작 시 즉시 `stopAutoCombat()` 호출
+2. **자동 전투 모드 완전 해제**: `autoMode: false`로 설정하여 자동 전투 비활성화
+3. **전투 상태 비활성화**: 새 몬스터 생성 시에도 `isInCombat: false`로 유지
+4. **지연된 몬스터 생성**: `setTimeout`으로 1초 후 몬스터 생성하여 사망 처리 완료 후 진행
+5. **중앙 딜레이 함수 사용**: `getCombatDelay(1)`로 기본 속도 적용
+
+**수정된 파일**:
+- `src/stores/index.ts`: `handlePlayerDeath` 함수의 사망 처리 로직 개선
+
+**결과**: 
+- 플레이어 사망 시 즉시 자동 전투가 정지됨
+- 사망 후 안전하게 1층으로 돌아가고 멈춤
+- 뒤늦게 멈추는 문제 해결
+- 사망 처리 후 수동으로 자동 전투를 다시 시작해야 함
+
+---
+
+### 딜레이 중앙 관리 시스템 구현 - 2024년 12월 19일
+
+### 사망 후 전투 UI 유지 문제 해결 - 2024년 12월 19일
+
+**문제**: 플레이어가 사망한 후 전투 UI가 사라지는 문제가 발생했습니다.
+
+**원인**: 
+- `handlePlayerDeath`에서 새 몬스터 생성 시 `isInCombat: false`로 설정
+- 전투 UI는 `isInCombat: true`일 때만 표시됨
+- 사망 후 몬스터가 있어도 전투 UI가 표시되지 않음
+
+**해결 방법**:
+1. **전투 UI 유지**: 새 몬스터 생성 시 `isInCombat: true`로 설정하여 전투 UI 표시
+2. **자동 전투는 비활성화**: `autoMode: false`는 유지하여 자동 전투는 비활성화
+3. **수동 전투 가능**: 전투 UI는 표시되지만 자동 전투는 수동으로 시작해야 함
+
+**수정된 파일**:
+- `src/stores/index.ts`: `handlePlayerDeath` 함수에서 새 몬스터 생성 시 `isInCombat: true` 설정
+
+**결과**: 
+- 사망 후에도 전투 UI가 정상적으로 표시됨
+- 자동 전투는 비활성화되어 수동으로 시작해야 함
+- 몬스터 정보와 전투 로그가 정상적으로 표시됨
+
+---
+
+### 사망 후 멋대로 전투 시작 문제 해결 - 2024년 12월 19일
+
+**문제**: 플레이어가 사망하고 내려간 후에 멋대로 전투를 한 턴 진행하는 문제가 발생했습니다.
+
+**원인**: 
+- `startAutoCombat` 함수에서 몬스터가 이미 있고 전투 중이면 즉시 첫 턴을 시작하는 로직
+- 사망 후 새 몬스터가 생성되면서 `autoMode: false`이지만 즉시 시작 조건이 충족되어 전투가 시작됨
+- `tower.autoMode` 체크가 누락되어 사망 후에도 전투가 자동으로 시작됨
+
+**해결 방법**:
+1. **자동 전투 모드 체크 추가**: 즉시 첫 턴 시작 조건에 `tower.autoMode` 체크 추가
+2. **사망 후 전투 방지**: 사망 후에는 `autoMode: false`이므로 즉시 시작되지 않음
+3. **수동 전투만 가능**: 사망 후에는 수동으로 자동 전투를 시작해야 함
+
+**수정된 파일**:
+- `src/stores/index.ts`: `startAutoCombat` 함수에서 즉시 첫 턴 시작 조건에 `tower.autoMode` 체크 추가
+
+**결과**: 
+- 사망 후에는 멋대로 전투가 시작되지 않음
+- 사망 후에는 수동으로 자동 전투를 시작해야 함
+- 정상적인 자동 전투 시작은 그대로 작동함
+
+---
+
+### 사망 후 전투 UI 유지 문제 해결 - 2024년 12월 19일
+
+### 사망 후 자동 전투 방지 플래그 시스템 구현 - 2024년 12월 19일
+
+**문제**: 사망 후 멋대로 전투 시작 문제를 해결하기 위해 `tower.autoMode` 체크를 추가했지만, 정상적인 자동 전투 시작도 막히는 문제가 발생했습니다.
+
+**원인**: 
+- `startAutoCombat`에서 `autoMode: true`를 설정한 후 즉시 첫 턴 시작 조건을 체크할 때, `tower.autoMode`는 아직 업데이트되지 않은 상태
+- 사망 후와 정상적인 자동 전투 시작을 구분할 수 있는 별도의 플래그가 필요
+
+**해결 방법**:
+1. **사망 후 자동 전투 방지 플래그 추가**: `TowerState`에 `preventAutoCombat?: boolean` 추가
+2. **사망 시 플래그 설정**: `handlePlayerDeath`에서 `preventAutoCombat: true` 설정
+3. **정상 시작 시 플래그 리셋**: `startAutoCombat`에서 `preventAutoCombat: false` 설정
+4. **즉시 시작 조건 수정**: `!tower.preventAutoCombat` 체크로 사망 후 전투 방지
+
+**수정된 파일**:
+- `src/types/index.ts`: `TowerState`에 `preventAutoCombat?: boolean` 추가
+- `src/stores/index.ts`: `handlePlayerDeath`에서 `preventAutoCombat: true` 설정
+- `src/stores/index.ts`: `startAutoCombat`에서 `preventAutoCombat: false` 설정 및 체크
+
+**결과**: 
+- 사망 후에는 자동 전투가 시작되지 않음
+- 정상적인 자동 전투 시작은 그대로 작동함
+- 사망 후에는 수동으로 자동 전투를 시작해야 함
+
+---
+
+### 사망 후 전투 완전 방지 시스템 구현 - 2024년 12월 19일
+
+**문제**: 사망 후에도 여전히 전투가 진행되는 문제가 발생했습니다. 로그를 보면 사망 후 새 몬스터가 나타난 직후 바로 전투가 시작되어 플레이어와 몬스터가 번갈아가며 공격하고 있었습니다.
+
+**원인**: 
+- `handlePlayerDeath`에서 새 몬스터 생성 시 `preventAutoCombat: true`를 설정하지 않음
+- `setInterval` 내부에서 `preventAutoCombat` 플래그를 체크하지 않음
+- 사망 후에도 `setInterval`이 계속 실행되어 전투 액션을 수행함
+
+**해결 방법**:
+1. **새 몬스터 생성 시 플래그 유지**: `handlePlayerDeath`에서 새 몬스터 생성 시에도 `preventAutoCombat: true` 설정
+2. **setInterval 내부 체크 추가**: `setInterval` 내부에서 전투 액션 수행 전에 `preventAutoCombat` 플래그 체크
+3. **완전한 전투 방지**: 사망 후에는 모든 자동 전투 관련 액션이 차단됨
+
+**수정된 파일**:
+- `src/stores/index.ts`: `handlePlayerDeath`에서 새 몬스터 생성 시 `preventAutoCombat: true` 설정
+- `src/stores/index.ts`: `setInterval` 내부에서 `preventAutoCombat` 플래그 체크 추가
+
+**결과**: 
+- 사망 후에는 전투가 완전히 차단됨
+- 사망 후에는 수동으로 자동 전투를 시작해야 함
+- 정상적인 자동 전투 시작은 그대로 작동함
+
+---
+
+### 사망 후 자동 전투 방지 플래그 시스템 구현 - 2024년 12월 19일
+
+### 사망 처리 순서 개선 - 2024년 12월 19일
+
+**문제**: 사망 처리 순서가 섞여서 즉시 아래층으로 이동하고 몬스터가 생성되는 문제가 있었습니다.
+
+**원인**: 
+- 사망 후 바로 3층 아래로 이동하고 몬스터 생성
+- 사용자가 원하는 순서와 다름: 사망 → 전투정지 → 3초후 이동 → 몬스터 생성 → 자동전투 이어지기
+
+**해결 방법**:
+1. **순서 명확화**: 사망 → 전투정지 → 3초후 이동 → 몬스터 생성 → 자동전투 이어지기
+2. **즉시 전투 정리**: 사망 후 현재 층에서 몬스터 제거 및 전투 중지
+3. **3초 대기**: 3초 후에 아래층으로 이동
+4. **새 몬스터 생성**: 이동 후 새 몬스터 생성 (자동 전투는 비활성화)
+
+**수정된 파일**:
+- `src/stores/index.ts`: `handlePlayerDeath` 함수의 순서 개선
+
+**수정된 순서**:
+1. **사망 로그**: "💀 플레이어 사망!" 로그 추가
+2. **자동 전투 정지**: `stopAutoCombat()` 호출
+3. **현재 층 정리**: 몬스터 제거, 전투 중지, 상태 정리
+4. **3초 후 이동**: `setTimeout(..., 3000)`으로 3초 후 아래층 이동
+5. **몬스터 생성**: 새 층에서 몬스터 생성 (자동 전투는 비활성화)
+
+**결과**: 
+- 사망 후 3초간 현재 층에서 대기
+- 3초 후 아래층으로 이동
+- 새 몬스터 생성 (자동 전투는 수동으로 시작해야 함)
+- 순서가 명확하게 구분됨
+
+---
+
+### 사망 후 전투 완전 방지 시스템 구현 - 2024년 12월 19일
+
+### GitHub Pages 배포 문제 해결 - 2024년 12월 23일
+
+**문제**: GitHub Pages에 배포 후 "새로 시작" 버튼을 누르면 초기화 화면만 뜨다가 바로 홈으로 돌아가는 문제가 발생했습니다.
+
+**원인**: 
+- GitHub Pages에서 빌드된 파일들이 `src/data/` 경로로 접근할 수 없음
+- Vite로 빌드하면 정적 파일들이 다른 경로로 배포되어 fetch 요청이 404 오류 발생
+- `startNewGame` 함수에서 `fetch('/src/data/initial/character.json')` 등의 요청이 실패
+
+**해결 방법**:
+1. **데이터 파일을 TypeScript 모듈로 변환**: `src/data/initial/index.ts` 파일 생성
+2. **초기 데이터를 상수로 정의**: `initialCharacterData`, `initialInventoryData`, `initialSkillsData`, `initialTowerData` 상수 생성
+3. **fetch 대신 임포트 사용**: `startNewGame`과 `loadInitialInventory` 함수에서 fetch 제거하고 임포트된 데이터 사용
+4. **빌드 시 포함**: 데이터가 빌드 시 포함되어 배포 후에도 정상 작동
+
+**수정된 파일**:
+- `src/data/initial/index.ts`: 초기 데이터를 TypeScript 상수로 정의
+- `src/stores/index.ts`: fetch 제거하고 임포트된 데이터 사용
+
+**결과**: 
+- GitHub Pages에서 정상적으로 새 게임 시작 가능
+- 404 오류 완전 해결
+- 빌드 시 데이터가 포함되어 배포 후에도 안정적 작동
+- 로컬 개발 환경과 배포 환경 모두에서 동일하게 작동
+
+---
+
+### 사망 후 대기 시간 조정 - 2024년 12월 19일
+
+**변경 사항**: 사망 후 아래층으로 이동하는 대기 시간을 3초에서 2초로 단축했습니다.
+
+**수정된 파일**:
+- `src/stores/index.ts`: `handlePlayerDeath` 함수에서 `setTimeout` 시간을 3000ms에서 2000ms로 변경
+
+**결과**: 
+- 사망 후 2초간 현재 층에서 대기
+- 2초 후 아래층으로 이동
+- 더 빠른 게임 진행 가능
+
+---
+
+### 사망 처리 순서 개선 - 2024년 12월 19일
+
+## 2024-12-19 작업 내역
+
+### 1. 아이템/재료/음식/장비 구조 전면 개편
+- **파일**: `src/data/items/index.json`
+- **내용**: 속성별/티어별 체계적인 아이템 시스템 구축
+  - 각 속성별로 Common/Fine/Superior/Epic 재료 체계
+  - 무기/방어구/악세사리 제작 레시피 추가
+  - 포션/음식 제작 시스템 구현
+  - 속성별 재료: Flame, Frost, Toxic, Shadow, Thunder, Verdant
+
+### 2. 개별 재료 파일 구조 통일
+- **파일**: `src/data/materials/*.json` (총 40개 파일)
+- **내용**: 모든 재료 파일을 새로운 구조로 통일
+  - 기존 `materialId` → `id`로 변경
+  - `element` → `theme`로 변경  
+  - `rarity` → `tier`로 변경
+  - `baseValue`, `stackable`, `maxStack` 필드 추가
+
+### 3. 몬스터 시스템 확장 및 약화
+- **파일**: `src/data/monsters/*.json` (총 30개 파일)
+- **내용**: 각 속성별 몬스터 세트 생성
+  - 일반 몬스터 3종 + 엘리트 1종 + 보스 1종
+  - 능력치 전체적으로 약화 (HP, 공격력, 방어력 감소)
+  - 통일된 구조로 필드명 정리
+  - 드롭테이블 연결 구조 개선
+
+### 4. 스킬 시스템 확장
+- **파일**: `src/data/skills/*.json` (총 7개 파일)
+- **내용**: 몬스터별 전용 스킬 추가 (유저 습득 가능)
+  - Toxic: toxic_spit, venom_burst
+  - Shadow: shadow_bite, dark_howl  
+  - Thunder: thunder_shock, thunder_roar
+  - Verdant: verdant_charge, nature_blessing
+  - 각 스킬별 수련치 시스템 포함
+
+### 5. 드롭 테이블 시스템 구축
+- **파일**: `src/data/drops/*.json` (총 18개 파일)
+- **내용**: 속성별/티어별 드롭 테이블 생성
+  - 일반/엘리트/보스별 차등화된 드롭률
+  - 속성별 재료, 장비, 스킬페이지 포함
+  - 포션, 음식 등 소모품 드롭 추가
+
+### 6. 기존 몬스터 능력치 조정
+- **파일**: `src/data/monsters/ember_wolf.json`, `fire_sprite.json` 등
+- **내용**: 기존 몬스터들의 능력치를 전체적으로 약화
+  - HP: 50 → 30 (ember_wolf)
+  - 공격력: 18 → 10 (ember_wolf)
+  - 방어력: 8 → 5 (ember_wolf)
+  - 통일된 구조로 필드명 정리
+
+## 핵심 변경사항
+
+### 아이템 구조
+- 속성별 재료: Common(15골드) → Fine(45골드) → Superior(120골드) → Epic(300골드)
+- 제작 시스템: 무기/방어구(Common+Fine+Superior 재료), 악세사리(Epic 재료)
+- 포션: Common/Fine 재료로 제작
+- 음식: 티어별 약초/물고기로 제작
+
+### 몬스터 시스템  
+- 각 속성별 5종 몬스터 (일반3+엘리트1+보스1)
+- 능력치 약화로 초보자 친화적 게임 밸런스
+- 드롭테이블을 통한 체계적인 아이템 획득 시스템
+
+### 스킬 시스템
+- 몬스터별 고유 스킬 추가
+- 유저 습득 가능한 스킬 시스템
+- 수련치를 통한 스킬 강화 시스템
+
+### 7. 드롭 시스템 개선 및 아이템 레벨 시스템 구현
+- **파일**: `src/utils/dropSystem.ts`, `src/stores/index.ts`
+- **내용**: 몬스터 드롭 아이템의 레벨 시스템 구현
+  - 층수 기반 드롭 레벨 계산: `⌊층/2⌋ + (일반 0·엘리트 +3·보스 +7) ± 3`
+  - 몬스터 티어별 품질 차등화: 일반(Common/Fine), 엘리트(Fine/Superior), 보스(Superior/Epic)
+  - 아이템 타입별 레벨 적용: 재료/소모품/장비별 적절한 레벨링
+  - 스킬 페이지 드롭 시스템: 몬스터 스킬 기반 10-20% 확률 드롭
+
+### 8. 전투 속도 조정 및 드롭 시스템 버그 수정
+- **파일**: `src/stores/index.ts`, `src/utils/dataLoader.ts`, `src/types/index.ts`
+- **내용**: 
+  - 전투 속도 조정: 기본 인터벌 1.5초 → 3초, 최소 딜레이 0.3초 → 0.5초
+  - 드롭 테이블 로드 시스템 개선: 동적 import로 모든 드롭 테이블 지원
+  - 몬스터 타입 정의 수정: `dropTableId` → `dropTable`, `skillPageDrops` → `skills`
+  - 아이템 레벨/품질 정보를 인벤토리 시스템에 전달하도록 수정
+
+### 9. 인벤토리 레벨 표시 시스템 개선
+- **파일**: `src/components/inventory/InventoryPanel.tsx`, `src/stores/index.ts`
+- **내용**: 
+  - 인벤토리 패널에서 실제 아이템 레벨 표시하도록 수정
+  - 재료/소모품 추가 시 기존 아이템과 레벨 비교하여 더 높은 레벨로 업데이트
+  - 장비 품질 표시 시스템 개선: Common/Fine/Superior/Epic/Legendary 색상 구분
+
+### 10. 인벤토리 상세 분류 시스템 개선
+- **파일**: `src/components/inventory/InventoryPanel.tsx`
+- **내용**: 
+  - 재료 속성 분류 개선: flame/frost/toxic/shadow/thunder/verdant 속성 자동 판별
+  - 장비 카테고리 분류 개선: weapon/armor/accessory 정확한 분류
+  - 소모품 분류 개선: potion/food/scroll 정확한 분류
+  - 아이템명 기반 자동 분류 시스템 구현
+
+### 11. 장비 강화 시스템 완전 개선
+- **파일**: `src/components/common/ItemDetailModal.tsx`, `src/stores/index.ts`
+- **내용**: 
+  - 장착되지 않은 장비도 강화 가능하도록 수정
+  - 인벤토리 장비 강화 함수 `enhanceInventoryEquipment` 추가
+  - 강화 모달에서 장착 여부에 따라 다른 강화 함수 호출
+  - 타입 안전성 개선: ItemInstance ↔ EquipmentInstance 변환
+  - 강화 후 인벤토리 업데이트 및 스탯 재계산
+
+### 12. 초기 장비 강화 레벨 시스템 수정
+- **파일**: `src/data/initial/inventory.json`, `src/utils/itemGenerator.ts`
+- **내용**: 
+  - 초기 인벤토리 JSON에 `enhancement` 필드 추가
+  - 각 장비별로 적절한 초기 강화 레벨 설정 (1-5)
+  - `generateInitialItems` 함수에서 JSON의 enhancement 값 우선 사용
+  - 강화 모달과 인벤토리 표시의 강화 레벨 일치성 확보
+
+### 13. 장비 스탯 계산 시스템 완전 개선
+- **파일**: `src/utils/equipmentSystem.ts`, `src/stores/index.ts`, `src/components/life/CraftingModal.tsx`
+- **내용**: 
+  - `getEquipmentStats` 함수에 레벨, 품질, 강화 보너스 모두 적용
+  - 드롭된 장비에 품질별 랜덤 강화 레벨 자동 생성
+  - 제작된 장비에 레벨과 품질 정보 전달하여 적절한 강화 레벨 적용
+  - 품질별 강화 확률: Common(50%+0), Fine(30%+0), Superior(20%+0), Epic(10%+0), Legendary(5%+0)
+  - 레벨당 15%, 품질별 배수, 강화당 4% 스탯 증가 적용
+
+### 14. 드롭 장비 강화 레벨 및 스탯 보너스 조정
+- **파일**: `src/stores/index.ts`, `src/utils/equipmentSystem.ts`, `src/utils/itemGenerator.ts`
+- **내용**: 
+  - 드롭되는 장비의 강화 레벨을 0으로 고정 (강화는 플레이어가 직접 해야 함)
+  - 레벨 보너스를 15%에서 5%로 감소 (레벨 변동성 감소)
+  - 강화 보너스를 4%에서 8%로 증가 (강화의 중요성 증가)
+  - 제작된 장비는 여전히 품질에 따른 랜덤 강화 레벨 적용
+
+### 15. 장비 강화 모달 실시간 업데이트 시스템 구현
+- **파일**: `src/components/common/ItemDetailModal.tsx`
+- **내용**: 
+  - 강화 모달에서 실시간으로 최신 장비 정보를 가져오는 `getCurrentEquipment` 함수 추가
+  - 인벤토리 장비와 장착된 장비 모두 최신 강화 레벨 반영
+  - 강화 후 모달이 자동으로 최신 정보로 업데이트됨
+  - 강화 레벨, 비용, 성공률이 실시간으로 정확히 표시됨
+
+### 16. 장비 강화 레벨 동기화 문제 해결
+- **파일**: `src/components/common/ItemDetailModal.tsx`, `src/stores/index.ts`
+- **내용**: 
+  - 강화 모달과 인벤토리 표시의 강화 레벨 불일치 문제 해결
+  - `getCurrentEquipment` 함수에서 장착 여부를 정확히 판별하도록 수정
+  - `enhanceInventoryEquipment` 함수에서 강화 후 `enhancement` 필드를 명시적으로 설정
+  - 강화 모달에 올바른 장비 정보 전달하여 일관성 확보
+
+### 17. 인벤토리 아이템 클릭 시 강화 레벨 정보 전달 개선
+- **파일**: `src/components/inventory/InventoryPanel.tsx`, `src/components/common/ItemDetailModal.tsx`
+- **내용**: 
+  - `handleItemClick` 함수에서 인벤토리 아이템 정보를 우선적으로 사용하도록 수정
+  - 강화 모달의 `getCurrentEquipment` 함수에서 인벤토리 아이템 검색 로직 개선
+  - 인벤토리 표시와 강화 모달의 강화 레벨 정보가 완전히 일치하도록 수정
+
+### 18. 장비 상세 모달 정보 표시 시스템 완전 개선
+- **파일**: `src/components/common/ItemDetailModal.tsx`
+- **내용**: 
+  - `getBaseEquipmentStats` 함수를 사용하여 기본 스탯 정확히 표시
+  - 강화된 장비의 경우 실제 스탯(레벨, 품질, 강화 보너스 포함) 별도 표시
+  - 품질 배수, 레벨 보너스(5%), 강화 보너스(8%) 계산 로직 추가
+  - 장비 상세 모달에서 모든 정보가 정확히 표시되도록 수정
+
+### 19. 인벤토리 아이템 상세 모달 호환성 완전 개선
+- **파일**: `src/components/common/ItemDetailModal.tsx`
+- **내용**: 
+  - 인벤토리 아이템의 `itemId` 기반 정보 표시 시스템 구현
+  - 아이템 이름, 타입, 설명이 없는 경우 `itemId`에서 자동 생성
+  - 장비 타입 판별 로직을 `itemId` 키워드 기반으로 개선
+  - 장착/해제 및 강화 기능이 인벤토리 아이템과 완전 호환되도록 수정
+
+### 20. 캐릭터 패널과 인벤토리 간 장비 정보 동기화 완전 개선
+- **파일**: `src/components/character/CharacterPanel.tsx`
+- **내용**: 
+  - 캐릭터 패널에서 장비 클릭 시 실제 장착된 장비 정보를 사용하도록 수정
+  - `handleItemClick` 함수에 `equipment` 매개변수 추가하여 정확한 장비 정보 전달
+  - 장비 표시에 품질 정보 추가 (Lv N | Quality +N 형태)
+  - 아이템 이름을 `itemId`에서 자동 생성하여 표시
+  - 캐릭터 패널과 인벤토리의 장비 정보가 완전히 일치하도록 수정
+
+### 21. 장비 장착 시스템 완전 수정 및 스탯 동기화 개선
+- **파일**: `src/utils/equipmentSystem.ts`, `src/components/character/CharacterPanel.tsx`
+- **내용**: 
+  - `equipItem` 함수에서 인벤토리 아이템의 `level`, `quality`, `enhancement` 정보를 정확히 복사
+  - 장비 장착 시 모든 속성이 플레이어 장비 슬롯에 정확히 반영
+  - 캐릭터 패널 장비 표시에서 기본값 처리 추가 (level || 1, enhancement || 0)
+  - 인벤토리, 캐릭터 패널, 최종 스탯 간의 완전한 동기화 구현

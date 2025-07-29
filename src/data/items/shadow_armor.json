@@ -1,0 +1,26 @@
+{
+  "itemId": "shadow_armor",
+  "name": "암흑 갑옷",
+  "description": "암흑 저항력을 지닌 갑옷",
+  "type": "armor",
+  "subtype": "chest",
+  "element": "shadow",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalDefense": 15,
+    "magicalDefense": 12,
+    "maxHp": 60,
+    "shadowResistance": 20
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 45,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "materials": [
+    { "materialId": "shadow_ore", "quantity": 3 },
+    { "materialId": "leather", "quantity": 2 }
+  ]
+} 

@@ -1,0 +1,25 @@
+{
+  "itemId": "verdant_staff",
+  "name": "자연 지팡이",
+  "description": "자연 마법을 증폭시키는 지팡이",
+  "type": "weapon",
+  "subtype": "staff",
+  "element": "verdant",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalAttack": 5,
+    "magicalAttack": 35,
+    "verdantAttack": 30
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 50,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "materials": [
+    { "materialId": "verdant_crystal", "quantity": 2 },
+    { "materialId": "wood", "quantity": 3 }
+  ]
+} 

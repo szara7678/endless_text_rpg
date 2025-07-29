@@ -3,32 +3,8 @@ import { Monster, Skill } from '../types'
 // 몬스터 데이터 로딩
 export async function loadMonster(monsterId: string): Promise<Monster | null> {
   try {
-    let monsterData: any
-    
-    switch (monsterId) {
-      case 'flame_imp':
-        monsterData = (await import('../data/monsters/flame_imp.json')).default
-        break
-      case 'frost_wolf':
-        monsterData = (await import('../data/monsters/frost_wolf.json')).default
-        break
-      case 'fire_sprite':
-        monsterData = (await import('../data/monsters/fire_sprite.json')).default
-        break
-      case 'ember_wolf':
-        monsterData = (await import('../data/monsters/ember_wolf.json')).default
-        break
-      case 'magma_slime':
-        monsterData = (await import('../data/monsters/magma_slime.json')).default
-        break
-      case 'inferno_dragon':
-        monsterData = (await import('../data/monsters/inferno_dragon.json')).default
-        break
-      default:
-        console.warn(`알 수 없는 몬스터: ${monsterId}`)
-        return null
-    }
-    
+    // 동적 import를 사용하여 모든 몬스터 지원
+    const monsterData = (await import(`../data/monsters/${monsterId}.json`)).default
     return monsterData as Monster
   } catch (error) {
     console.warn(`몬스터 ${monsterId} 로드 실패:`, error)
@@ -69,17 +45,8 @@ export async function loadSkill(skillId: string): Promise<Skill | null> {
 // 드롭 테이블 로딩
 export async function loadDropTable(dropTableId: string): Promise<any | null> {
   try {
-    let dropData: any
-    
-    switch (dropTableId) {
-      case 'flame_normal':
-        dropData = (await import('../data/drops/flame_normal.json')).default
-        break
-      default:
-        console.warn(`알 수 없는 드롭 테이블: ${dropTableId}`)
-        return null
-    }
-    
+    // 동적 import를 사용하여 모든 드롭 테이블 지원
+    const dropData = (await import(`../data/drops/${dropTableId}.json`)).default
     return dropData
   } catch (error) {
     console.warn(`드롭 테이블 ${dropTableId} 로드 실패:`, error)

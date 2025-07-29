@@ -1,0 +1,25 @@
+{
+  "itemId": "frost_staff",
+  "name": "빙결 지팡이",
+  "description": "빙결 마법을 증폭시키는 지팡이",
+  "type": "weapon",
+  "subtype": "staff",
+  "element": "frost",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalAttack": 5,
+    "magicalAttack": 35,
+    "frostAttack": 30
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 50,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "materials": [
+    { "materialId": "frost_crystal", "quantity": 2 },
+    { "materialId": "wood", "quantity": 3 }
+  ]
+} 

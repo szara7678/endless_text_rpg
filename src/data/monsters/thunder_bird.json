@@ -1,0 +1,18 @@
+{
+  "id": "thunder_bird",
+  "name": "썬더 버드",
+  "description": "전기를 두른 새.",
+  "level": 1,
+  "hp": 23,
+  "maxHp": 23,
+  "attack": 8,
+  "defense": 3,
+  "speed": 24,
+  "theme": "Thunder",
+  "tier": "normal",
+  "dropTable": "thunder_normal",
+  "xpReward": 2,
+  "goldReward": 5,
+  "skills": ["thunder_shock"],
+  "traits": ["thunder_resistance"]
+} 

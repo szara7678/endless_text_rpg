@@ -1,0 +1,1097 @@
+{
+  "materials": {
+    "flame_ore": {
+      "id": "flame_ore",
+      "name": "화염석",
+      "description": "뜨거운 열기를 내뿜는 붉은 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Flame",
+      "tier": "Common",
+      "baseValue": 15
+    },
+    "flame_crystal": {
+      "id": "flame_crystal",
+      "name": "화염 수정",
+      "description": "영원히 타오르는 화염이 담긴 수정",
+      "type": "material",
+      "category": "crystal",
+      "theme": "Flame",
+      "tier": "Fine",
+      "baseValue": 45
+    },
+    "flame_essence": {
+      "id": "flame_essence",
+      "name": "화염 정수",
+      "description": "정제된 화염의 순수한 에너지",
+      "type": "material",
+      "category": "essence",
+      "theme": "Flame",
+      "tier": "Superior",
+      "baseValue": 120
+    },
+    "flame_gem": {
+      "id": "flame_gem",
+      "name": "화염 보석",
+      "description": "강력한 화염의 힘이 깃든 보석",
+      "type": "material",
+      "category": "gem",
+      "theme": "Flame",
+      "tier": "Epic",
+      "baseValue": 300
+    },
+    "frost_ore": {
+      "id": "frost_ore",
+      "name": "빙결석",
+      "description": "차가운 얼음이 깃든 푸른 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Frost",
+      "tier": "Common",
+      "baseValue": 15
+    },
+    "frost_crystal": {
+      "id": "frost_crystal",
+      "name": "빙결 수정",
+      "description": "영원히 얼어있는 얼음이 담긴 수정",
+      "type": "material",
+      "category": "crystal",
+      "theme": "Frost",
+      "tier": "Fine",
+      "baseValue": 45
+    },
+    "frost_essence": {
+      "id": "frost_essence",
+      "name": "빙결 정수",
+      "description": "정제된 얼음의 순수한 에너지",
+      "type": "material",
+      "category": "essence",
+      "theme": "Frost",
+      "tier": "Superior",
+      "baseValue": 120
+    },
+    "frost_gem": {
+      "id": "frost_gem",
+      "name": "빙결 보석",
+      "description": "강력한 얼음의 힘이 깃든 보석",
+      "type": "material",
+      "category": "gem",
+      "theme": "Frost",
+      "tier": "Epic",
+      "baseValue": 300
+    },
+    "toxic_ore": {
+      "id": "toxic_ore",
+      "name": "독성석",
+      "description": "독성을 머금은 녹색 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Toxic",
+      "tier": "Common",
+      "baseValue": 15
+    },
+    "toxic_crystal": {
+      "id": "toxic_crystal",
+      "name": "독성 수정",
+      "description": "독성을 머금은 녹색 수정",
+      "type": "material",
+      "category": "crystal",
+      "theme": "Toxic",
+      "tier": "Fine",
+      "baseValue": 45
+    },
+    "toxic_essence": {
+      "id": "toxic_essence",
+      "name": "독성 정수",
+      "description": "정제된 독성의 순수한 에너지",
+      "type": "material",
+      "category": "essence",
+      "theme": "Toxic",
+      "tier": "Superior",
+      "baseValue": 120
+    },
+    "toxic_gem": {
+      "id": "toxic_gem",
+      "name": "독성 보석",
+      "description": "강력한 독성의 힘이 깃든 보석",
+      "type": "material",
+      "category": "gem",
+      "theme": "Toxic",
+      "tier": "Epic",
+      "baseValue": 300
+    },
+    "shadow_ore": {
+      "id": "shadow_ore",
+      "name": "암흑석",
+      "description": "어둠의 힘이 깃든 검은 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Shadow",
+      "tier": "Common",
+      "baseValue": 15
+    },
+    "shadow_crystal": {
+      "id": "shadow_crystal",
+      "name": "암흑 수정",
+      "description": "어둠의 힘이 깃든 검은 수정",
+      "type": "material",
+      "category": "crystal",
+      "theme": "Shadow",
+      "tier": "Fine",
+      "baseValue": 45
+    },
+    "shadow_essence": {
+      "id": "shadow_essence",
+      "name": "암흑 정수",
+      "description": "정제된 어둠의 순수한 에너지",
+      "type": "material",
+      "category": "essence",
+      "theme": "Shadow",
+      "tier": "Superior",
+      "baseValue": 120
+    },
+    "shadow_gem": {
+      "id": "shadow_gem",
+      "name": "암흑 보석",
+      "description": "강력한 어둠의 힘이 깃든 보석",
+      "type": "material",
+      "category": "gem",
+      "theme": "Shadow",
+      "tier": "Epic",
+      "baseValue": 300
+    },
+    "thunder_ore": {
+      "id": "thunder_ore",
+      "name": "번개석",
+      "description": "전기를 머금은 노란 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Thunder",
+      "tier": "Common",
+      "baseValue": 15
+    },
+    "thunder_crystal": {
+      "id": "thunder_crystal",
+      "name": "번개 수정",
+      "description": "전기를 머금은 노란 수정",
+      "type": "material",
+      "category": "crystal",
+      "theme": "Thunder",
+      "tier": "Fine",
+      "baseValue": 45
+    },
+    "thunder_essence": {
+      "id": "thunder_essence",
+      "name": "번개 정수",
+      "description": "정제된 번개의 순수한 에너지",
+      "type": "material",
+      "category": "essence",
+      "theme": "Thunder",
+      "tier": "Superior",
+      "baseValue": 120
+    },
+    "thunder_gem": {
+      "id": "thunder_gem",
+      "name": "번개 보석",
+      "description": "강력한 번개의 힘이 깃든 보석",
+      "type": "material",
+      "category": "gem",
+      "theme": "Thunder",
+      "tier": "Epic",
+      "baseValue": 300
+    },
+    "verdant_ore": {
+      "id": "verdant_ore",
+      "name": "자연석",
+      "description": "자연의 힘이 깃든 초록 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Verdant",
+      "tier": "Common",
+      "baseValue": 15
+    },
+    "verdant_crystal": {
+      "id": "verdant_crystal",
+      "name": "자연 수정",
+      "description": "자연의 힘이 깃든 초록 수정",
+      "type": "material",
+      "category": "crystal",
+      "theme": "Verdant",
+      "tier": "Fine",
+      "baseValue": 45
+    },
+    "verdant_essence": {
+      "id": "verdant_essence",
+      "name": "자연 정수",
+      "description": "정제된 자연의 순수한 에너지",
+      "type": "material",
+      "category": "essence",
+      "theme": "Verdant",
+      "tier": "Superior",
+      "baseValue": 120
+    },
+    "verdant_gem": {
+      "id": "verdant_gem",
+      "name": "자연 보석",
+      "description": "강력한 자연의 힘이 깃든 보석",
+      "type": "material",
+      "category": "gem",
+      "theme": "Verdant",
+      "tier": "Epic",
+      "baseValue": 300
+    },
+    "iron_ore": {
+      "id": "iron_ore",
+      "name": "철 광석",
+      "description": "기본적인 철 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 10
+    },
+    "steel_ore": {
+      "id": "steel_ore",
+      "name": "강철 광석",
+      "description": "정제된 강철 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Physical",
+      "tier": "Fine",
+      "baseValue": 30
+    },
+    "mithril_ore": {
+      "id": "mithril_ore",
+      "name": "미스릴 광석",
+      "description": "희귀한 미스릴 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Physical",
+      "tier": "Superior",
+      "baseValue": 80
+    },
+    "dragon_ore": {
+      "id": "dragon_ore",
+      "name": "드래곤 광석",
+      "description": "전설적인 드래곤 광석",
+      "type": "material",
+      "category": "ore",
+      "theme": "Physical",
+      "tier": "Epic",
+      "baseValue": 200
+    },
+    "red_herb": {
+      "id": "red_herb",
+      "name": "빨간 약초",
+      "description": "체력 회복에 효과적인 빨간 약초",
+      "type": "material",
+      "category": "herb",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 8
+    },
+    "blue_herb": {
+      "id": "blue_herb",
+      "name": "파란 약초",
+      "description": "마나 회복에 효과적인 파란 약초",
+      "type": "material",
+      "category": "herb",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 8
+    },
+    "green_herb": {
+      "id": "green_herb",
+      "name": "초록 약초",
+      "description": "독성 해독에 효과적인 초록 약초",
+      "type": "material",
+      "category": "herb",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 8
+    },
+    "healing_herb": {
+      "id": "healing_herb",
+      "name": "치유 약초",
+      "description": "강력한 치유 효과가 있는 약초",
+      "type": "material",
+      "category": "herb",
+      "theme": "Physical",
+      "tier": "Fine",
+      "baseValue": 25
+    },
+    "mana_flower": {
+      "id": "mana_flower",
+      "name": "마나 꽃",
+      "description": "마나 회복에 특화된 꽃",
+      "type": "material",
+      "category": "herb",
+      "theme": "Physical",
+      "tier": "Fine",
+      "baseValue": 25
+    },
+    "nature_essence": {
+      "id": "nature_essence",
+      "name": "자연 정수",
+      "description": "자연의 치유 에너지가 담긴 정수",
+      "type": "material",
+      "category": "herb",
+      "theme": "Physical",
+      "tier": "Superior",
+      "baseValue": 70
+    },
+    "life_essence": {
+      "id": "life_essence",
+      "name": "생명 정수",
+      "description": "생명의 힘이 담긴 신성한 정수",
+      "type": "material",
+      "category": "herb",
+      "theme": "Physical",
+      "tier": "Epic",
+      "baseValue": 180
+    },
+    "small_fish": {
+      "id": "small_fish",
+      "name": "작은 물고기",
+      "description": "작은 민물고기",
+      "type": "material",
+      "category": "fish",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 5
+    },
+    "medium_fish": {
+      "id": "medium_fish",
+      "name": "중간 물고기",
+      "description": "중간 크기의 물고기",
+      "type": "material",
+      "category": "fish",
+      "theme": "Physical",
+      "tier": "Fine",
+      "baseValue": 15
+    },
+    "large_fish": {
+      "id": "large_fish",
+      "name": "큰 물고기",
+      "description": "큰 물고기",
+      "type": "material",
+      "category": "fish",
+      "theme": "Physical",
+      "tier": "Superior",
+      "baseValue": 40
+    },
+    "rare_fish": {
+      "id": "rare_fish",
+      "name": "희귀한 물고기",
+      "description": "매우 희귀한 물고기",
+      "type": "material",
+      "category": "fish",
+      "theme": "Physical",
+      "tier": "Epic",
+      "baseValue": 100
+    },
+    "raw_meat": {
+      "id": "raw_meat",
+      "name": "생고기",
+      "description": "가공되지 않은 고기",
+      "type": "material",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 3
+    },
+    "flour": {
+      "id": "flour",
+      "name": "밀가루",
+      "description": "기본적인 밀가루",
+      "type": "material",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 2
+    },
+    "milk": {
+      "id": "milk",
+      "name": "우유",
+      "description": "신선한 우유",
+      "type": "material",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 3
+    },
+    "vegetable": {
+      "id": "vegetable",
+      "name": "야채",
+      "description": "신선한 야채",
+      "type": "material",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 2
+    },
+    "wheat": {
+      "id": "wheat",
+      "name": "밀",
+      "description": "기본적인 곡물",
+      "type": "material",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 1
+    },
+    "wood": {
+      "id": "wood",
+      "name": "나무",
+      "description": "기본적인 나무 재료",
+      "type": "material",
+      "category": "wood",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 1
+    },
+    "leather": {
+      "id": "leather",
+      "name": "가죽",
+      "description": "기본적인 가죽 재료",
+      "type": "material",
+      "category": "leather",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 5
+    },
+    "common_metal": {
+      "id": "common_metal",
+      "name": "일반 금속",
+      "description": "기본적인 금속 재료",
+      "type": "material",
+      "category": "metal",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseValue": 8
+    },
+    "refined_metal": {
+      "id": "refined_metal",
+      "name": "정제된 금속",
+      "description": "정제된 금속 재료",
+      "type": "material",
+      "category": "metal",
+      "theme": "Physical",
+      "tier": "Fine",
+      "baseValue": 25
+    }
+  },
+  "equipment": {
+    "wooden_sword": {
+      "id": "wooden_sword",
+      "name": "나무 검",
+      "description": "가장 기본적인 나무 검",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 15,
+        "magicalAttack": 0
+      }
+    },
+    "flame_sword": {
+      "id": "flame_sword",
+      "name": "화염검",
+      "description": "화염 에너지로 벼려진 검",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Flame",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 25,
+        "magicalAttack": 15,
+        "flameAttack": 20
+      },
+      "materials": [
+        { "materialId": "flame_ore", "quantity": 3 },
+        { "materialId": "iron_ore", "quantity": 2 }
+      ]
+    },
+    "frost_sword": {
+      "id": "frost_sword",
+      "name": "빙결검",
+      "description": "차가운 빙결 에너지를 담은 검",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Frost",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 25,
+        "magicalAttack": 15,
+        "frostAttack": 20
+      },
+      "materials": [
+        { "materialId": "frost_ore", "quantity": 3 },
+        { "materialId": "iron_ore", "quantity": 2 }
+      ]
+    },
+    "toxic_sword": {
+      "id": "toxic_sword",
+      "name": "독성검",
+      "description": "독성 에너지를 담은 검",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Toxic",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 25,
+        "magicalAttack": 15,
+        "toxicAttack": 20
+      },
+      "materials": [
+        { "materialId": "toxic_ore", "quantity": 3 },
+        { "materialId": "iron_ore", "quantity": 2 }
+      ]
+    },
+    "shadow_sword": {
+      "id": "shadow_sword",
+      "name": "암흑검",
+      "description": "어둠의 힘을 담은 검",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Shadow",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 25,
+        "magicalAttack": 15,
+        "shadowAttack": 20
+      },
+      "materials": [
+        { "materialId": "shadow_ore", "quantity": 3 },
+        { "materialId": "iron_ore", "quantity": 2 }
+      ]
+    },
+    "thunder_sword": {
+      "id": "thunder_sword",
+      "name": "번개검",
+      "description": "번개 에너지를 담은 검",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Thunder",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 25,
+        "magicalAttack": 15,
+        "thunderAttack": 20
+      },
+      "materials": [
+        { "materialId": "thunder_ore", "quantity": 3 },
+        { "materialId": "iron_ore", "quantity": 2 }
+      ]
+    },
+    "verdant_sword": {
+      "id": "verdant_sword",
+      "name": "자연검",
+      "description": "자연의 힘을 담은 검",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Verdant",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 25,
+        "magicalAttack": 15,
+        "verdantAttack": 20
+      },
+      "materials": [
+        { "materialId": "verdant_ore", "quantity": 3 },
+        { "materialId": "iron_ore", "quantity": 2 }
+      ]
+    },
+    "flame_staff": {
+      "id": "flame_staff",
+      "name": "화염 지팡이",
+      "description": "화염 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Flame",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 5,
+        "magicalAttack": 35,
+        "flameAttack": 30
+      },
+      "materials": [
+        { "materialId": "flame_crystal", "quantity": 2 },
+        { "materialId": "wood", "quantity": 3 }
+      ]
+    },
+    "frost_staff": {
+      "id": "frost_staff",
+      "name": "빙결 지팡이",
+      "description": "빙결 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Frost",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 5,
+        "magicalAttack": 35,
+        "frostAttack": 30
+      },
+      "materials": [
+        { "materialId": "frost_crystal", "quantity": 2 },
+        { "materialId": "wood", "quantity": 3 }
+      ]
+    },
+    "toxic_staff": {
+      "id": "toxic_staff",
+      "name": "독성 지팡이",
+      "description": "독성 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Toxic",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 5,
+        "magicalAttack": 35,
+        "toxicAttack": 30
+      },
+      "materials": [
+        { "materialId": "toxic_crystal", "quantity": 2 },
+        { "materialId": "wood", "quantity": 3 }
+      ]
+    },
+    "shadow_staff": {
+      "id": "shadow_staff",
+      "name": "암흑 지팡이",
+      "description": "암흑 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Shadow",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 5,
+        "magicalAttack": 35,
+        "shadowAttack": 30
+      },
+      "materials": [
+        { "materialId": "shadow_crystal", "quantity": 2 },
+        { "materialId": "wood", "quantity": 3 }
+      ]
+    },
+    "thunder_staff": {
+      "id": "thunder_staff",
+      "name": "번개 지팡이",
+      "description": "번개 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Thunder",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 5,
+        "magicalAttack": 35,
+        "thunderAttack": 30
+      },
+      "materials": [
+        { "materialId": "thunder_crystal", "quantity": 2 },
+        { "materialId": "wood", "quantity": 3 }
+      ]
+    },
+    "verdant_staff": {
+      "id": "verdant_staff",
+      "name": "자연 지팡이",
+      "description": "자연 마법을 증폭시키는 지팡이",
+      "type": "weapon",
+      "slot": "weapon",
+      "theme": "Verdant",
+      "tier": "Common",
+      "baseStats": {
+        "physicalAttack": 5,
+        "magicalAttack": 35,
+        "verdantAttack": 30
+      },
+      "materials": [
+        { "materialId": "verdant_crystal", "quantity": 2 },
+        { "materialId": "wood", "quantity": 3 }
+      ]
+    },
+    "leather_armor": {
+      "id": "leather_armor",
+      "name": "가죽 갑옷",
+      "description": "기본적인 가죽 갑옷",
+      "type": "armor",
+      "slot": "chest",
+      "theme": "Physical",
+      "tier": "Common",
+      "baseStats": {
+        "physicalDefense": 12,
+        "magicalDefense": 8,
+        "maxHp": 50
+      }
+    },
+    "flame_armor": {
+      "id": "flame_armor",
+      "name": "화염 갑옷",
+      "description": "화염 저항력을 지닌 갑옷",
+      "type": "armor",
+      "slot": "chest",
+      "theme": "Flame",
+      "tier": "Common",
+      "baseStats": {
+        "physicalDefense": 15,
+        "magicalDefense": 12,
+        "maxHp": 60,
+        "flameResistance": 20
+      },
+      "materials": [
+        { "materialId": "flame_ore", "quantity": 3 },
+        { "materialId": "leather", "quantity": 2 }
+      ]
+    },
+    "frost_armor": {
+      "id": "frost_armor",
+      "name": "빙결 갑옷",
+      "description": "빙결 저항력을 지닌 갑옷",
+      "type": "armor",
+      "slot": "chest",
+      "theme": "Frost",
+      "tier": "Common",
+      "baseStats": {
+        "physicalDefense": 15,
+        "magicalDefense": 12,
+        "maxHp": 60,
+        "frostResistance": 20
+      },
+      "materials": [
+        { "materialId": "frost_ore", "quantity": 3 },
+        { "materialId": "leather", "quantity": 2 }
+      ]
+    },
+    "toxic_armor": {
+      "id": "toxic_armor",
+      "name": "독성 갑옷",
+      "description": "독성 저항력을 지닌 갑옷",
+      "type": "armor",
+      "slot": "chest",
+      "theme": "Toxic",
+      "tier": "Common",
+      "baseStats": {
+        "physicalDefense": 15,
+        "magicalDefense": 12,
+        "maxHp": 60,
+        "toxicResistance": 20
+      },
+      "materials": [
+        { "materialId": "toxic_ore", "quantity": 3 },
+        { "materialId": "leather", "quantity": 2 }
+      ]
+    },
+    "shadow_armor": {
+      "id": "shadow_armor",
+      "name": "암흑 갑옷",
+      "description": "암흑 저항력을 지닌 갑옷",
+      "type": "armor",
+      "slot": "chest",
+      "theme": "Shadow",
+      "tier": "Common",
+      "baseStats": {
+        "physicalDefense": 15,
+        "magicalDefense": 12,
+        "maxHp": 60,
+        "shadowResistance": 20
+      },
+      "materials": [
+        { "materialId": "shadow_ore", "quantity": 3 },
+        { "materialId": "leather", "quantity": 2 }
+      ]
+    },
+    "thunder_armor": {
+      "id": "thunder_armor",
+      "name": "번개 갑옷",
+      "description": "번개 저항력을 지닌 갑옷",
+      "type": "armor",
+      "slot": "chest",
+      "theme": "Thunder",
+      "tier": "Common",
+      "baseStats": {
+        "physicalDefense": 15,
+        "magicalDefense": 12,
+        "maxHp": 60,
+        "thunderResistance": 20
+      },
+      "materials": [
+        { "materialId": "thunder_ore", "quantity": 3 },
+        { "materialId": "leather", "quantity": 2 }
+      ]
+    },
+    "verdant_armor": {
+      "id": "verdant_armor",
+      "name": "자연 갑옷",
+      "description": "자연의 힘을 담은 갑옷",
+      "type": "armor",
+      "slot": "chest",
+      "theme": "Verdant",
+      "tier": "Common",
+      "baseStats": {
+        "physicalDefense": 15,
+        "magicalDefense": 12,
+        "maxHp": 60,
+        "verdantResistance": 20
+      },
+      "materials": [
+        { "materialId": "verdant_ore", "quantity": 3 },
+        { "materialId": "leather", "quantity": 2 }
+      ]
+    },
+    "flame_ring": {
+      "id": "flame_ring",
+      "name": "화염 반지",
+      "description": "화염의 힘을 증폭시키는 반지",
+      "type": "accessory",
+      "slot": "accessory",
+      "theme": "Flame",
+      "tier": "Epic",
+      "baseStats": {
+        "flameAttack": 50,
+        "flameResistance": 30,
+        "magicalAttack": 25
+      },
+      "materials": [
+        { "materialId": "flame_gem", "quantity": 1 },
+        { "materialId": "steel_ore", "quantity": 2 }
+      ]
+    },
+    "frost_ring": {
+      "id": "frost_ring",
+      "name": "빙결 반지",
+      "description": "빙결의 힘을 증폭시키는 반지",
+      "type": "accessory",
+      "slot": "accessory",
+      "theme": "Frost",
+      "tier": "Epic",
+      "baseStats": {
+        "frostAttack": 50,
+        "frostResistance": 30,
+        "magicalAttack": 25
+      },
+      "materials": [
+        { "materialId": "frost_gem", "quantity": 1 },
+        { "materialId": "steel_ore", "quantity": 2 }
+      ]
+    },
+    "toxic_ring": {
+      "id": "toxic_ring",
+      "name": "독성 반지",
+      "description": "독성의 힘을 증폭시키는 반지",
+      "type": "accessory",
+      "slot": "accessory",
+      "theme": "Toxic",
+      "tier": "Epic",
+      "baseStats": {
+        "toxicAttack": 50,
+        "toxicResistance": 30,
+        "magicalAttack": 25
+      },
+      "materials": [
+        { "materialId": "toxic_gem", "quantity": 1 },
+        { "materialId": "steel_ore", "quantity": 2 }
+      ]
+    },
+    "shadow_ring": {
+      "id": "shadow_ring",
+      "name": "암흑 반지",
+      "description": "암흑의 힘을 증폭시키는 반지",
+      "type": "accessory",
+      "slot": "accessory",
+      "theme": "Shadow",
+      "tier": "Epic",
+      "baseStats": {
+        "shadowAttack": 50,
+        "shadowResistance": 30,
+        "magicalAttack": 25
+      },
+      "materials": [
+        { "materialId": "shadow_gem", "quantity": 1 },
+        { "materialId": "steel_ore", "quantity": 2 }
+      ]
+    },
+    "thunder_ring": {
+      "id": "thunder_ring",
+      "name": "번개 반지",
+      "description": "번개의 힘을 증폭시키는 반지",
+      "type": "accessory",
+      "slot": "accessory",
+      "theme": "Thunder",
+      "tier": "Epic",
+      "baseStats": {
+        "thunderAttack": 50,
+        "thunderResistance": 30,
+        "magicalAttack": 25
+      },
+      "materials": [
+        { "materialId": "thunder_gem", "quantity": 1 },
+        { "materialId": "steel_ore", "quantity": 2 }
+      ]
+    },
+    "verdant_ring": {
+      "id": "verdant_ring",
+      "name": "자연 반지",
+      "description": "자연의 힘을 증폭시키는 반지",
+      "type": "accessory",
+      "slot": "accessory",
+      "theme": "Verdant",
+      "tier": "Epic",
+      "baseStats": {
+        "verdantAttack": 50,
+        "verdantResistance": 30,
+        "magicalAttack": 25
+      },
+      "materials": [
+        { "materialId": "verdant_gem", "quantity": 1 },
+        { "materialId": "steel_ore", "quantity": 2 }
+      ]
+    }
+  },
+  "consumables": {
+    "health_potion": {
+      "id": "health_potion",
+      "name": "체력 포션",
+      "description": "즉시 HP를 회복한다",
+      "type": "consumable",
+      "category": "potion",
+      "theme": "Physical",
+      "tier": "Common",
+      "effect": {
+        "type": "heal",
+        "value": 100,
+        "instant": true
+      },
+      "materials": [
+        { "materialId": "red_herb", "quantity": 2 },
+        { "materialId": "blue_herb", "quantity": 1 }
+      ]
+    },
+    "mana_potion": {
+      "id": "mana_potion",
+      "name": "마나 포션",
+      "description": "즉시 MP를 회복한다",
+      "type": "consumable",
+      "category": "potion",
+      "theme": "Physical",
+      "tier": "Common",
+      "effect": {
+        "type": "mana",
+        "value": 50,
+        "instant": true
+      },
+      "materials": [
+        { "materialId": "blue_herb", "quantity": 2 },
+        { "materialId": "mana_flower", "quantity": 1 }
+      ]
+    },
+    "stamina_potion": {
+      "id": "stamina_potion",
+      "name": "체력 포션",
+      "description": "체력과 마나를 모두 회복한다",
+      "type": "consumable",
+      "category": "potion",
+      "theme": "Physical",
+      "tier": "Fine",
+      "effect": {
+        "type": "heal",
+        "value": 150,
+        "instant": true
+      },
+      "materials": [
+        { "materialId": "healing_herb", "quantity": 1 },
+        { "materialId": "mana_flower", "quantity": 1 }
+      ]
+    },
+    "bread": {
+      "id": "bread",
+      "name": "빵",
+      "description": "기본적인 식량",
+      "type": "consumable",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Common",
+      "effect": {
+        "type": "buff",
+        "duration": 10,
+        "stats": {
+          "physicalAttack": 5,
+          "magicalAttack": 5
+        }
+      },
+      "materials": [
+        { "materialId": "flour", "quantity": 2 },
+        { "materialId": "milk", "quantity": 1 }
+      ]
+    },
+    "fish_stew": {
+      "id": "fish_stew",
+      "name": "생선 스튜",
+      "description": "영양가 높은 생선 스튜",
+      "type": "consumable",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Fine",
+      "effect": {
+        "type": "buff",
+        "duration": 10,
+        "stats": {
+          "physicalAttack": 10,
+          "magicalAttack": 10,
+          "speed": 5
+        }
+      },
+      "materials": [
+        { "materialId": "medium_fish", "quantity": 1 },
+        { "materialId": "vegetable", "quantity": 2 }
+      ]
+    },
+    "herb_soup": {
+      "id": "herb_soup",
+      "name": "약초 수프",
+      "description": "치유 효과가 있는 약초 수프",
+      "type": "consumable",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Superior",
+      "effect": {
+        "type": "buff",
+        "duration": 10,
+        "stats": {
+          "physicalAttack": 15,
+          "magicalAttack": 15,
+          "physicalDefense": 10,
+          "magicalDefense": 10
+        }
+      },
+      "materials": [
+        { "materialId": "large_fish", "quantity": 1 },
+        { "materialId": "nature_essence", "quantity": 1 }
+      ]
+    },
+    "divine_feast": {
+      "id": "divine_feast",
+      "name": "신성한 만찬",
+      "description": "신성한 힘이 깃든 최고급 음식",
+      "type": "consumable",
+      "category": "food",
+      "theme": "Physical",
+      "tier": "Epic",
+      "effect": {
+        "type": "buff",
+        "duration": 10,
+        "stats": {
+          "physicalAttack": 25,
+          "magicalAttack": 25,
+          "physicalDefense": 20,
+          "magicalDefense": 20,
+          "speed": 15
+        }
+      },
+      "materials": [
+        { "materialId": "rare_fish", "quantity": 1 },
+        { "materialId": "life_essence", "quantity": 1 }
+      ]
+    }
+  }
+} 

@@ -1,0 +1,35 @@
+{
+  "skillId": "thunder_roar",
+  "name": "썬더 로어",
+  "description": "강력한 번개 포효로 적 전체를 공격하고 속도를 감소시킨다.",
+  "type": "Active",
+  "element": "Thunder",
+  "triggerChance": {
+    "base": 15,
+    "perLevel": 7,
+    "max": 90
+  },
+  "maxLevel": 0,
+  "requiredPages": 4,
+  "effects": [
+    {
+      "type": "area_damage",
+      "element": "Thunder",
+      "baseValue": 150,
+      "levelScaling": 25,
+      "targets": 3
+    },
+    {
+      "type": "debuff",
+      "stat": "speed",
+      "baseValue": -6,
+      "levelScaling": -2,
+      "duration": 2
+    }
+  ],
+  "trainingRules": [
+    { "condition": "cast", "xpGain": 2 },
+    { "condition": "kill", "xpGain": 8 },
+    { "condition": "killWeak", "xpGain": 30 }
+  ]
+} 

@@ -1,0 +1,18 @@
+{
+  "id": "verdant_boss",
+  "name": "가이아 드래곤",
+  "description": "숲의 탑을 지키는 전설의 드래곤.",
+  "level": 10,
+  "hp": 212,
+  "maxHp": 212,
+  "attack": 51,
+  "defense": 22,
+  "speed": 27,
+  "theme": "Verdant",
+  "tier": "boss",
+  "dropTable": "verdant_boss",
+  "xpReward": 60,
+  "goldReward": 120,
+  "skills": ["verdant_charge", "nature_blessing"],
+  "traits": ["verdant_resistance", "boss"]
+} 

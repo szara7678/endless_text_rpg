@@ -1,0 +1,33 @@
+{
+  "skillId": "nature_blessing",
+  "name": "네이처 블레싱",
+  "description": "자연의 축복으로 아군 전체를 회복시키고 방어력을 높인다.",
+  "type": "Active",
+  "element": "Verdant",
+  "triggerChance": {
+    "base": 20,
+    "perLevel": 5,
+    "max": 85
+  },
+  "maxLevel": 0,
+  "requiredPages": 4,
+  "effects": [
+    {
+      "type": "heal_all",
+      "baseValue": 20,
+      "levelScaling": 5
+    },
+    {
+      "type": "buff_all",
+      "stat": "defense",
+      "baseValue": 8,
+      "levelScaling": 2,
+      "duration": 3
+    }
+  ],
+  "trainingRules": [
+    { "condition": "cast", "xpGain": 2 },
+    { "condition": "kill", "xpGain": 8 },
+    { "condition": "killWeak", "xpGain": 30 }
+  ]
+} 

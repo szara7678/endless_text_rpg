@@ -1,13 +1,12 @@
 {
-  "materialId": "wood",
+  "id": "wood",
   "name": "나무",
-  "description": "단단한 나무입니다. 무기 손잡이나 건축 재료로 사용됩니다.",
-  "type": "wood",
-  "element": "Verdant",
-  "rarity": "Normal",
-  "baseLevel": 1,
-  "maxLevel": 5,
-  "sellPrice": 2,
-  "stackSize": 999,
-  "category": "crafting"
+  "description": "기본적인 나무 재료",
+  "type": "material",
+  "category": "wood",
+  "theme": "Physical",
+  "tier": "Common",
+  "baseValue": 1,
+  "stackable": true,
+  "maxStack": 99
 } 

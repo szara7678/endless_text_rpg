@@ -1,0 +1,12 @@
+{
+  "id": "large_fish",
+  "name": "큰 물고기",
+  "description": "큰 물고기",
+  "type": "material",
+  "category": "fish",
+  "theme": "Physical",
+  "tier": "Superior",
+  "baseValue": 40,
+  "stackable": true,
+  "maxStack": 99
+} 

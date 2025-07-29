@@ -4,8 +4,11 @@
   "description": "몸 주변에 화염 오라를 생성하여 지속적으로 주변 적들에게 피해를 입힙니다.",
   "type": "Passive",
   "element": "Flame",
-  "baseTriggerChance": 10,
-  "triggerChanceLevels": [1, 6, 12, 20, 30, 45, 60, 80, 100],
+  "triggerChance": {
+    "base": 10,
+    "perLevel": 6,
+    "max": 95
+  },
   "maxLevel": 0,
   "requiredPages": 3,
   "effects": [

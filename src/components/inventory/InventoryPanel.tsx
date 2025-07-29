@@ -45,10 +45,22 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
 
   const handleItemClick = async (itemId: string) => {
     try {
-      const itemData = await loadItem(itemId)
-      if (itemData) {
-        setSelectedItem(itemData)
+      // 인벤토리에서 해당 아이템 찾기
+      const inventoryItem = inventory.items.find(item => 
+        item.itemId === itemId || item.uniqueId === itemId
+      )
+      
+      if (inventoryItem) {
+        // 인벤토리 아이템 정보를 사용 (강화 레벨 등 포함)
+        setSelectedItem(inventoryItem)
         setShowItemModal(true)
+      } else {
+        // 인벤토리에 없는 경우 기본 아이템 데이터 로드
+        const itemData = await loadItem(itemId)
+        if (itemData) {
+          setSelectedItem(itemData)
+          setShowItemModal(true)
+        }
       }
     } catch (error) {
       console.error('아이템 데이터 로드 실패:', error)
@@ -84,12 +96,23 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
     let items: any[] = []
 
     if (activeMainTab === 'materials') {
-      items = inventory.materials.map(mat => ({
-        ...mat,
-        type: 'material',
-        level: 1, // 재료는 기본 레벨 1
-        element: 'neutral' // 임시로 중성 속성
-      }))
+      items = inventory.materials.map(mat => {
+        // 재료 속성 판별
+        let element = 'neutral'
+        if (mat.materialId?.includes('flame') || mat.materialId?.includes('fire')) element = 'Flame'
+        else if (mat.materialId?.includes('frost') || mat.materialId?.includes('ice')) element = 'Frost'
+        else if (mat.materialId?.includes('toxic') || mat.materialId?.includes('poison')) element = 'Toxic'
+        else if (mat.materialId?.includes('shadow') || mat.materialId?.includes('dark')) element = 'Shadow'
+        else if (mat.materialId?.includes('thunder') || mat.materialId?.includes('lightning')) element = 'Thunder'
+        else if (mat.materialId?.includes('verdant') || mat.materialId?.includes('nature')) element = 'Verdant'
+        
+        return {
+          ...mat,
+          type: 'material',
+          level: mat.level || 1,
+          element: element
+        }
+      })
 
       // 재료 하위 탭 필터링
       if (activeSubTab === 'elemental') {
@@ -110,14 +133,25 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
       // 장비는 items에서 health_potion, mana_potion 제외하고 가져오기
       // 장비는 uniqueId로 개별 관리되므로 각각 별도 아이템으로 표시
       items = inventory.items
-        .filter(item => !item.itemId.includes('potion'))
-        .map(item => ({
-          ...item,
-          type: 'equipment',
-          category: item.itemId.includes('sword') || item.itemId.includes('staff') ? 'weapon' : 
-                   item.itemId.includes('armor') ? 'armor' : 'accessory',
-          displayId: item.uniqueId || `${item.itemId}_${Math.random()}` // 고유 표시용 ID
-        }))
+        .filter(item => !item.itemId.includes('potion') && !item.itemId.includes('food'))
+        .map(item => {
+          // 장비 카테고리 판별
+          let category = 'accessory'
+          if (item.itemId.includes('sword') || item.itemId.includes('staff') || item.itemId.includes('weapon')) {
+            category = 'weapon'
+          } else if (item.itemId.includes('armor') || item.itemId.includes('chest')) {
+            category = 'armor'
+          } else if (item.itemId.includes('ring') || item.itemId.includes('necklace') || item.itemId.includes('amulet')) {
+            category = 'accessory'
+          }
+          
+          return {
+            ...item,
+            type: 'equipment',
+            category: category,
+            displayId: item.uniqueId || `${item.itemId}_${Math.random()}` // 고유 표시용 ID
+          }
+        })
 
       // 장비 하위 탭 필터링
       if (activeSubTab === 'weapon') {
@@ -128,25 +162,36 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
         items = items.filter(item => item.category === 'accessory')
       }
     } else if (activeMainTab === 'consumables') {
-      // 소모품은 consumables + potion류 items 합치기
+      // 소모품은 potion류와 food류 items 합치기
       const potionItems = inventory.items
         .filter(item => item.itemId.includes('potion'))
         .map(item => ({
           ...item,
           type: 'consumable',
-          level: 1,
+          level: item.level || 1,
           consumableId: item.itemId,
           category: 'potion'
+        }))
+      
+      const foodItems = inventory.items
+        .filter(item => item.itemId.includes('food') || item.itemId.includes('bread') || item.itemId.includes('stew'))
+        .map(item => ({
+          ...item,
+          type: 'consumable',
+          level: item.level || 1,
+          consumableId: item.itemId,
+          category: 'food'
         }))
       
       items = [
         ...inventory.consumables.map(consumable => ({
           ...consumable,
           type: 'consumable',
-          level: 1,
-          category: 'potion' // 임시로 물약으로 분류
+          level: consumable.level || 1,
+          category: consumable.itemId?.includes('food') ? 'food' : 'potion'
         })),
-        ...potionItems
+        ...potionItems,
+        ...foodItems
       ]
 
       // 소모품 하위 탭 필터링

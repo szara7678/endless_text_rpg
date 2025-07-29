@@ -1,0 +1,23 @@
+{
+  "itemId": "herb_soup",
+  "name": "약초 수프",
+  "description": "치유 효과가 있는 약초 수프",
+  "type": "consumable",
+  "category": "food",
+  "theme": "Physical",
+  "tier": "Superior",
+  "effect": {
+    "type": "buff",
+    "duration": 10,
+    "stats": {
+      "physicalAttack": 15,
+      "magicalAttack": 15,
+      "physicalDefense": 10,
+      "magicalDefense": 10
+    }
+  },
+  "materials": [
+    { "materialId": "large_fish", "quantity": 1 },
+    { "materialId": "nature_essence", "quantity": 1 }
+  ]
+} 

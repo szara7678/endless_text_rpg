@@ -1,0 +1,25 @@
+{
+  "itemId": "shadow_ring",
+  "name": "암흑 반지",
+  "description": "암흑의 힘을 증폭시키는 반지",
+  "type": "accessory",
+  "subtype": "ring",
+  "element": "shadow",
+  "rarity": "Epic",
+  "level": 1,
+  "baseStats": {
+    "shadowAttack": 50,
+    "shadowResistance": 30,
+    "magicalAttack": 25
+  },
+  "requirements": {
+    "level": 10
+  },
+  "sellPrice": 200,
+  "enhanceable": true,
+  "maxEnhancement": 15,
+  "materials": [
+    { "materialId": "shadow_gem", "quantity": 1 },
+    { "materialId": "steel_ore", "quantity": 2 }
+  ]
+} 

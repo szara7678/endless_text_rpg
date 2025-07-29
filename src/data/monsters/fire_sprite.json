@@ -1,26 +1,18 @@
 {
   "id": "fire_sprite",
-  "name": "화염 정령",
-  "description": "순수한 화염 에너지로 이뤄진 정령.",
+  "name": "파이어 스프라이트",
+  "description": "작은 불꽃 정령입니다.",
+  "level": 1,
+  "hp": 18,
+  "maxHp": 18,
+  "attack": 7,
+  "defense": 3,
+  "speed": 24,
   "theme": "Flame",
   "tier": "normal",
-  
-  "hp": 60,
-  "maxHp": 60,
-  "level": 1,
-  "attack": 35,
-  "defense": 5,
-  "speed": 30,
-  
-  "goldReward": 20,
-  "xpReward": 0,
-  
-  "dropTableId": "flame_normal",
-  "skillPageDrops": ["flame_bolt", "burning_aura"],
-  
-  "traits": ["magical", "flame_body"],
-  "resistances": ["Flame"],
-  "weaknesses": ["Frost"],
-  
-  "skills": ["fireball", "flame_burst"]
+  "dropTable": "flame_normal",
+  "xpReward": 2,
+  "goldReward": 4,
+  "skills": ["ember_toss"],
+  "traits": ["fire_resistance"]
 } 

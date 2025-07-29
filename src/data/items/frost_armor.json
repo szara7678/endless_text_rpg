@@ -1,0 +1,26 @@
+{
+  "itemId": "frost_armor",
+  "name": "빙결 갑옷",
+  "description": "빙결 저항력을 지닌 갑옷",
+  "type": "armor",
+  "subtype": "chest",
+  "element": "frost",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalDefense": 15,
+    "magicalDefense": 12,
+    "maxHp": 60,
+    "frostResistance": 20
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 45,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "materials": [
+    { "materialId": "frost_ore", "quantity": 3 },
+    { "materialId": "leather", "quantity": 2 }
+  ]
+} 

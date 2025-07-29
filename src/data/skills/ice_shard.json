@@ -4,8 +4,11 @@
   "description": "날카로운 얼음 조각을 발사하여 적을 공격합니다.",
   "type": "Active",
   "element": "Frost",
-  "baseTriggerChance": 10,
-  "triggerChanceLevels": [1, 4, 8, 15, 22, 30, 40, 55, 70, 90],
+  "triggerChance": {
+    "base": 10,
+    "perLevel": 4,
+    "max": 85
+  },
   "maxLevel": 0,
   "requiredPages": 3,
   "effects": [

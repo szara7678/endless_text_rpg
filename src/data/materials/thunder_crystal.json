@@ -1,0 +1,12 @@
+{
+  "id": "thunder_crystal",
+  "name": "번개 수정",
+  "description": "전기를 머금은 노란 수정",
+  "type": "material",
+  "category": "crystal",
+  "theme": "Thunder",
+  "tier": "Fine",
+  "baseValue": 45,
+  "stackable": true,
+  "maxStack": 99
+} 

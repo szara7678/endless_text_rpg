@@ -1,0 +1,25 @@
+{
+  "itemId": "toxic_sword",
+  "name": "독성검",
+  "description": "독성 에너지를 담은 검",
+  "type": "weapon",
+  "subtype": "sword",
+  "element": "toxic",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalAttack": 25,
+    "magicalAttack": 15,
+    "toxicAttack": 20
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 40,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "materials": [
+    { "materialId": "toxic_ore", "quantity": 3 },
+    { "materialId": "iron_ore", "quantity": 2 }
+  ]
+} 

@@ -1,12 +1,12 @@
 {
   "id": "thunder_gem",
   "name": "번개 보석",
-  "description": "번개의 에너지가 담긴 전기를 띤 보석",
+  "description": "강력한 번개의 힘이 깃든 보석",
   "type": "material",
   "category": "gem",
-  "element": "Thunder",
-  "baseValue": 25,
-  "rarity": "Superior",
+  "theme": "Thunder",
+  "tier": "Epic",
+  "baseValue": 300,
   "stackable": true,
   "maxStack": 99
 } 

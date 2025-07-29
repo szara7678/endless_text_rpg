@@ -1,12 +1,12 @@
 {
   "id": "blue_herb",
   "name": "파란 약초",
-  "description": "마나 회복에 효과적인 파란색 약초",
+  "description": "마나 회복에 효과적인 파란 약초",
   "type": "material",
   "category": "herb",
-  "element": "Frost",
-  "baseValue": 12,
-  "rarity": "Common",
+  "theme": "Physical",
+  "tier": "Common",
+  "baseValue": 8,
   "stackable": true,
   "maxStack": 99
 } 

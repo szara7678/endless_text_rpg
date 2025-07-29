@@ -234,12 +234,23 @@ async function processPlayerSkills(player: PlayerState, monster: Monster, skills
         continue
       }
       
-      // 스킬 발동 체크
-      if (Math.random() * 100 < skill.triggerChance) {
-        // 스킬 데이터 로드
-        try {
-          const skillData = await import(`../data/skills/${skill.skillId}.json`)
-          if (skillData.default && skillData.default.effects) {
+      // 스킬 데이터 로드 및 발동률 계산
+      try {
+        const skillData = await import(`../data/skills/${skill.skillId}.json`)
+        if (skillData.default && skillData.default.effects) {
+          // 실제 스킬 발동률 계산
+          let actualTriggerChance = 10 // 기본값
+          
+          if (skill.skillId === 'basic_attack') {
+            actualTriggerChance = 100
+          } else if (skillData.default.triggerChance) {
+            const { base, perLevel, max } = skillData.default.triggerChance
+            const calculatedChance = base + (skill.level - 1) * perLevel
+            actualTriggerChance = Math.min(calculatedChance, max)
+          }
+          
+          // 스킬 발동 체크
+          if (Math.random() * 100 < actualTriggerChance) {
             for (const effect of skillData.default.effects) {
               if (effect.type === 'damage') {
                 // 스킬 데미지 계산
@@ -252,9 +263,9 @@ async function processPlayerSkills(player: PlayerState, monster: Monster, skills
               }
             }
           }
-        } catch (error) {
-          console.error(`스킬 데이터 로드 실패: ${skill.skillId}`, error)
         }
+      } catch (error) {
+        console.error(`스킬 데이터 로드 실패: ${skill.skillId}`, error)
       }
     }
   }

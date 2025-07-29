@@ -1,12 +1,12 @@
 {
   "id": "toxic_shard",
   "name": "독성 파편",
-  "description": "독성 기운이 스며든 위험한 파편",
+  "description": "독성 에너지가 응축된 파편",
   "type": "material",
   "category": "shard",
-  "element": "Toxic",
-  "baseValue": 18,
-  "rarity": "Fine",
+  "theme": "Toxic",
+  "tier": "Common",
+  "baseValue": 8,
   "stackable": true,
   "maxStack": 99
 } 

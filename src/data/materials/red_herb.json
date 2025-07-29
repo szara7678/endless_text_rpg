@@ -1,13 +1,12 @@
 {
-  "materialId": "red_herb",
-  "name": "빨간 허브",
-  "description": "체력 회복 효과가 있는 빨간색 약초입니다.",
-  "type": "herb",
-  "element": "Verdant",
-  "rarity": "Normal",
-  "baseLevel": 1,
-  "maxLevel": 3,
-  "sellPrice": 3,
-  "stackSize": 999,
-  "category": "alchemy"
+  "id": "red_herb",
+  "name": "빨간 약초",
+  "description": "체력 회복에 효과적인 빨간 약초",
+  "type": "material",
+  "category": "herb",
+  "theme": "Physical",
+  "tier": "Common",
+  "baseValue": 8,
+  "stackable": true,
+  "maxStack": 99
 } 

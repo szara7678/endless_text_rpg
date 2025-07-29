@@ -1,0 +1,18 @@
+{
+  "id": "shadow_spirit",
+  "name": "섀도우 스피릿",
+  "description": "어둠의 정령.",
+  "level": 3,
+  "hp": 29,
+  "maxHp": 29,
+  "attack": 11,
+  "defense": 5,
+  "speed": 20,
+  "theme": "Shadow",
+  "tier": "normal",
+  "dropTable": "shadow_normal",
+  "xpReward": 5,
+  "goldReward": 7,
+  "skills": ["shadow_bite"],
+  "traits": ["shadow_resistance"]
+} 

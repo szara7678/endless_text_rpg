@@ -1,0 +1,18 @@
+{
+  "id": "thunder_golem",
+  "name": "썬더 골렘",
+  "description": "전기 에너지가 흐르는 골렘.",
+  "level": 3,
+  "hp": 35,
+  "maxHp": 35,
+  "attack": 13,
+  "defense": 7,
+  "speed": 16,
+  "theme": "Thunder",
+  "tier": "normal",
+  "dropTable": "thunder_normal",
+  "xpReward": 5,
+  "goldReward": 7,
+  "skills": ["thunder_shock"],
+  "traits": ["thunder_resistance"]
+} 

@@ -4,8 +4,11 @@
   "description": "기본적인 물리 공격으로 적에게 피해를 입힙니다.",
   "type": "Active",
   "element": "physical",
-  "baseTriggerChance": 100,
-  "triggerChanceLevels": [],
+  "triggerChance": {
+    "base": 100,
+    "perLevel": 0,
+    "max": 100
+  },
   "maxLevel": 0,
   "requiredPages": 0,
   "effects": [

@@ -1,0 +1,12 @@
+{
+  "id": "verdant_ore",
+  "name": "자연석",
+  "description": "자연의 힘이 깃든 초록 광석",
+  "type": "material",
+  "category": "ore",
+  "theme": "Verdant",
+  "tier": "Common",
+  "baseValue": 15,
+  "stackable": true,
+  "maxStack": 99
+} 

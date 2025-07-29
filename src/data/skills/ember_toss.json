@@ -4,8 +4,11 @@
   "description": "작은 화염탄 여러 개를 던져 여러 적에게 동시에 피해를 입힙니다.",
   "type": "Active",
   "element": "Flame",
-  "baseTriggerChance": 10,
-  "triggerChanceLevels": [1, 2, 5, 10, 16, 24, 35, 50, 70, 95],
+  "triggerChance": {
+    "base": 10,
+    "perLevel": 8,
+    "max": 95
+  },
   "maxLevel": 0,
   "requiredPages": 3,
   "effects": [

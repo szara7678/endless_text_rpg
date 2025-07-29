@@ -1,0 +1,18 @@
+{
+  "id": "shadow_bat",
+  "name": "섀도우 배트",
+  "description": "어둠을 날아다니는 박쥐.",
+  "level": 2,
+  "hp": 27,
+  "maxHp": 27,
+  "attack": 10,
+  "defense": 4,
+  "speed": 23,
+  "theme": "Shadow",
+  "tier": "normal",
+  "dropTable": "shadow_normal",
+  "xpReward": 4,
+  "goldReward": 8,
+  "skills": ["shadow_bite"],
+  "traits": ["shadow_resistance"]
+} 

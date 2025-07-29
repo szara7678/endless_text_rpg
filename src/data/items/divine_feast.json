@@ -1,0 +1,24 @@
+{
+  "itemId": "divine_feast",
+  "name": "신성한 만찬",
+  "description": "신성한 힘이 깃든 최고급 음식",
+  "type": "consumable",
+  "category": "food",
+  "theme": "Physical",
+  "tier": "Epic",
+  "effect": {
+    "type": "buff",
+    "duration": 10,
+    "stats": {
+      "physicalAttack": 25,
+      "magicalAttack": 25,
+      "physicalDefense": 20,
+      "magicalDefense": 20,
+      "speed": 15
+    }
+  },
+  "materials": [
+    { "materialId": "rare_fish", "quantity": 1 },
+    { "materialId": "life_essence", "quantity": 1 }
+  ]
+} 

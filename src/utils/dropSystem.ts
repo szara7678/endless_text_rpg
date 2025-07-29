@@ -1,47 +1,74 @@
 import { Monster, InventoryState } from '../types'
-import { loadDropTable, loadItems } from './dataLoader'
+import { loadDropTable } from './dataLoader'
+import { calculateDropLevel } from './towerSystem'
 
 // 몬스터 처치 시 아이템 드롭 처리
 export async function processItemDrops(
   monster: Monster, 
-  inventory: InventoryState
-): Promise<{ items: string[], materials: string[], gold: number }> {
-  const results = { items: [], materials: [], gold: 0 }
+  inventory: InventoryState,
+  currentFloor: number
+): Promise<{ items: Array<{itemId: string, level: number, quality: string}>, materials: Array<{itemId: string, level: number}>, gold: number }> {
+  const results = { 
+    items: [] as Array<{itemId: string, level: number, quality: string}>, 
+    materials: [] as Array<{itemId: string, level: number}>, 
+    gold: 0 
+  }
   
-  if (!monster.dropTableId) return results
+  if (!monster.dropTable) return results
   
   try {
-    const dropTable = await loadDropTable(monster.dropTableId)
+    const dropTable = await loadDropTable(monster.dropTable)
     if (!dropTable || !dropTable.drops) return results
     
+    // 드롭 레벨 계산
+    const dropLevel = calculateDropLevel(currentFloor)
+    
     for (const drop of dropTable.drops) {
-      // 확률 체크
-      if (Math.random() * 100 > drop.chance) continue
+      // 확률 체크 (chance는 0~1 사이 값)
+      if (Math.random() > drop.chance) continue
       
       // 수량 결정
       const quantity = Math.floor(
-        Math.random() * (drop.maxQuantity - drop.minQuantity + 1) + drop.minQuantity
+        Math.random() * (drop.max - drop.min + 1) + drop.min
       )
       
+      // 아이템 레벨 결정 (드롭 레벨 + 랜덤 변동)
+      const itemLevel = Math.max(1, dropLevel + Math.floor(Math.random() * 5) - 2) // ±2 레벨 변동
+      
+      // 품질 결정 (몬스터 티어에 따라)
+      let quality = 'Common'
+      if (monster.tier === 'boss') {
+        quality = Math.random() < 0.3 ? 'Epic' : Math.random() < 0.6 ? 'Superior' : 'Fine'
+      } else if (monster.tier === 'elite') {
+        quality = Math.random() < 0.2 ? 'Superior' : Math.random() < 0.6 ? 'Fine' : 'Common'
+      } else {
+        quality = Math.random() < 0.1 ? 'Fine' : 'Common'
+      }
+      
       // 타입별 처리
-      switch (drop.type) {
-        case 'material':
-          for (let i = 0; i < quantity; i++) {
-            results.materials.push(drop.itemId)
-          }
-          break
-          
-        case 'consumable':
-          for (let i = 0; i < quantity; i++) {
-            results.items.push(drop.itemId)
-          }
-          break
-          
-        case 'equipment':
-          for (let i = 0; i < quantity; i++) {
-            results.items.push(drop.itemId)
-          }
-          break
+      if (drop.type === 'skillPage') {
+        // 스킬 페이지는 레벨 없이 처리
+        for (let i = 0; i < quantity; i++) {
+          results.items.push({ itemId: drop.itemId, level: 1, quality: 'Common' })
+        }
+      } else if (drop.itemId.includes('_ore') || drop.itemId.includes('_crystal') || 
+                 drop.itemId.includes('_essence') || drop.itemId.includes('_gem') ||
+                 drop.itemId.includes('_herb') || drop.itemId.includes('_fish') ||
+                 drop.itemId.includes('_wood') || drop.itemId.includes('_leather')) {
+        // 재료류
+        for (let i = 0; i < quantity; i++) {
+          results.materials.push({ itemId: drop.itemId, level: itemLevel })
+        }
+      } else if (drop.itemId.includes('_potion') || drop.itemId.includes('_food')) {
+        // 소모품류
+        for (let i = 0; i < quantity; i++) {
+          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: 'Common' })
+        }
+      } else {
+        // 장비류
+        for (let i = 0; i < quantity; i++) {
+          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: quality })
+        }
       }
     }
     
@@ -57,12 +84,13 @@ export async function processItemDrops(
 export function processSkillPageDrops(monster: Monster): string[] {
   const drops: string[] = []
   
-  if (!monster.skillPageDrops) return drops
+  if (!monster.skills) return drops
   
-  for (const skillPageId of monster.skillPageDrops) {
-    // 기본 20% 확률로 스킬 페이지 드롭
-    if (Math.random() < 0.2) {
-      drops.push(skillPageId)
+  for (const skillId of monster.skills) {
+    // 기본 10% 확률로 스킬 페이지 드롭 (보스는 20%)
+    const dropChance = monster.tier === 'boss' ? 0.2 : 0.1
+    if (Math.random() < dropChance) {
+      drops.push(skillId)
     }
   }
   

@@ -73,8 +73,8 @@ export const generateRandomStats = (baseStats: any, level: number, quality: stri
   }
 
   const qualityMultiplier = qualityMultipliers[quality] || 1.0
-  const levelMultiplier = 1 + (level - 1) * 0.15  // 레벨당 15% 증가
-  const enhancementMultiplier = 1 + enhancement * 0.08  // 강화당 8% 증가
+  const levelMultiplier = 1 + (level - 1) * 0.05  // 레벨당 5% 증가 (줄임)
+  const enhancementMultiplier = 1 + enhancement * 0.08  // 강화당 8% 증가 (유지)
   
   const generatedStats: any = {}
 
@@ -142,12 +142,23 @@ export const generateInitialItems = async (initialItems: any[]): Promise<Generat
 
   for (const item of initialItems) {
     try {
-      const generatedItem = await generateItem(
-        item.itemId,
-        item.level || 1,
-        item.quality || 'Common',
-        item.quantity || 1
-      )
+      // 초기 아이템의 경우 enhancement 값이 있으면 사용, 없으면 랜덤 생성
+      let enhancement = item.enhancement
+      if (enhancement === undefined) {
+        enhancement = getRandomEnhancement(item.quality || 'Common')
+      }
+
+      const generatedItem: GeneratedItem = {
+        itemId: item.itemId,
+        uniqueId: generateUniqueId(),
+        level: item.level || 1,
+        quality: item.quality || 'Common',
+        enhancement: enhancement,
+        quantity: item.quantity || 1,
+        generatedStats: null, // 초기 아이템은 스탯을 미리 계산하지 않음
+        craftedAt: Date.now()
+      }
+
       generatedItems.push(generatedItem)
     } catch (error) {
       console.error(`초기 아이템 ${item.itemId} 생성 실패:`, error)

@@ -1,13 +1,12 @@
 {
-  "materialId": "healing_herb",
+  "id": "healing_herb",
   "name": "치유 약초",
-  "description": "치유 효과가 있는 약초입니다. 회복 물약 제작에 사용됩니다.",
-  "type": "herb",
-  "element": "verdant",
-  "rarity": "Fine",
-  "baseLevel": 1,
-  "maxLevel": 4,
-  "sellPrice": 12,
-  "stackSize": 999,
-  "category": "alchemy"
+  "description": "강력한 치유 효과가 있는 약초",
+  "type": "material",
+  "category": "herb",
+  "theme": "Physical",
+  "tier": "Fine",
+  "baseValue": 25,
+  "stackable": true,
+  "maxStack": 99
 } 

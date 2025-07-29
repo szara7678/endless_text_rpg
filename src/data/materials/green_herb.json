@@ -1,12 +1,12 @@
 {
   "id": "green_herb",
   "name": "초록 약초",
-  "description": "기본적인 치유 약초",
+  "description": "독성 해독에 효과적인 초록 약초",
   "type": "material",
   "category": "herb",
-  "element": "Verdant",
-  "baseValue": 10,
-  "rarity": "Common",
+  "theme": "Physical",
+  "tier": "Common",
+  "baseValue": 8,
   "stackable": true,
   "maxStack": 99
 } 

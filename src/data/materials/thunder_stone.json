@@ -1,13 +1,12 @@
 {
-  "materialId": "thunder_stone",
-  "name": "번개 석",
-  "description": "전기가 흐르는 특별한 돌입니다. 번개 장비 제작에 사용됩니다.",
-  "type": "stone",
-  "element": "thunder",
-  "rarity": "Superior",
-  "baseLevel": 2,
-  "maxLevel": 5,
-  "sellPrice": 28,
-  "stackSize": 999,
-  "category": "crafting"
+  "id": "thunder_stone",
+  "name": "번개 돌",
+  "description": "번개의 힘이 깃든 돌",
+  "type": "material",
+  "category": "stone",
+  "theme": "Thunder",
+  "tier": "Common",
+  "baseValue": 10,
+  "stackable": true,
+  "maxStack": 99
 } 

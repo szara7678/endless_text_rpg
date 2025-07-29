@@ -1,0 +1,25 @@
+{
+  "itemId": "toxic_ring",
+  "name": "독성 반지",
+  "description": "독성의 힘을 증폭시키는 반지",
+  "type": "accessory",
+  "subtype": "ring",
+  "element": "toxic",
+  "rarity": "Epic",
+  "level": 1,
+  "baseStats": {
+    "toxicAttack": 50,
+    "toxicResistance": 30,
+    "magicalAttack": 25
+  },
+  "requirements": {
+    "level": 10
+  },
+  "sellPrice": 200,
+  "enhanceable": true,
+  "maxEnhancement": 15,
+  "materials": [
+    { "materialId": "toxic_gem", "quantity": 1 },
+    { "materialId": "steel_ore", "quantity": 2 }
+  ]
+} 

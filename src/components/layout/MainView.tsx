@@ -9,6 +9,7 @@ const MainView: React.FC = () => {
     player,
     startAutoCombat,
     stopAutoCombat,
+    setAutoSpeed,
     clearCombatLog,
     addSkillTrainingXp,
     addSkillPage
@@ -86,16 +87,40 @@ const MainView: React.FC = () => {
     const currentIndex = speeds.indexOf(tower.autoSpeed || 1)
     const nextSpeed = speeds[(currentIndex + 1) % speeds.length]
     
-    if (tower.autoMode) {
-      stopAutoCombat()
-      startAutoCombat(nextSpeed)
-    } else {
-      startAutoCombat(nextSpeed)
-    }
+    // setAutoSpeed를 사용하여 일관된 방식으로 속도 변경
+    setAutoSpeed(nextSpeed)
   }
 
   const handleClearLog = () => {
     clearCombatLog()
+  }
+
+  // 현재 층 몬스터 수 계산
+  const getCurrentFloorMonsterInfo = () => {
+    const currentFloor = tower.currentFloor
+    const floorInCycle = currentFloor % 10
+    const killCount = tower.monsterKillCount || 0
+    
+    let requiredKills = 0
+    if (floorInCycle === 0) {
+      // 휴식층: 즉시 다음 층으로
+      return { current: 0, required: 0, text: '휴식층' }
+    } else if (floorInCycle >= 1 && floorInCycle <= 5) {
+      // 일반 몬스터층: 3마리 처치
+      requiredKills = 3
+    } else if (floorInCycle >= 6 && floorInCycle <= 8) {
+      // 정예 몬스터층: 2마리 처치
+      requiredKills = 2
+    } else if (floorInCycle === 9) {
+      // 보스층: 1마리 처치
+      requiredKills = 1
+    }
+    
+    return { 
+      current: killCount, 
+      required: requiredKills, 
+      text: `${killCount}/${requiredKills}` 
+    }
   }
 
   // 스킬 시스템 테스트용
@@ -123,7 +148,7 @@ const MainView: React.FC = () => {
                 ⚔️ {tower.currentMonster.name}
               </h3>
               <div className="text-sm text-gray-400">
-                {player.highestFloor}층
+                {player.highestFloor}층 ({getCurrentFloorMonsterInfo().text})
               </div>
             </div>
             

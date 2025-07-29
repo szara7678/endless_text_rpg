@@ -1,0 +1,18 @@
+{
+  "id": "toxic_snake",
+  "name": "톡식 스네이크",
+  "description": "맹독을 품은 뱀.",
+  "level": 2,
+  "hp": 32,
+  "maxHp": 32,
+  "attack": 11,
+  "defense": 5,
+  "speed": 19,
+  "theme": "Toxic",
+  "tier": "normal",
+  "dropTable": "toxic_normal",
+  "xpReward": 4,
+  "goldReward": 8,
+  "skills": ["toxic_spit"],
+  "traits": ["toxic_resistance"]
+} 

@@ -244,8 +244,9 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
           // addConsumable(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
           console.log('소모품 제작:', selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
         } else {
-          addItem(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
-          console.log('장비 제작:', selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
+          // 장비 제작 시 레벨과 품질 정보 전달
+          addItem(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity, level, quality)
+          console.log('장비 제작:', selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity, 'Lv', level, quality)
         }
 
         // 경험치 추가

@@ -1,0 +1,18 @@
+{
+  "id": "frost_boss",
+  "name": "글레이셜 드래곤",
+  "description": "얼음의 탑을 지키는 전설의 드래곤.",
+  "level": 10,
+  "hp": 210,
+  "maxHp": 210,
+  "attack": 52,
+  "defense": 24,
+  "speed": 29,
+  "theme": "Frost",
+  "tier": "boss",
+  "dropTable": "frost_boss",
+  "xpReward": 60,
+  "goldReward": 120,
+  "skills": ["frost_bite", "ice_shard"],
+  "traits": ["frost_resistance", "boss"]
+} 

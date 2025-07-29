@@ -1,0 +1,12 @@
+{
+  "id": "small_fish",
+  "name": "작은 물고기",
+  "description": "작은 민물고기",
+  "type": "material",
+  "category": "fish",
+  "theme": "Physical",
+  "tier": "Common",
+  "baseValue": 5,
+  "stackable": true,
+  "maxStack": 99
+} 

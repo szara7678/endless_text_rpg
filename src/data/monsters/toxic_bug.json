@@ -1,0 +1,18 @@
+{
+  "id": "toxic_bug",
+  "name": "톡식 버그",
+  "description": "맹독성 곤충.",
+  "level": 3,
+  "hp": 28,
+  "maxHp": 28,
+  "attack": 10,
+  "defense": 4,
+  "speed": 17,
+  "theme": "Toxic",
+  "tier": "normal",
+  "dropTable": "toxic_normal",
+  "xpReward": 5,
+  "goldReward": 7,
+  "skills": ["toxic_spit"],
+  "traits": ["toxic_resistance"]
+} 

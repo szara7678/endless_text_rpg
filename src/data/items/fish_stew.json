@@ -1,0 +1,22 @@
+{
+  "itemId": "fish_stew",
+  "name": "생선 스튜",
+  "description": "영양가 높은 생선 스튜",
+  "type": "consumable",
+  "category": "food",
+  "theme": "Physical",
+  "tier": "Fine",
+  "effect": {
+    "type": "buff",
+    "duration": 10,
+    "stats": {
+      "physicalAttack": 10,
+      "magicalAttack": 10,
+      "speed": 5
+    }
+  },
+  "materials": [
+    { "materialId": "medium_fish", "quantity": 1 },
+    { "materialId": "vegetable", "quantity": 2 }
+  ]
+} 

@@ -1,26 +1,18 @@
 {
   "id": "frost_wolf",
-  "name": "서리 늑대",
-  "description": "차가운 서리를 내뿜는 늑대. 빠른 공격으로 적을 위협한다.",
+  "name": "프로스트 울프",
+  "description": "차가운 기운이 감도는 늑대.",
+  "level": 2,
+  "hp": 36,
+  "maxHp": 36,
+  "attack": 12,
+  "defense": 6,
+  "speed": 20,
   "theme": "Frost",
   "tier": "normal",
-  
-  "hp": 90,
-  "maxHp": 90,
-  "level": 2,
-  "attack": 14,
-  "defense": 7,
-  "speed": 15,
-  
-  "goldReward": 18,
-  "xpReward": 0,
-  
-  "dropTableId": "frost_normal",
-  "skillPageDrops": ["ice_shard"],
-  
-  "traits": ["agile", "frost_resistant"],
-  "resistances": ["Frost"],
-  "weaknesses": ["Flame"],
-  
-  "skills": ["frost_bite"]
+  "dropTable": "frost_normal",
+  "xpReward": 4,
+  "goldReward": 8,
+  "skills": ["ice_shard"],
+  "traits": ["frost_resistance"]
 } 

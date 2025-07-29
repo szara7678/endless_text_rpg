@@ -1,0 +1,18 @@
+{
+  "id": "shadow_rat",
+  "name": "섀도우 랫",
+  "description": "어둠에 숨어드는 쥐.",
+  "level": 1,
+  "hp": 21,
+  "maxHp": 21,
+  "attack": 7,
+  "defense": 3,
+  "speed": 21,
+  "theme": "Shadow",
+  "tier": "normal",
+  "dropTable": "shadow_normal",
+  "xpReward": 2,
+  "goldReward": 5,
+  "skills": ["shadow_bite"],
+  "traits": ["shadow_resistance"]
+} 

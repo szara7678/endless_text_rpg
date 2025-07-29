@@ -4,8 +4,11 @@
   "description": "적을 얼려서 이동 속도와 공격 속도를 감소시킵니다.",
   "type": "Passive",
   "element": "Frost",
-  "baseTriggerChance": 10,
-  "triggerChanceLevels": [1, 5, 12, 20, 30, 45, 65, 85],
+  "triggerChance": {
+    "base": 15,
+    "perLevel": 5,
+    "max": 80
+  },
   "maxLevel": 0,
   "requiredPages": 3,
   "effects": [

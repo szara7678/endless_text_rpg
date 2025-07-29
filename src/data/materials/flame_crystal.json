@@ -1,13 +1,12 @@
 {
-  "materialId": "flame_crystal",
+  "id": "flame_crystal",
   "name": "화염 수정",
-  "description": "뜨거운 화염의 힘이 응축된 수정입니다. 화염 장비 제작에 사용됩니다.",
-  "type": "crystal",
-  "element": "flame",
-  "rarity": "Superior",
-  "baseLevel": 2,
-  "maxLevel": 5,
-  "sellPrice": 20,
-  "stackSize": 999,
-  "category": "crafting"
+  "description": "영원히 타오르는 화염이 담긴 수정",
+  "type": "material",
+  "category": "crystal",
+  "theme": "Flame",
+  "tier": "Fine",
+  "baseValue": 45,
+  "stackable": true,
+  "maxStack": 99
 } 

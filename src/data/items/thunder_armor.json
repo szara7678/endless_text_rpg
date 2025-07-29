@@ -1,0 +1,26 @@
+{
+  "itemId": "thunder_armor",
+  "name": "번개 갑옷",
+  "description": "번개 저항력을 지닌 갑옷",
+  "type": "armor",
+  "subtype": "chest",
+  "element": "thunder",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalDefense": 15,
+    "magicalDefense": 12,
+    "maxHp": 60,
+    "thunderResistance": 20
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 45,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "materials": [
+    { "materialId": "thunder_ore", "quantity": 3 },
+    { "materialId": "leather", "quantity": 2 }
+  ]
+} 

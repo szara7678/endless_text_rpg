@@ -1,0 +1,12 @@
+{
+  "id": "thunder_essence",
+  "name": "번개 정수",
+  "description": "정제된 번개의 순수한 에너지",
+  "type": "material",
+  "category": "essence",
+  "theme": "Thunder",
+  "tier": "Superior",
+  "baseValue": 120,
+  "stackable": true,
+  "maxStack": 99
+} 

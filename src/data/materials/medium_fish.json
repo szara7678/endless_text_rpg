@@ -1,0 +1,12 @@
+{
+  "id": "medium_fish",
+  "name": "중간 물고기",
+  "description": "중간 크기의 물고기",
+  "type": "material",
+  "category": "fish",
+  "theme": "Physical",
+  "tier": "Fine",
+  "baseValue": 15,
+  "stackable": true,
+  "maxStack": 99
+} 

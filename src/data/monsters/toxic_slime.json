@@ -1,0 +1,18 @@
+{
+  "id": "toxic_slime",
+  "name": "톡식 슬라임",
+  "description": "끈적한 독성 슬라임.",
+  "level": 1,
+  "hp": 24,
+  "maxHp": 24,
+  "attack": 7,
+  "defense": 4,
+  "speed": 15,
+  "theme": "Toxic",
+  "tier": "normal",
+  "dropTable": "toxic_normal",
+  "xpReward": 2,
+  "goldReward": 5,
+  "skills": ["toxic_spit"],
+  "traits": ["toxic_resistance"]
+} 

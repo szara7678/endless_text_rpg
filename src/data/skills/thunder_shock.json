@@ -1,0 +1,31 @@
+{
+  "skillId": "thunder_shock",
+  "name": "썬더 쇼크",
+  "description": "적에게 번개를 내려 데미지와 기절을 준다.",
+  "type": "Active",
+  "element": "Thunder",
+  "triggerChance": {
+    "base": 20,
+    "perLevel": 6,
+    "max": 85
+  },
+  "maxLevel": 0,
+  "requiredPages": 3,
+  "effects": [
+    {
+      "type": "damage",
+      "element": "Thunder",
+      "baseValue": 120,
+      "levelScaling": 20
+    },
+    {
+      "type": "stun",
+      "duration": 1
+    }
+  ],
+  "trainingRules": [
+    { "condition": "cast", "xpGain": 1 },
+    { "condition": "kill", "xpGain": 5 },
+    { "condition": "killWeak", "xpGain": 20 }
+  ]
+} 

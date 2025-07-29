@@ -1,12 +1,12 @@
 {
   "id": "frost_ore",
   "name": "빙결석",
-  "description": "차가운 기운이 흘러나오는 푸른 광석",
+  "description": "차가운 얼음이 깃든 푸른 광석",
   "type": "material",
   "category": "ore",
-  "element": "Frost",
+  "theme": "Frost",
+  "tier": "Common",
   "baseValue": 15,
-  "rarity": "Common",
   "stackable": true,
   "maxStack": 99
 } 

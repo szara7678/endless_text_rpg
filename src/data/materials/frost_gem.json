@@ -1,0 +1,12 @@
+{
+  "id": "frost_gem",
+  "name": "빙결 보석",
+  "description": "강력한 얼음의 힘이 깃든 보석",
+  "type": "material",
+  "category": "gem",
+  "theme": "Frost",
+  "tier": "Epic",
+  "baseValue": 300,
+  "stackable": true,
+  "maxStack": 99
+} 

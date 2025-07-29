@@ -1,0 +1,12 @@
+{
+  "id": "toxic_gem",
+  "name": "독성 보석",
+  "description": "강력한 독성의 힘이 깃든 보석",
+  "type": "material",
+  "category": "gem",
+  "theme": "Toxic",
+  "tier": "Epic",
+  "baseValue": 300,
+  "stackable": true,
+  "maxStack": 99
+} 

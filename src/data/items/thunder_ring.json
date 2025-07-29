@@ -1,0 +1,25 @@
+{
+  "itemId": "thunder_ring",
+  "name": "번개 반지",
+  "description": "번개의 힘을 증폭시키는 반지",
+  "type": "accessory",
+  "subtype": "ring",
+  "element": "thunder",
+  "rarity": "Epic",
+  "level": 1,
+  "baseStats": {
+    "thunderAttack": 50,
+    "thunderResistance": 30,
+    "magicalAttack": 25
+  },
+  "requirements": {
+    "level": 10
+  },
+  "sellPrice": 200,
+  "enhanceable": true,
+  "maxEnhancement": 15,
+  "materials": [
+    { "materialId": "thunder_gem", "quantity": 1 },
+    { "materialId": "steel_ore", "quantity": 2 }
+  ]
+} 

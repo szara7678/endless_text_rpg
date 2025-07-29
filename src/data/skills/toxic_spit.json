@@ -1,0 +1,33 @@
+{
+  "skillId": "toxic_spit",
+  "name": "독성 침 뱉기",
+  "description": "적에게 독을 뱉어 중독시킨다.",
+  "type": "Active",
+  "element": "Toxic",
+  "triggerChance": {
+    "base": 30,
+    "perLevel": 4,
+    "max": 80
+  },
+  "maxLevel": 0,
+  "requiredPages": 3,
+  "effects": [
+    {
+      "type": "damage",
+      "element": "Toxic",
+      "baseValue": 100,
+      "levelScaling": 15
+    },
+    {
+      "type": "poison",
+      "baseValue": 5,
+      "levelScaling": 2,
+      "duration": 3
+    }
+  ],
+  "trainingRules": [
+    { "condition": "cast", "xpGain": 1 },
+    { "condition": "kill", "xpGain": 5 },
+    { "condition": "killWeak", "xpGain": 20 }
+  ]
+} 

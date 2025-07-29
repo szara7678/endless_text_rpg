@@ -4,13 +4,15 @@
       "skillId": "basic_attack",
       "level": 1,
       "experience": 0,
-      "experienceNeeded": 100
+      "experienceNeeded": 100,
+      "triggerChance": 100
     },
     {
       "skillId": "fireball",
       "level": 1,
       "experience": 0,
-      "experienceNeeded": 100
+      "experienceNeeded": 100,
+      "triggerChance": 90
     }
   ],
   "passiveSkills": [],

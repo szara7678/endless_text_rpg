@@ -1,0 +1,12 @@
+{
+  "id": "life_essence",
+  "name": "생명 정수",
+  "description": "생명의 힘이 담긴 신성한 정수",
+  "type": "material",
+  "category": "herb",
+  "theme": "Physical",
+  "tier": "Epic",
+  "baseValue": 180,
+  "stackable": true,
+  "maxStack": 99
+} 

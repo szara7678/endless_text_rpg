@@ -1,13 +1,12 @@
 {
-  "materialId": "steel_ore",
+  "id": "steel_ore",
   "name": "강철 광석",
-  "description": "순도 높은 강철 광석입니다. 고급 장비 제작에 사용됩니다.",
-  "type": "ore",
-  "element": "neutral",
-  "rarity": "Fine",
-  "baseLevel": 2,
-  "maxLevel": 4,
-  "sellPrice": 18,
-  "stackSize": 999,
-  "category": "smithing"
+  "description": "정제된 강철 광석",
+  "type": "material",
+  "category": "ore",
+  "theme": "Physical",
+  "tier": "Fine",
+  "baseValue": 30,
+  "stackable": true,
+  "maxStack": 99
 } 

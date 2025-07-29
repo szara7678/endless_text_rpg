@@ -1,13 +1,12 @@
 {
-  "materialId": "flame_ore",
-  "name": "화염 광석",
-  "description": "뜨거운 화염의 기운이 담긴 광석입니다. 화염 속성 장비 제작에 사용됩니다.",
-  "type": "ore",
-  "element": "Flame",
-  "rarity": "Common",
-  "baseLevel": 1,
-  "maxLevel": 10,
-  "sellPrice": 5,
-  "stackSize": 999,
-  "category": "crafting"
+  "id": "flame_ore",
+  "name": "화염석",
+  "description": "뜨거운 열기를 내뿜는 붉은 광석",
+  "type": "material",
+  "category": "ore",
+  "theme": "Flame",
+  "tier": "Common",
+  "baseValue": 15,
+  "stackable": true,
+  "maxStack": 99
 } 

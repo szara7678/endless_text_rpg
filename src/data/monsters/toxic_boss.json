@@ -1,0 +1,18 @@
+{
+  "id": "toxic_boss",
+  "name": "베놈 킹",
+  "description": "독의 탑을 지키는 전설의 왕.",
+  "level": 10,
+  "hp": 200,
+  "maxHp": 200,
+  "attack": 50,
+  "defense": 20,
+  "speed": 27,
+  "theme": "Toxic",
+  "tier": "boss",
+  "dropTable": "toxic_boss",
+  "xpReward": 60,
+  "goldReward": 120,
+  "skills": ["toxic_spit", "venom_burst"],
+  "traits": ["toxic_resistance", "boss"]
+} 

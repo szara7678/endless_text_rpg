@@ -1,0 +1,12 @@
+{
+  "id": "verdant_crystal",
+  "name": "자연 수정",
+  "description": "자연의 힘이 깃든 초록 수정",
+  "type": "material",
+  "category": "crystal",
+  "theme": "Verdant",
+  "tier": "Fine",
+  "baseValue": 45,
+  "stackable": true,
+  "maxStack": 99
+} 

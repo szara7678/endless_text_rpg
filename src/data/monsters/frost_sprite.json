@@ -1,0 +1,18 @@
+{
+  "id": "frost_sprite",
+  "name": "프로스트 스프라이트",
+  "description": "작은 얼음 정령.",
+  "level": 1,
+  "hp": 20,
+  "maxHp": 20,
+  "attack": 7,
+  "defense": 3,
+  "speed": 23,
+  "theme": "Frost",
+  "tier": "normal",
+  "dropTable": "frost_normal",
+  "xpReward": 2,
+  "goldReward": 5,
+  "skills": ["ice_shard"],
+  "traits": ["frost_resistance"]
+} 

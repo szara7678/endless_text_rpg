@@ -1,13 +1,12 @@
 {
-  "materialId": "flour",
+  "id": "flour",
   "name": "밀가루",
-  "description": "부드러운 밀가루입니다. 요리 재료로 사용됩니다.",
-  "type": "ingredient",
-  "element": "neutral",
-  "rarity": "Common",
-  "baseLevel": 1,
-  "maxLevel": 3,
-  "sellPrice": 3,
-  "stackSize": 999,
-  "category": "cooking"
+  "description": "기본적인 밀가루",
+  "type": "material",
+  "category": "food",
+  "theme": "Physical",
+  "tier": "Common",
+  "baseValue": 2,
+  "stackable": true,
+  "maxStack": 99
 } 

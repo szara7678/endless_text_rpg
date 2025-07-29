@@ -1,0 +1,18 @@
+{
+  "id": "thunder_boss",
+  "name": "썬더 드래곤",
+  "description": "번개의 탑을 지키는 전설의 드래곤.",
+  "level": 10,
+  "hp": 215,
+  "maxHp": 215,
+  "attack": 53,
+  "defense": 23,
+  "speed": 30,
+  "theme": "Thunder",
+  "tier": "boss",
+  "dropTable": "thunder_boss",
+  "xpReward": 60,
+  "goldReward": 120,
+  "skills": ["thunder_shock", "thunder_roar"],
+  "traits": ["thunder_resistance", "boss"]
+} 

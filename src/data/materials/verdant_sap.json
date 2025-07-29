@@ -1,13 +1,12 @@
 {
-  "materialId": "verdant_sap",
+  "id": "verdant_sap",
   "name": "자연 수액",
-  "description": "고대 나무에서 추출한 생명력 넘치는 수액입니다. 자연 장비 제작에 사용됩니다.",
-  "type": "sap",
-  "element": "verdant",
-  "rarity": "Superior",
-  "baseLevel": 2,
-  "maxLevel": 5,
-  "sellPrice": 25,
-  "stackSize": 999,
-  "category": "crafting"
+  "description": "자연의 생명력이 담긴 수액",
+  "type": "material",
+  "category": "sap",
+  "theme": "Verdant",
+  "tier": "Common",
+  "baseValue": 12,
+  "stackable": true,
+  "maxStack": 99
 } 

@@ -1,0 +1,12 @@
+{
+  "id": "toxic_ore",
+  "name": "독성석",
+  "description": "독성을 머금은 녹색 광석",
+  "type": "material",
+  "category": "ore",
+  "theme": "Toxic",
+  "tier": "Common",
+  "baseValue": 15,
+  "stackable": true,
+  "maxStack": 99
+} 

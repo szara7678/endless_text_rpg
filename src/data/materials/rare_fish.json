@@ -1,0 +1,12 @@
+{
+  "id": "rare_fish",
+  "name": "희귀한 물고기",
+  "description": "매우 희귀한 물고기",
+  "type": "material",
+  "category": "fish",
+  "theme": "Physical",
+  "tier": "Epic",
+  "baseValue": 100,
+  "stackable": true,
+  "maxStack": 99
+} 

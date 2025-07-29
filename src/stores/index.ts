@@ -10,9 +10,10 @@ import { skillSlice } from './skillSlice'
 import { uiSlice } from './uiSlice'
 import { lifeSlice } from './lifeSlice'
 import { processAutoCombatTurn, generateNextMonster, processPlayerTurn, processMonsterTurn, determineFirstAttacker } from '../utils/combatEngine'
-import { processItemDrops } from '../utils/dropSystem'
+import { processItemDrops, processSkillPageDrops } from '../utils/dropSystem'
 import * as EquipmentSystem from '../utils/equipmentSystem'
 import { generateInitialItems } from '../utils/itemGenerator'
+import { initialCharacterData, initialInventoryData, initialSkillsData, initialTowerData } from '../data/initial'
 
 // equipmentSystem 함수들을 destructure
 const { 
@@ -46,8 +47,8 @@ interface GameStore {
   setActivePanel: (panel: 'character' | 'inventory' | 'shop' | 'life' | null) => void
 
   // 인벤토리 관리
-  addItem: (itemId: string, quantity: number) => void
-  addMaterial: (materialId: string, count: number) => void
+  addItem: (itemId: string, quantity: number, level?: number, quality?: string) => void
+  addMaterial: (materialId: string, count: number, level?: number) => void
   addSkillPage: (skillId: string) => void
   removeMaterial: (materialId: string, count: number) => void
 
@@ -60,6 +61,7 @@ interface GameStore {
   equipItem: (itemId: string) => void
   unequipItem: (slot: 'weapon' | 'armor' | 'accessory') => void
   enhanceEquipment: (slot: 'weapon' | 'armor' | 'accessory') => void
+  enhanceInventoryEquipment: (itemId: string, uniqueId: string) => void
 
   // 생활 스킬 시스템
   addLifeSkillXp: (skillType: any, xp: number) => void
@@ -178,32 +180,16 @@ export const useGameStore = create<GameStore>()(
       },
       gameState: 'menu',
 
-      // 자동 저장 (5초마다)
+      // 자동 저장 (몬스터 처치 시에만)
       startAutoSave: () => {
-        setInterval(() => {
-          const state = get()
-          if (state.gameState === 'playing') {
-            const saveData = {
-              player: state.player,
-              tower: state.tower,
-              inventory: state.inventory,
-              skills: state.skills,
-              timestamp: Date.now()
-            }
-            localStorage.setItem('endless_rpg_save', JSON.stringify(saveData))
-            console.log('💾 자동 저장 완료')
-          }
-        }, 5000)
+        // 주기적 저장 대신 몬스터 처치 시에만 저장하도록 변경
+        console.log('💾 몬스터 처치 시 저장 시스템 활성화')
       },
 
       // 초기 인벤토리 로드
       loadInitialInventory: async () => {
         try {
           console.log('📦 초기 인벤토리 로드 중...')
-          
-          // initial/inventory.json 로드
-          const initialInventoryResponse = await fetch('/src/data/initial/inventory.json')
-          const initialInventoryData = await initialInventoryResponse.json()
           
           // 초기 아이템들 생성
           const generatedItems = await generateInitialItems(initialInventoryData.initialItems)
@@ -254,19 +240,10 @@ export const useGameStore = create<GameStore>()(
           
           // 1단계: 초기 데이터 로드
           console.log('⏳ 1단계: 초기 데이터 로드 중...')
-          const [initialCharacterResponse, initialInventoryResponse, initialSkillsResponse, initialTowerResponse] = await Promise.all([
-            fetch('/src/data/initial/character.json'),
-            fetch('/src/data/initial/inventory.json'),
-            fetch('/src/data/initial/skills.json'),
-            fetch('/src/data/initial/tower.json')
-          ])
-          
-          const [initialCharacter, initialInventory, initialSkills, initialTower] = await Promise.all([
-            initialCharacterResponse.json(),
-            initialInventoryResponse.json(),
-            initialSkillsResponse.json(),
-            initialTowerResponse.json()
-          ])
+          const initialCharacter = initialCharacterData
+          const initialInventory = initialInventoryData
+          const initialSkills = initialSkillsData
+          const initialTower = initialTowerData
           
           console.log('✅ 1단계 완료: 초기 데이터 로드됨')
           
@@ -405,7 +382,7 @@ export const useGameStore = create<GameStore>()(
 
       // 딜레이 계산 함수 (중앙 관리)
       getCombatDelay: (speed: number) => {
-        return Math.max(200, 2000 / speed)
+        return Math.max(1000, 2000 / speed) // 기본 딜레이를 더 늘림 (최소 1초)
       },
 
       // 자동 전투 시스템 (턴제) - 단일 인터벌 사용
@@ -413,9 +390,8 @@ export const useGameStore = create<GameStore>()(
         const { tower } = get()
         if (autoCombatInterval) return
 
-        // 게임 속도에 따른 인터벌 계산 (게임 속도와 연동)
-        const baseInterval = 1500 // 기본 1.5초
-        const interval = Math.max(300, baseInterval / speed) // 최소 0.3초
+        // 게임 속도에 따른 인터벌 계산 (게임 속도와 연동) - getCombatDelay와 통일
+        const interval = get().getCombatDelay(speed)
 
         // 자동 전투 상태 설정
         set((state: any) => ({
@@ -423,7 +399,8 @@ export const useGameStore = create<GameStore>()(
           tower: {
             ...state.tower,
             autoMode: true,
-            autoSpeed: speed
+            autoSpeed: speed,
+            preventAutoCombat: false // 정상적인 자동 전투 시작 시 플래그 리셋
           }
         }))
 
@@ -454,13 +431,13 @@ export const useGameStore = create<GameStore>()(
               }
             }
             
-            // 전투 중이고 턴 대기 중이거나 플레이어 턴이 진행 중이면 액션 수행
+            // 전투 중이고 턴 대기 중이면 액션 수행 (사망 후가 아닌 경우에만)
             if (currentState.tower.isInCombat && 
                 currentState.tower.currentMonster && 
-                (currentState.tower.combatState?.phase === 'waiting' || 
-                 currentState.tower.combatState?.phase === 'player_turn') &&
+                currentState.tower.combatState?.phase === 'waiting' &&
                 !currentState.tower.combatState.playerTurnComplete &&
-                !currentState.tower.combatState.monsterTurnComplete) {
+                !currentState.tower.combatState.monsterTurnComplete &&
+                !currentState.tower.preventAutoCombat) { // 사망 후 자동 전투 방지 플래그 체크
               await get().performCombatAction('attack')
             }
           } catch (error) {
@@ -469,9 +446,10 @@ export const useGameStore = create<GameStore>()(
           }
         }, interval)
 
-        // 몬스터가 이미 있고 전투 중이면 즉시 첫 턴 시작
+        // 몬스터가 이미 있고 전투 중이면 즉시 첫 턴 시작 (사망 후가 아닌 경우에만)
         if (tower.currentMonster && tower.isInCombat && 
-            (!tower.combatState || tower.combatState.phase === 'waiting')) {
+            (!tower.combatState || tower.combatState.phase === 'waiting') &&
+            !tower.preventAutoCombat) { // 사망 후 자동 전투 방지 플래그 체크
           // 즉시 첫 턴 시작
           setTimeout(() => {
             get().performCombatAction('attack')
@@ -491,7 +469,8 @@ export const useGameStore = create<GameStore>()(
           ...state,
           tower: {
             ...state.tower,
-            autoMode: false
+            autoMode: false,
+            preventAutoCombat: true // 즉시 전투 중지 플래그 추가
           }
         }))
 
@@ -500,6 +479,9 @@ export const useGameStore = create<GameStore>()(
 
       // 자동 전투 속도 설정
       setAutoSpeed: (speed: number) => {
+        const currentState = get()
+        const wasAutoMode = currentState.tower.autoMode
+        
         set((state: any) => ({
           ...state,
           tower: {
@@ -507,6 +489,12 @@ export const useGameStore = create<GameStore>()(
             autoSpeed: speed
           }
         }))
+        
+        // 자동 전투가 활성화되어 있으면 새로운 속도로 재시작
+        if (wasAutoMode) {
+          get().stopAutoCombat()
+          get().startAutoCombat(speed)
+        }
       },
 
       // 전투 액션 수행 (턴제 시스템)
@@ -599,26 +587,29 @@ export const useGameStore = create<GameStore>()(
               }))
             }
 
-            // 몬스터가 살아있으면 즉시 몬스터 턴으로 진행
+            // 몬스터가 살아있으면 지연 후 몬스터 턴으로 진행
             if (result.monsterHpAfter > 0) {
-              // 몬스터 턴으로 즉시 전환
-              set((state: any) => ({
-                ...state,
-                tower: {
-                  ...state.tower,
-                  combatState: {
-                    ...state.tower.combatState,
-                    playerTurnComplete: false,
-                    monsterTurnComplete: false,
-                    phase: 'monster_turn',
-                    currentTurn: state.tower.combatState.currentTurn + 1
-                  }
-                }
-              }))
-              
               // 게임 속도에 따른 지연 후 몬스터 턴 실행
               const delay = get().getCombatDelay(currentState.tower.autoSpeed)
+              // get().addCombatLog('combat', `⏳ ${delay}ms 후 몬스터 턴 시작...`)
+              
               setTimeout(() => {
+                // 지연 후 몬스터 턴으로 전환
+                set((state: any) => ({
+                  ...state,
+                  tower: {
+                    ...state.tower,
+                    combatState: {
+                      ...state.tower.combatState,
+                      playerTurnComplete: false,
+                      monsterTurnComplete: false,
+                      phase: 'monster_turn',
+                      currentTurn: state.tower.combatState.currentTurn + 1
+                    }
+                  }
+                }))
+                
+                // 몬스터 턴 실행
                 get().performCombatAction('attack')
               }, delay)
             } else {
@@ -653,26 +644,29 @@ export const useGameStore = create<GameStore>()(
               }
             }))
 
-            // 플레이어가 살아있으면 즉시 플레이어 턴으로 진행
+            // 플레이어가 살아있으면 지연 후 플레이어 턴으로 진행
             if (result.playerHpAfter > 0) {
-              // 플레이어 턴으로 즉시 전환
-              set((state: any) => ({
-                ...state,
-                tower: {
-                  ...state.tower,
-                  combatState: {
-                    ...state.tower.combatState,
-                    playerTurnComplete: false,
-                    monsterTurnComplete: false,
-                    phase: 'player_turn',
-                    currentTurn: state.tower.combatState.currentTurn + 1
-                  }
-                }
-              }))
-              
               // 게임 속도에 따른 지연 후 플레이어 턴 실행
               const delay = get().getCombatDelay(currentState.tower.autoSpeed)
+              // get().addCombatLog('combat', `⏳ ${delay}ms 후 플레이어 턴 시작...`)
+              
               setTimeout(() => {
+                // 지연 후 플레이어 턴으로 전환
+                set((state: any) => ({
+                  ...state,
+                  tower: {
+                    ...state.tower,
+                    combatState: {
+                      ...state.tower.combatState,
+                      playerTurnComplete: false,
+                      monsterTurnComplete: false,
+                      phase: 'player_turn',
+                      currentTurn: state.tower.combatState.currentTurn + 1
+                    }
+                  }
+                }))
+                
+                // 플레이어 턴 실행
                 get().performCombatAction('attack')
               }, delay)
             } else {
@@ -814,29 +808,113 @@ export const useGameStore = create<GameStore>()(
           }))
           get().addCombatLog('loot', `💰 골드 +${goldGain}`)
           
-          // 간단한 아이템 드롭
-          if (Math.random() < 0.3) {
-            get().addMaterial('iron_ore', 1)
-            get().addCombatLog('loot', `⛏️ 철 광석 획득!`)
+          // 새로운 드롭 시스템 적용
+          try {
+            const currentTower = get().tower
+            const dropResults = await processItemDrops(monster, get().inventory, currentTower.currentFloor)
+            
+            // 재료 드롭 처리
+            for (const material of dropResults.materials) {
+              get().addMaterial(material.itemId, 1, material.level)
+              get().addCombatLog('loot', `⛏️ ${material.itemId.replace('_', ' ')} (Lv${material.level}) 획득!`)
+            }
+            
+            // 아이템 드롭 처리
+            for (const item of dropResults.items) {
+              get().addItem(item.itemId, 1, item.level, item.quality)
+              const qualityText = item.quality !== 'Common' ? ` (${item.quality})` : ''
+              get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText} 획득!`)
+            }
+            
+            // 스킬 페이지 드롭 처리
+            const skillPages = processSkillPageDrops(monster)
+            for (const skillId of skillPages) {
+              get().addSkillPage(skillId)
+              get().addCombatLog('loot', `📚 ${skillId} 스킬 페이지 획득!`)
+            }
+            
+          } catch (error) {
+            console.error('드롭 처리 실패:', error)
+            // 기존 간단한 드롭으로 폴백
+            if (Math.random() < 0.3) {
+              get().addMaterial('iron_ore', 1)
+              get().addCombatLog('loot', `⛏️ 철 광석 획득!`)
+            }
           }
           
-          // 몬스터 제거 및 다음 몬스터 생성
+          // 몬스터 처치 횟수 증가 및 층 진행 체크
           const { tower } = get()
-          const nextMonster = await generateNextMonster(tower.currentFloor)
+          const currentFloor = tower.currentFloor
+          const floorInCycle = currentFloor % 10
           
-          if (nextMonster) {
+          // 현재 층에서 처치해야 할 몬스터 수 결정
+          let requiredKills = 0
+          if (floorInCycle === 0) {
+            // 휴식층: 즉시 다음 층으로
+            requiredKills = 0
+          } else if (floorInCycle >= 1 && floorInCycle <= 5) {
+            // 일반 몬스터층: 3마리 처치
+            requiredKills = 3
+          } else if (floorInCycle >= 6 && floorInCycle <= 8) {
+            // 정예 몬스터층: 2마리 처치
+            requiredKills = 2
+          } else if (floorInCycle === 9) {
+            // 보스층: 1마리 처치
+            requiredKills = 1
+          }
+          
+          // 몬스터 처치 횟수 증가
+          const newKillCount = (tower.monsterKillCount || 0) + 1
+          
+          if (newKillCount >= requiredKills) {
+            // 충분한 몬스터를 처치했으면 다음 층으로
             set((state: any) => ({
               ...state,
               tower: {
                 ...state.tower,
-                currentMonster: nextMonster,
-                isInCombat: true
+                monsterKillCount: 0 // 카운트 리셋
               }
             }))
-            get().addCombatLog('combat', `👹 ${nextMonster.name}이(가) 나타났습니다!`)
-          } else {
-            // 몬스터가 없으면 다음 층으로
             await get().proceedToNextFloor()
+          } else {
+            // 아직 더 처치해야 하면 다음 몬스터 생성
+            set((state: any) => ({
+              ...state,
+              tower: {
+                ...state.tower,
+                monsterKillCount: newKillCount
+              }
+            }))
+            
+            const nextMonster = await generateNextMonster(currentFloor)
+            if (nextMonster) {
+              set((state: any) => ({
+                ...state,
+                tower: {
+                  ...state.tower,
+                  currentMonster: nextMonster,
+                  isInCombat: true
+                }
+              }))
+              get().addCombatLog('combat', `👹 ${nextMonster.name}이(가) 나타났습니다!`)
+            } else {
+              // 몬스터 생성 실패 시 다음 층으로
+              await get().proceedToNextFloor()
+            }
+          }
+          
+          // 몬스터 처치 시 저장
+          const state = get()
+          if (state.gameState === 'playing') {
+            const saveData = {
+              player: state.player,
+              tower: state.tower,
+              inventory: state.inventory,
+              skills: state.skills,
+              timestamp: Date.now()
+            }
+            localStorage.setItem('endless_rpg_save', JSON.stringify(saveData))
+            console.log('💾 몬스터 처치 시 저장 완료')
           }
           
         } catch (error) {
@@ -848,62 +926,82 @@ export const useGameStore = create<GameStore>()(
       handlePlayerDeath: async () => {
         console.log('💀 플레이어 사망!')
         
-        const { player } = get()
-        // 3층 전으로 돌아가기 (최소 1층)
-        const newFloor = Math.max(1, player.highestFloor - 3)
+        // 1. 사망 로그
+        get().addCombatLog('death', '💀 플레이어 사망!')
         
+        // 2. 자동 전투 즉시 정지
+        get().stopAutoCombat()
+        
+        // 3. 현재 층에서 전투 상태 정리 (몬스터 제거, 전투 중지)
         set((state: any) => ({
           ...state,
-          player: {
-            ...state.player,
-            hp: state.player.maxHp,
-            mp: state.player.maxMp,
-            highestFloor: newFloor // 최고 층도 함께 조정
-          },
           tower: {
             ...state.tower,
-            currentFloor: newFloor,
             currentMonster: null,
             isInCombat: false,
+            autoMode: false,
+            preventAutoCombat: true,
             combatState: {
               phase: 'waiting',
               currentTurn: 0,
               playerTurnComplete: false,
               monsterTurnComplete: false,
-              turnDelay: 1000
+              turnDelay: get().getCombatDelay(1)
             }
           }
         }))
         
-        get().addCombatLog('floor', `💀 사망하여 ${newFloor}층으로 돌아갑니다...`)
-        get().stopAutoCombat()
-        
-        // 해당 층에 맞는 몬스터 생성
-        try {
-          const newMonster = await generateNextMonster(newFloor)
-          if (newMonster) {
-            set((state: any) => ({
-              ...state,
-              tower: {
-                ...state.tower,
-                currentMonster: newMonster,
-                isInCombat: true,
-                combatState: {
-                  phase: 'waiting',
-                  currentTurn: 0,
-                  playerTurnComplete: false,
-                  monsterTurnComplete: false,
-                  turnDelay: 1000
+        // 4. 1초 후에 아래층으로 이동 및 몬스터 생성
+        setTimeout(async () => {
+          const { player } = get()
+          const newFloor = Math.max(1, player.highestFloor - 3)
+          
+          // 층 이동 및 플레이어 상태 복구
+          set((state: any) => ({
+            ...state,
+            player: {
+              ...state.player,
+              hp: state.player.maxHp,
+              mp: state.player.maxMp,
+              highestFloor: newFloor
+            },
+            tower: {
+              ...state.tower,
+              currentFloor: newFloor,
+              preventAutoCombat: true
+            }
+          }))
+          
+          get().addCombatLog('floor', `💀 사망하여 ${newFloor}층으로 돌아갑니다...`)
+          
+          // 5. 새 몬스터 생성 (전투 UI는 표시하되 자동 전투는 비활성화)
+          try {
+            const newMonster = await generateNextMonster(newFloor)
+            if (newMonster) {
+              set((state: any) => ({
+                ...state,
+                tower: {
+                  ...state.tower,
+                  currentMonster: newMonster,
+                  isInCombat: true, // 전투 UI 표시
+                  preventAutoCombat: true, // 자동 전투는 비활성화
+                  combatState: {
+                    phase: 'waiting',
+                    currentTurn: 0,
+                    playerTurnComplete: false,
+                    monsterTurnComplete: false,
+                    turnDelay: get().getCombatDelay(1)
+                  }
                 }
-              }
-            }))
-            
-            get().addCombatLog('combat', `👹 ${newMonster.name}이(가) 나타났습니다!`)
+              }))
+              
+              get().addCombatLog('combat', `👹 ${newMonster.name}이(가) 나타났습니다!`)
+            }
+          } catch (error) {
+            console.error('몬스터 생성 실패:', error)
+            get().addCombatLog('combat', '⚠️ 몬스터를 불러오는데 실패했습니다.')
           }
-        } catch (error) {
-          console.error('몬스터 생성 실패:', error)
-          get().addCombatLog('combat', '⚠️ 몬스터를 불러오는데 실패했습니다.')
-        }
+        }, 1000) // 1초 후 실행
       },
 
       proceedToNextFloor: async () => {
@@ -1098,7 +1196,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       // 인벤토리 관리
-      addItem: (itemId: string, quantity: number) => {
+      addItem: (itemId: string, quantity: number, level: number = 1, quality: string = 'Common') => {
         set((state: any) => {
           const newItems = [...state.inventory.items]
           
@@ -1116,19 +1214,21 @@ export const useGameStore = create<GameStore>()(
               newItems.push({
                 itemId,
                 uniqueId: `${itemId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                level: 1,
+                level: level,
                 quantity: 1,
-                quality: 'Common',
-                enhancement: 0
+                quality: quality as any,
+                enhancement: 0  // 드롭되는 장비는 강화 레벨 0으로 고정
               })
             }
           } else {
             // 소모품은 기존 방식대로 수량 관리
             const existingIndex = newItems.findIndex(item => item.itemId === itemId && !item.uniqueId)
             if (existingIndex >= 0) {
+              // 기존 소모품이 있으면 수량만 추가하고 레벨은 더 높은 것으로 유지
               newItems[existingIndex].quantity += quantity
+              newItems[existingIndex].level = Math.max(newItems[existingIndex].level || 1, level)
             } else {
-              newItems.push({ itemId, quantity, level: 1 })
+              newItems.push({ itemId, quantity, level: level })
             }
           }
           
@@ -1142,18 +1242,20 @@ export const useGameStore = create<GameStore>()(
         })
       },
 
-      addMaterial: (materialId: string, count: number) => {
+      addMaterial: (materialId: string, count: number, level: number = 1) => {
         set((state: any) => {
           const materials = [...state.inventory.materials]
           const existingIndex = materials.findIndex(m => m.materialId === materialId)
           
           if (existingIndex >= 0) {
+            // 기존 재료가 있으면 수량만 추가하고 레벨은 더 높은 것으로 유지
             materials[existingIndex].count += count
+            materials[existingIndex].level = Math.max(materials[existingIndex].level, level)
           } else {
             materials.push({
               materialId,
               name: materialId.replace('_', ' '),
-              level: 1,
+              level: level,
               count
             })
           }
@@ -1452,14 +1554,28 @@ export const useGameStore = create<GameStore>()(
 
       // 장비 해제
       unequipItem: (slot: 'weapon' | 'armor' | 'accessory') => {
-        const { player } = get()
+        const { player, inventory } = get()
         
         const result = unequipItem(player, slot)
         
         if (result.success) {
+          // 인벤토리에 해제된 장비 추가
+          const newInventory = { ...inventory }
+          if (result.unequippedItem) {
+            newInventory.items.push({
+              itemId: result.unequippedItem.itemId,
+              uniqueId: result.unequippedItem.uniqueId,
+              level: result.unequippedItem.level,
+              quality: result.unequippedItem.quality,
+              enhancement: result.unequippedItem.enhancement,
+              quantity: 1
+            })
+          }
+          
           set((state: any) => ({
             ...state,
-            player: result.newPlayer
+            player: result.newPlayer,
+            inventory: newInventory
           }))
           get().addCombatLog('loot', `✅ ${result.message}`)
         } else {
@@ -1467,7 +1583,7 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
-      // 장비 강화
+      // 장비 강화 (장착된 장비)
       enhanceEquipment: (slot: 'weapon' | 'armor' | 'accessory') => {
         const { player } = get()
         
@@ -1504,6 +1620,70 @@ export const useGameStore = create<GameStore>()(
              }))
            }
            get().addCombatLog('loot', `❌ ${result.message}`)
+        }
+      },
+
+      // 장비 강화 (인벤토리의 장비)
+      enhanceInventoryEquipment: (itemId: string, uniqueId: string) => {
+        const { player, inventory } = get()
+        
+        // 인벤토리에서 해당 장비 찾기
+        const targetItem = inventory.items.find(item => 
+          item.uniqueId === uniqueId || (item.itemId === itemId && !item.uniqueId)
+        )
+        
+        if (!targetItem) {
+          get().addCombatLog('loot', `❌ 강화할 장비를 찾을 수 없습니다.`)
+          return
+        }
+
+        // ItemInstance를 EquipmentInstance로 변환
+        const equipmentInstance = {
+          ...targetItem,
+          traits: [],
+          quality: targetItem.quality || 'Common',
+          enhancement: targetItem.enhancement || 0
+        }
+
+        const result = enhanceEquipment(equipmentInstance, player.gold)
+        
+        if (result.success) {
+          // 인벤토리의 장비 업데이트 (EquipmentInstance를 ItemInstance로 변환)
+          const newInventory = { ...inventory }
+          const itemIndex = newInventory.items.findIndex(item => 
+            item.uniqueId === uniqueId || (item.itemId === itemId && !item.uniqueId)
+          )
+          
+          if (itemIndex !== -1) {
+            const { traits, ...itemInstance } = result.newEquipment
+            newInventory.items[itemIndex] = {
+              ...itemInstance,
+              quantity: 1, // 장비는 항상 수량 1
+              enhancement: result.newEquipment.enhancement // 강화 레벨 명시적으로 설정
+            }
+          }
+          
+          // 골드 차감
+          const newPlayer = { ...player, gold: player.gold - result.goldCost }
+          
+          set((state: any) => ({
+            ...state,
+            player: newPlayer,
+            inventory: newInventory
+          }))
+          get().addCombatLog('loot', `✅ ${result.message}`)
+        } else {
+          if (result.goldCost > 0) {
+            // 실패했지만 골드는 소모됨
+            set((state: any) => ({
+              ...state,
+              player: {
+                ...state.player,
+                gold: state.player.gold - result.goldCost
+              }
+            }))
+          }
+          get().addCombatLog('loot', `❌ ${result.message}`)
         }
       },
 

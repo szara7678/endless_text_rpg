@@ -126,16 +126,13 @@ export interface Monster {
   xpReward: number // 경험치 (기획안상 0)
   
   // 드롭
-  dropTableId: string
-  skillPageDrops: string[] // 스킬 ID 목록
+  dropTable: string
+  skills: string[] // 스킬 ID 목록
   
   // 특성
   traits: string[]
   resistances: ThemeType[]
   weaknesses: ThemeType[]
-  
-  // 스킬 (몬스터도 스킬 사용)
-  skills: string[] // 스킬 ID 목록
 }
 
 // === 스킬 ===
@@ -419,6 +416,8 @@ export interface TowerState {
   isInCombat: boolean
   lastUsedSkill?: string | null // 마지막으로 사용된 스킬 (kill 수련치용)
   combatState?: CombatState // 턴제 전투 상태
+  preventAutoCombat?: boolean // 사망 후 자동 전투 방지 플래그
+  monsterKillCount?: number // 현재 층에서 처치한 몬스터 수
 }
 
 export interface CombatLogEntry {

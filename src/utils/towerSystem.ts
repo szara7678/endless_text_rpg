@@ -174,34 +174,34 @@ export function getMonsterPoolForFloor(floor: number): string[] {
   // 현재는 하드코딩으로 임시 구현
   const monsterPools: Record<ThemeType, Record<string, string[]>> = {
     'Flame': {
-      'normal': ['flame_imp', 'fire_sprite', 'magma_slime', 'ember_wolf'],
-      'elite': ['flame_guardian', 'fire_elemental', 'lava_golem'],
-      'boss': ['inferno_dragon']
+      'normal': ['flame_imp', 'fire_sprite', 'magma_slime', 'ember_wolf', 'flame_lizard'],
+      'elite': ['flame_elite'],
+      'boss': ['flame_boss', 'inferno_dragon']
     },
     'Frost': {
-      'normal': ['frost_imp', 'ice_sprite', 'frozen_slime', 'crystal_wolf'],
-      'elite': ['frost_guardian', 'ice_elemental', 'glacier_golem'],
-      'boss': ['blizzard_dragon']
+      'normal': ['frost_sprite', 'frost_wolf'],
+      'elite': ['frost_elite'],
+      'boss': ['frost_boss']
     },
     'Toxic': {
-      'normal': ['toxic_imp', 'poison_sprite', 'acid_slime', 'venom_wolf'],
-      'elite': ['toxic_guardian', 'poison_elemental', 'plague_golem'],
-      'boss': ['miasma_dragon']
+      'normal': ['toxic_slime', 'toxic_snake', 'toxic_bug'],
+      'elite': ['toxic_elite'],
+      'boss': ['toxic_boss']
     },
     'Shadow': {
-      'normal': ['shadow_imp', 'dark_sprite', 'void_slime', 'shade_wolf'],
-      'elite': ['shadow_guardian', 'dark_elemental', 'obsidian_golem'],
-      'boss': ['eclipse_dragon']
+      'normal': ['shadow_bat', 'shadow_rat', 'shadow_spirit'],
+      'elite': ['shadow_elite'],
+      'boss': ['shadow_boss']
     },
     'Thunder': {
-      'normal': ['thunder_imp', 'lightning_sprite', 'storm_slime', 'bolt_wolf'],
-      'elite': ['thunder_guardian', 'lightning_elemental', 'storm_golem'],
-      'boss': ['tempest_dragon']
+      'normal': ['thunder_bird', 'thunder_snake', 'thunder_golem'],
+      'elite': ['thunder_elite'],
+      'boss': ['thunder_boss']
     },
     'Verdant': {
-      'normal': ['verdant_imp', 'nature_sprite', 'moss_slime', 'thorn_wolf'],
-      'elite': ['verdant_guardian', 'nature_elemental', 'earth_golem'],
-      'boss': ['gaia_dragon']
+      'normal': ['verdant_sprite', 'verdant_boar', 'verdant_golem'],
+      'elite': ['verdant_elite'],
+      'boss': ['verdant_boss']
     }
   }
   

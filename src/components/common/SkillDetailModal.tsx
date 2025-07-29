@@ -26,17 +26,50 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
     return elementMap[element] || elementMap['neutral']
   }
 
-  // 스킬 정보 계산
-  const skillInfo = {
+  // 스킬 데이터에서 실제 발동률 계산
+  const calculateActualTriggerChance = async (skillId: string, level: number) => {
+    try {
+      const skillData = await import(`../../data/skills/${skillId}.json`)
+      if (skillData.default) {
+        const { triggerChance } = skillData.default
+        
+        if (skillId === 'basic_attack') {
+          return 100
+        }
+        
+        if (triggerChance) {
+          const { base, perLevel, max } = triggerChance
+          const calculatedChance = base + (level - 1) * perLevel
+          return Math.min(calculatedChance, max)
+        }
+        
+        return 10
+      }
+    } catch (error) {
+      console.error(`스킬 데이터 로드 실패: ${skillId}`, error)
+    }
+    return skillId === 'basic_attack' ? 100 : 10
+  }
+
+  const [skillInfo, setSkillInfo] = React.useState({
     name: skill.skillId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Unknown Skill',
     level: skill.level || 1,
-    triggerChance: skill.skillId === 'basic_attack' ? 100 : (skill.triggerChance || 0),
+    triggerChance: skill.triggerChance || (skill.skillId === 'basic_attack' ? 100 : 10),
     currentXp: skill.currentXp || 0,
     maxXp: skill.maxXp || 100,
     element: 'physical', // 기본값
     description: '스킬 설명이 여기에 표시됩니다.',
     type: 'Active'
-  }
+  })
+
+  // 실제 발동률 계산 (비동기 처리)
+  React.useEffect(() => {
+    const updateTriggerChance = async () => {
+      const actualChance = await calculateActualTriggerChance(skill.skillId, skillInfo.level)
+      setSkillInfo(prev => ({ ...prev, triggerChance: actualChance }))
+    }
+    updateTriggerChance()
+  }, [skill.skillId, skillInfo.level])
 
   // 속성별 스킬 분류
   if (skill.skillId?.includes('fireball') || skill.skillId?.includes('flame') || skill.skillId?.includes('ember')) {
@@ -178,35 +211,48 @@ const SkillDetailModal: React.FC<SkillDetailModalProps> = ({ isOpen, onClose, sk
                  </span>
                </div>
                
-               {/* 스킬별 발동률 증가 레벨 체크 */}
+               {/* 스킬별 발동률 증가 체크 */}
                {(() => {
                  // 기본 공격은 항상 100% 발동률 유지
                  if (skill.skillId === 'basic_attack') {
                    return null
                  }
                  
-                 const skillTriggerMap: Record<string, number[]> = {
-                   'fireball': [1, 3, 7, 12, 18, 25, 35, 45, 60, 80, 100],
-                   'ice_shard': [1, 4, 8, 15, 22, 30, 40, 55, 70, 90],
-                   'flame_aura': [1, 6, 12, 20, 30, 45, 60, 80, 100],
-                   'frost_bite': [1, 5, 12, 20, 30, 45, 65, 85],
-                   'ember_toss': [1, 2, 5, 10, 16, 24, 35, 50, 70, 95]
+                 // 스킬 데이터에서 다음 레벨 발동률 계산
+                 const calculateNextLevelTriggerChance = async () => {
+                   try {
+                     const skillData = await import(`../../data/skills/${skill.skillId}.json`)
+                     if (skillData.default && skillData.default.triggerChance) {
+                       const { base, perLevel, max } = skillData.default.triggerChance
+                       const nextLevelChance = base + skillInfo.level * perLevel
+                       const nextLevelFinalChance = Math.min(nextLevelChance, max)
+                       
+                       if (nextLevelFinalChance > skillInfo.triggerChance) {
+                         return (
+                           <div className="flex justify-between text-sm">
+                             <span className="text-gray-300">발동률</span>
+                             <span className="text-green-400 font-mono">
+                               {nextLevelFinalChance}%
+                               <span className="text-green-500 ml-1">(+{nextLevelFinalChance - skillInfo.triggerChance}%)</span>
+                             </span>
+                           </div>
+                         )
+                       }
+                     }
+                   } catch (error) {
+                     console.error(`스킬 데이터 로드 실패: ${skill.skillId}`, error)
+                   }
+                   return null
                  }
-                 const triggerLevels = skillTriggerMap[skill.skillId] || [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
-                 const willIncreaseAt = skillInfo.level + 1
                  
-                 if (triggerLevels.includes(willIncreaseAt)) {
-                   return (
-                     <div className="flex justify-between text-sm">
-                       <span className="text-gray-300">발동률</span>
-                       <span className="text-green-400 font-mono">
-                         {Math.min(95, skillInfo.triggerChance + 5)}%
-                         <span className="text-green-500 ml-1">(+5%)</span>
-                       </span>
-                     </div>
-                   )
-                 }
-                 return null
+                 // 비동기 처리를 위한 상태 관리
+                 const [nextLevelInfo, setNextLevelInfo] = React.useState<React.ReactNode>(null)
+                 
+                 React.useEffect(() => {
+                   calculateNextLevelTriggerChance().then(setNextLevelInfo)
+                 }, [skill.skillId, skillInfo.level, skillInfo.triggerChance])
+                 
+                 return nextLevelInfo
                })()}
                
                <div className="text-xs text-gray-500 mt-2">

@@ -1,0 +1,18 @@
+{
+  "id": "verdant_golem",
+  "name": "버던트 골렘",
+  "description": "숲의 힘이 깃든 골렘.",
+  "level": 3,
+  "hp": 34,
+  "maxHp": 34,
+  "attack": 12,
+  "defense": 7,
+  "speed": 15,
+  "theme": "Verdant",
+  "tier": "normal",
+  "dropTable": "verdant_normal",
+  "xpReward": 5,
+  "goldReward": 7,
+  "skills": ["verdant_charge"],
+  "traits": ["verdant_resistance"]
+} 

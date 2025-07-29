@@ -1,0 +1,32 @@
+{
+  "skillId": "shadow_bite",
+  "name": "섀도우 바이트",
+  "description": "어둠의 힘으로 적을 물어 피해를 주고 체력을 회복한다.",
+  "type": "Active",
+  "element": "Shadow",
+  "triggerChance": {
+    "base": 25,
+    "perLevel": 5,
+    "max": 85
+  },
+  "maxLevel": 0,
+  "requiredPages": 3,
+  "effects": [
+    {
+      "type": "damage",
+      "element": "Shadow",
+      "baseValue": 130,
+      "levelScaling": 20
+    },
+    {
+      "type": "heal",
+      "baseValue": 30,
+      "levelScaling": 5
+    }
+  ],
+  "trainingRules": [
+    { "condition": "cast", "xpGain": 1 },
+    { "condition": "kill", "xpGain": 5 },
+    { "condition": "killWeak", "xpGain": 20 }
+  ]
+} 

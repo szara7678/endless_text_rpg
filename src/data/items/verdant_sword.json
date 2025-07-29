@@ -1,0 +1,25 @@
+{
+  "itemId": "verdant_sword",
+  "name": "자연검",
+  "description": "자연의 힘을 담은 검",
+  "type": "weapon",
+  "subtype": "sword",
+  "element": "verdant",
+  "rarity": "Fine",
+  "level": 1,
+  "baseStats": {
+    "physicalAttack": 25,
+    "magicalAttack": 15,
+    "verdantAttack": 20
+  },
+  "requirements": {
+    "level": 5
+  },
+  "sellPrice": 40,
+  "enhanceable": true,
+  "maxEnhancement": 10,
+  "materials": [
+    { "materialId": "verdant_ore", "quantity": 3 },
+    { "materialId": "iron_ore", "quantity": 2 }
+  ]
+} 

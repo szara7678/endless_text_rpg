@@ -1,0 +1,12 @@
+{
+  "id": "dragon_ore",
+  "name": "드래곤 광석",
+  "description": "전설적인 드래곤 광석",
+  "type": "material",
+  "category": "ore",
+  "theme": "Physical",
+  "tier": "Epic",
+  "baseValue": 200,
+  "stackable": true,
+  "maxStack": 99
+} 

@@ -18,15 +18,25 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
   const [selectedSkill, setSelectedSkill] = useState<any>(null)
   const [showItemModal, setShowItemModal] = useState(false)
   const [showSkillModal, setShowSkillModal] = useState(false)
+  const [skillFilter, setSkillFilter] = useState('all')
+  const [selectedElement, setSelectedElement] = useState('Flame')
+  const [allSkills, setAllSkills] = useState<any[]>([])
 
   if (!isOpen) return null
 
-  const handleItemClick = async (itemId: string) => {
+  const handleItemClick = async (itemId: string, equipment?: any) => {
     try {
-      const itemData = await loadItem(itemId)
-      if (itemData) {
-        setSelectedItem(itemData)
+      if (equipment) {
+        // 장착된 장비 정보를 사용
+        setSelectedItem(equipment)
         setShowItemModal(true)
+      } else {
+        // 기본 아이템 데이터 로드
+        const itemData = await loadItem(itemId)
+        if (itemData) {
+          setSelectedItem(itemData)
+          setShowItemModal(true)
+        }
       }
     } catch (error) {
       console.error('아이템 데이터 로드 실패:', error)
@@ -63,8 +73,70 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
     levelUpSkill(skillId)
   }
 
-  // 해금 가능한 스킬 목록
-  const unlockableSkills = ['fireball', 'ice_shard', 'flame_aura', 'frost_bite', 'ember_toss']
+  // 모든 스킬 목록 로드
+  React.useEffect(() => {
+    const loadAllSkills = async () => {
+      try {
+        const skillIds = [
+          'basic_attack', 'fireball', 'ice_shard', 'flame_aura', 'frost_bite', 'ember_toss',
+          'thunder_shock', 'thunder_roar', 'shadow_bite', 'dark_howl', 'toxic_spit', 'venom_burst',
+          'nature_blessing', 'verdant_charge'
+        ]
+        
+        const loadedSkills = []
+        for (const skillId of skillIds) {
+          try {
+            const skillData = await import(`../../data/skills/${skillId}.json`)
+            if (skillData.default) {
+              loadedSkills.push(skillData.default)
+            }
+          } catch (error) {
+            console.error(`스킬 로드 실패: ${skillId}`, error)
+          }
+        }
+        setAllSkills(loadedSkills)
+      } catch (error) {
+        console.error('스킬 목록 로드 실패:', error)
+      }
+    }
+    loadAllSkills()
+  }, [])
+
+  // 스킬 필터링
+  const filteredSkills = React.useMemo(() => {
+    if (!allSkills.length) return []
+    
+    let filtered = allSkills
+    
+    // 필터 적용
+    if (skillFilter === 'learned') {
+      filtered = filtered.filter(skill => 
+        skills.activeSkills.some(s => s.skillId === skill.skillId) || 
+        skills.passiveSkills.some(s => s.skillId === skill.skillId)
+      )
+    } else if (skillFilter === 'unlearned') {
+      filtered = filtered.filter(skill => 
+        !skills.activeSkills.some(s => s.skillId === skill.skillId) && 
+        !skills.passiveSkills.some(s => s.skillId === skill.skillId)
+      )
+    } else if (skillFilter === 'element') {
+      filtered = filtered.filter(skill => skill.element === selectedElement)
+    }
+    
+    // 미습득 스킬을 위로 정렬
+    filtered.sort((a, b) => {
+      const aLearned = skills.activeSkills.some(s => s.skillId === a.skillId) || 
+                       skills.passiveSkills.some(s => s.skillId === a.skillId)
+      const bLearned = skills.activeSkills.some(s => s.skillId === b.skillId) || 
+                       skills.passiveSkills.some(s => s.skillId === b.skillId)
+      
+      if (!aLearned && bLearned) return -1
+      if (aLearned && !bLearned) return 1
+      return 0
+    })
+    
+    return filtered
+  }, [allSkills, skillFilter, selectedElement, skills])
 
   const baseHp = player.baseMaxHp ?? 100;
   const baseMp = player.baseMaxMp ?? 50;
@@ -350,14 +422,16 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                   <div className="space-y-3">
                     <div 
                       className="bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors"
-                      onClick={() => player.equipment.weapon && handleItemClick(player.equipment.weapon.itemId)}
+                      onClick={() => player.equipment.weapon && handleItemClick(player.equipment.weapon.itemId, player.equipment.weapon)}
                     >
                       <div className="text-sm text-gray-400 mb-1">무기</div>
                       {player.equipment.weapon ? (
                         <div>
-                          <div className="font-medium text-white">{player.equipment.weapon.itemId}</div>
+                          <div className="font-medium text-white">
+                            {player.equipment.weapon.itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </div>
                           <div className="text-sm text-gray-400">
-                            레벨 {player.equipment.weapon.level} | +{player.equipment.weapon.enhancement}
+                            Lv {player.equipment.weapon.level || 1} | {player.equipment.weapon.quality || 'Common'} +{player.equipment.weapon.enhancement || 0}
                           </div>
                         </div>
                       ) : (
@@ -367,14 +441,16 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                     
                     <div 
                       className="bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors"
-                      onClick={() => player.equipment.armor && handleItemClick(player.equipment.armor.itemId)}
+                      onClick={() => player.equipment.armor && handleItemClick(player.equipment.armor.itemId, player.equipment.armor)}
                     >
                       <div className="text-sm text-gray-400 mb-1">방어구</div>
                       {player.equipment.armor ? (
                         <div>
-                          <div className="font-medium text-white">{player.equipment.armor.itemId}</div>
+                          <div className="font-medium text-white">
+                            {player.equipment.armor.itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </div>
                           <div className="text-sm text-gray-400">
-                            레벨 {player.equipment.armor.level} | +{player.equipment.armor.enhancement}
+                            Lv {player.equipment.armor.level || 1} | {player.equipment.armor.quality || 'Common'} +{player.equipment.armor.enhancement || 0}
                           </div>
                         </div>
                       ) : (
@@ -384,14 +460,16 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                     
                     <div 
                       className="bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors"
-                      onClick={() => player.equipment.accessory && handleItemClick(player.equipment.accessory.itemId)}
+                      onClick={() => player.equipment.accessory && handleItemClick(player.equipment.accessory.itemId, player.equipment.accessory)}
                     >
                       <div className="text-sm text-gray-400 mb-1">액세서리</div>
                       {player.equipment.accessory ? (
                         <div>
-                          <div className="font-medium text-white">{player.equipment.accessory.itemId}</div>
+                          <div className="font-medium text-white">
+                            {player.equipment.accessory.itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </div>
                           <div className="text-sm text-gray-400">
-                            레벨 {player.equipment.accessory.level} | +{player.equipment.accessory.enhancement}
+                            Lv {player.equipment.accessory.level || 1} | {player.equipment.accessory.quality || 'Common'} +{player.equipment.accessory.enhancement || 0}
                           </div>
                         </div>
                       ) : (
@@ -533,176 +611,174 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
 
             {activeTab === 'skills' && (
               <div className="p-4 space-y-6">
-                {/* 보유 액티브 스킬 */}
+                {/* 스킬 필터 탭 */}
                 <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-md font-semibold mb-3 text-purple-400">⚡ 액티브 스킬</h3>
+                  <div className="flex space-x-2 mb-4">
+                    <button
+                      onClick={() => setSkillFilter('all')}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        skillFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      모든 스킬
+                    </button>
+                    <button
+                      onClick={() => setSkillFilter('learned')}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        skillFilter === 'learned' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      습득한 스킬
+                    </button>
+                    <button
+                      onClick={() => setSkillFilter('unlearned')}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        skillFilter === 'unlearned' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      미습득 스킬
+                    </button>
+                    <button
+                      onClick={() => setSkillFilter('element')}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        skillFilter === 'element' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      속성별 스킬
+                    </button>
+                  </div>
+
+                  {/* 속성별 필터 (속성별 스킬 선택 시) */}
+                  {skillFilter === 'element' && (
+                    <div className="flex space-x-2 mb-4">
+                      {['Flame', 'Frost', 'Thunder', 'Toxic', 'Shadow', 'Verdant', 'Physical'].map((element) => (
+                        <button
+                          key={element}
+                          onClick={() => setSelectedElement(element)}
+                          className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                            selectedElement === element ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                          }`}
+                        >
+                          {element}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 스킬 목록 */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <h3 className="text-md font-semibold mb-3 text-purple-400">⚡ 스킬 목록</h3>
                   <div className="space-y-2">
-                    {skills.activeSkills.length > 0 ? skills.activeSkills.map((skill) => {
-                      // 임시로 직접 계산
+                    {filteredSkills.length > 0 ? filteredSkills.map((skill) => {
+                      const isLearned = skills.activeSkills.some(s => s.skillId === skill.skillId) || 
+                                      skills.passiveSkills.some(s => s.skillId === skill.skillId)
+                      const learnedSkill = isLearned ? 
+                        [...skills.activeSkills, ...skills.passiveSkills].find(s => s.skillId === skill.skillId) : null
+                      
                       const skillInfo = {
-                        name: skill.skillId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                        level: `Lv ${skill.level}`,
-                        progress: `${skill.currentXp || 0}/${skill.maxXp || 0}`,
+                        name: skill.name,
+                        level: learnedSkill ? `Lv ${learnedSkill.level}` : '미습득',
+                        progress: learnedSkill ? `${learnedSkill.currentXp || 0}/${learnedSkill.maxXp || 0}` : '',
+                        type: skill.type,
+                        element: skill.element,
+                        requiredPages: skill.requiredPages || 0
                       }
-                      const levelUpCost = { apCost: 1, goldCost: Math.floor(100 * Math.pow(1.5, skill.level - 1)) }
-                      const canLevel = { canLevel: (skill.currentXp || 0) >= (skill.maxXp || 0) && player.rebirthLevel >= 1 && player.gold >= levelUpCost.goldCost }
+                      
+                      const levelUpCost = learnedSkill ? { 
+                        apCost: 1, 
+                        goldCost: Math.floor(100 * Math.pow(1.5, learnedSkill.level - 1)) 
+                      } : null
+                      
+                      const canLevel = learnedSkill ? { 
+                        canLevel: (learnedSkill.currentXp || 0) >= (learnedSkill.maxXp || 0) && 
+                                 player.rebirthLevel >= 1 && 
+                                 player.gold >= levelUpCost.goldCost 
+                      } : null
+                      
+                                             const canUnlock = !isLearned && (skills.pagesOwned[skill.skillId] || 0) >= skillInfo.requiredPages
                       
                       return (
                         <div 
                           key={skill.skillId} 
-                          className="bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors"
+                          className={`bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors ${
+                            !isLearned ? 'border-l-4 border-yellow-500' : ''
+                          }`}
                           onClick={() => handleSkillClick(skill.skillId)}
                         >
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex-1">
                               <div className="font-medium text-white">{skillInfo.name}</div>
-                              <div className="text-sm text-gray-400">{skillInfo.level}</div>
-                            </div>
-                            {canLevel.canLevel && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleLevelUpSkill(skill.skillId)
-                                }}
-                                className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
-                              >
-                                <ArrowUp size={12} />
-                                레벨업
-                              </button>
-                            )}
-                          </div>
-                          
-                          <div className="text-xs text-gray-400 mb-2">
-                            경험치: {skillInfo.progress}
-                          </div>
-                          
-                          <div className="w-full bg-gray-700 rounded-full h-1 mb-2">
-                            <div 
-                              className="bg-purple-500 h-1 rounded-full transition-all duration-300"
-                              style={{ width: `${skill.maxXp ? ((skill.currentXp || 0) / skill.maxXp) * 100 : 0}%` }}
-                            />
-                          </div>
-                          
-                          <div className="text-xs text-gray-500">
-                            다음 레벨업: AP {levelUpCost.apCost}, 골드 {levelUpCost.goldCost}
-                          </div>
-                        </div>
-                      )
-                    }) : (
-                      <div className="text-gray-500 text-center py-4">
-                        보유한 액티브 스킬이 없습니다
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 보유 패시브 스킬 */}
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-md font-semibold mb-3 text-blue-400">🔮 패시브 스킬</h3>
-                  <div className="space-y-2">
-                    {skills.passiveSkills.length > 0 ? skills.passiveSkills.map((skill) => {
-                      // 임시로 직접 계산
-                      const skillInfo = {
-                        name: skill.skillId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                        level: `Lv ${skill.level}`,
-                        progress: `${skill.currentXp || 0}/${skill.maxXp || 0}`,
-                      }
-                      const levelUpCost = { apCost: 1, goldCost: Math.floor(100 * Math.pow(1.5, skill.level - 1)) }
-                      const canLevel = { canLevel: (skill.currentXp || 0) >= (skill.maxXp || 0) && player.rebirthLevel >= 1 && player.gold >= levelUpCost.goldCost }
-                      
-                      return (
-                        <div 
-                          key={skill.skillId} 
-                          className="bg-gray-800 rounded p-3 cursor-pointer hover:bg-gray-700 transition-colors"
-                          onClick={() => handleSkillClick(skill.skillId)}
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex-1">
-                              <div className="font-medium text-white">{skillInfo.name}</div>
-                              <div className="text-sm text-gray-400">{skillInfo.level}</div>
-                            </div>
-                            {canLevel.canLevel && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleLevelUpSkill(skill.skillId)
-                                }}
-                                className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
-                              >
-                                <ArrowUp size={12} />
-                                레벨업
-                              </button>
-                            )}
-                          </div>
-                          
-                          <div className="text-xs text-gray-400 mb-2">
-                            경험치: {skillInfo.progress}
-                          </div>
-                          
-                          <div className="w-full bg-gray-700 rounded-full h-1 mb-2">
-                            <div 
-                              className="bg-blue-500 h-1 rounded-full transition-all duration-300"
-                              style={{ width: `${skill.maxXp ? ((skill.currentXp || 0) / skill.maxXp) * 100 : 0}%` }}
-                            />
-                          </div>
-                          
-                          <div className="text-xs text-gray-500">
-                            다음 레벨업: AP {levelUpCost.apCost}, 골드 {levelUpCost.goldCost}
-                          </div>
-                        </div>
-                      )
-                    }) : (
-                      <div className="text-gray-500 text-center py-4">
-                        보유한 패시브 스킬이 없습니다
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 스킬 해금 */}
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-md font-semibold mb-3 text-yellow-400">📜 스킬 해금</h3>
-                  <div className="space-y-2">
-                    {unlockableSkills.map((skillId) => {
-                      const pageCount = skills.pagesOwned[skillId] || 0
-                      const canUnlock = pageCount >= 3 // 직접 계산
-                      const alreadyOwned = skills.activeSkills.some(s => s.skillId === skillId) ||
-                                         skills.passiveSkills.some(s => s.skillId === skillId)
-                      
-                      return (
-                        <div key={skillId} className="bg-gray-800 rounded p-3">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="font-medium text-white">
-                                {skillId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                              </div>
                               <div className="text-sm text-gray-400">
-                                페이지: {pageCount}/3
-                                {alreadyOwned && <span className="text-green-400 ml-2">(보유 중)</span>}
+                                {skillInfo.level} • {skillInfo.type} • {skillInfo.element}
                               </div>
                             </div>
-                            
-                            {canUnlock && !alreadyOwned ? (
-                              <button
-                                onClick={() => handleUnlockSkill(skillId)}
-                                className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
-                              >
-                                <Plus size={14} />
-                                해금
-                              </button>
-                            ) : (
-                              <div className="text-xs text-gray-500">
-                                {alreadyOwned ? '보유 중' : `${3 - pageCount}페이지 필요`}
-                              </div>
-                            )}
+                            <div className="flex space-x-2">
+                              {!isLearned && canUnlock && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleUnlockSkill(skill.skillId)
+                                  }}
+                                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
+                                >
+                                  해금
+                                </button>
+                              )}
+                              {learnedSkill && canLevel.canLevel && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleLevelUpSkill(skill.skillId)
+                                  }}
+                                  className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
+                                >
+                                  <ArrowUp size={12} />
+                                  레벨업
+                                </button>
+                              )}
+                            </div>
                           </div>
+                          
+                          {learnedSkill && (
+                            <>
+                              <div className="text-xs text-gray-400 mb-2">
+                                경험치: {skillInfo.progress}
+                              </div>
+                              
+                              <div className="w-full bg-gray-700 rounded-full h-1 mb-2">
+                                <div 
+                                  className={`h-1 rounded-full transition-all duration-300 ${
+                                    skillInfo.type === 'Active' ? 'bg-purple-500' : 'bg-blue-500'
+                                  }`}
+                                  style={{ width: `${learnedSkill.maxXp ? ((learnedSkill.currentXp || 0) / learnedSkill.maxXp) * 100 : 0}%` }}
+                                />
+                              </div>
+                              
+                              <div className="text-xs text-gray-500">
+                                다음 레벨업: AP {levelUpCost.apCost}, 골드 {levelUpCost.goldCost}
+                              </div>
+                            </>
+                          )}
+                          
+                          {!isLearned && (
+                            <div className="text-xs text-gray-500">
+                              필요 스킬 페이지: {skillInfo.requiredPages}개
+                            </div>
+                          )}
                         </div>
                       )
-                    })}
+                    }) : (
+                      <div className="text-gray-500 text-center py-4">
+                        해당하는 스킬이 없습니다
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
+
+
 
             {activeTab === 'titles' && (
               <div className="p-4 space-y-6">

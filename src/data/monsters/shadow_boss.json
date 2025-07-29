@@ -1,0 +1,18 @@
+{
+  "id": "shadow_boss",
+  "name": "섀도우 드래곤",
+  "description": "어둠의 탑을 지키는 전설의 드래곤.",
+  "level": 10,
+  "hp": 205,
+  "maxHp": 205,
+  "attack": 48,
+  "defense": 21,
+  "speed": 28,
+  "theme": "Shadow",
+  "tier": "boss",
+  "dropTable": "shadow_boss",
+  "xpReward": 60,
+  "goldReward": 120,
+  "skills": ["shadow_bite", "dark_howl"],
+  "traits": ["shadow_resistance", "boss"]
+} 

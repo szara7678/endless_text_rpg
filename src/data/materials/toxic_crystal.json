@@ -1,0 +1,12 @@
+{
+  "id": "toxic_crystal",
+  "name": "독성 수정",
+  "description": "독성을 머금은 녹색 수정",
+  "type": "material",
+  "category": "crystal",
+  "theme": "Toxic",
+  "tier": "Fine",
+  "baseValue": 45,
+  "stackable": true,
+  "maxStack": 99
+} 
