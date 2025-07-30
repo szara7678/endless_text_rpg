@@ -4,15 +4,22 @@
   "description": "체력을 즉시 회복시켜주는 빨간 물약입니다.",
   "type": "consumable",
   "subtype": "potion",
-  "rarity": "Normal",
+  "rarity": "Common",
   "level": 1,
-  "effects": {
-    "healHp": 50
-  },
-  "requirements": {
-    "level": 1
-  },
+  "effects": [
+    {
+      "type": "heal_hp",
+      "value": 50,
+      "duration": 0
+    }
+  ],
   "sellPrice": 5,
-  "stackSize": 99,
-  "consumable": true
+  "stackable": true,
+  "maxStack": 99,
+  "craftingMaterials": {
+    "healing_herb": 2,
+    "red_herb": 1
+  },
+  "requiredSkill": "alchemy",
+  "requiredSkillLevel": 1
 } 

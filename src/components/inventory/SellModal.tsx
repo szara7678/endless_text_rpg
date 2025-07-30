@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Trash2, Filter } from 'lucide-react'
 import { useGameStore } from '../../stores'
 import { calculateItemSellPrice } from '../../utils/itemSystem'
+import { loadItem } from '../../utils/dataLoader'
 
 interface SellModalProps {
   isOpen: boolean
@@ -19,6 +20,23 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
   const [filterType, setFilterType] = useState<string>('all')
   const [selectedItem, setSelectedItem] = useState<any>(item || null)
   const [excludedItems, setExcludedItems] = useState<Set<string>>(new Set())
+  const [itemNames, setItemNames] = useState<{[key: string]: string}>({})
+
+  // 아이템 이름 로드
+  const loadItemName = async (itemId: string) => {
+    if (itemNames[itemId]) return itemNames[itemId]
+    
+    try {
+      const itemData = await loadItem(itemId)
+      const name = itemData?.name || itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+      setItemNames(prev => ({ ...prev, [itemId]: name }))
+      return name
+    } catch (error) {
+      const name = itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+      setItemNames(prev => ({ ...prev, [itemId]: name }))
+      return name
+    }
+  }
 
   if (!isOpen) return null
 
@@ -77,7 +95,10 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
       }
     }))
 
-    addCombatLog('loot', `💰 ${selectedItem.itemId.replace('_', ' ')} ${sellQuantity}개 판매! +${sellPrice} 골드`)
+    // 한글 이름 가져오기
+    loadItemName(selectedItem.itemId).then(itemName => {
+      addCombatLog('loot', `💰 ${itemName} ${sellQuantity}개 판매! +${sellPrice} 골드`)
+    })
     setSelectedItem(null)
     setSellQuantity(1)
     onClose()
@@ -155,7 +176,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
 
     // 장비 아이템 추가
     const equipmentItems = inventory.items
-      .filter(item => !item.itemId.includes('potion') && !item.itemId.includes('food'))
+      .filter(item => !item.itemId.includes('potion') && !item.itemId.includes('food') && !item.itemId.includes('bread') && !item.itemId.includes('stew'))
       .map(item => ({
         ...item,
         type: 'equipment',

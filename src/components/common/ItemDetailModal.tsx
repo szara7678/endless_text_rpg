@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Sword, Shield, Star, Zap } from 'lucide-react'
 import { useGameStore } from '../../stores'
 import { calculateEnhancementCost, getBaseEquipmentStats } from '../../utils/equipmentSystem'
 import { calculateItemSellPrice } from '../../utils/itemSystem'
+import { loadItem } from '../../utils/dataLoader'
 
 interface ItemDetailModalProps {
   isOpen: boolean
@@ -195,6 +196,28 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
   const [showEnhancementModal, setShowEnhancementModal] = useState(false)
   const [showSellModal, setShowSellModal] = useState(false)
   const [sellQuantity, setSellQuantity] = useState(1)
+  const [itemData, setItemData] = useState<any>(null)
+
+  // 아이템 데이터 로드
+  useEffect(() => {
+    if (item && item.itemId) {
+      loadItem(item.itemId).then(data => {
+        setItemData(data)
+      }).catch(error => {
+        console.warn('아이템 데이터 로드 실패:', error)
+        setItemData(null)
+      })
+    } else if (item && item.materialId) {
+      loadItem(item.materialId).then(data => {
+        setItemData(data)
+      }).catch(error => {
+        console.warn('재료 데이터 로드 실패:', error)
+        setItemData(null)
+      })
+    } else {
+      setItemData(null)
+    }
+  }, [item])
 
   if (!isOpen || !item) return null
 
@@ -418,7 +441,9 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
       }
     }))
     
-    addCombatLog('loot', `💰 ${(item.itemId ? item.itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : '')} ${sellQuantity}개 판매! +${sellPrice} 골드`)
+    // 한글 이름 가져오기
+    const itemName = itemData?.name || item.name || (item.itemId || item.materialId)?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+    addCombatLog('loot', `💰 ${itemName} ${sellQuantity}개 판매! +${sellPrice} 골드`)
     setShowSellModal(false)
     onClose()
   }
@@ -460,11 +485,12 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">
-                {item.name || item.itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {itemData?.name || item.name || (item.itemId || item.materialId)?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </h3>
               <div className="text-sm text-gray-400">
-                {item.type || (item.itemId?.includes('sword') || item.itemId?.includes('staff') ? 'weapon' : 
-                               item.itemId?.includes('armor') ? 'armor' : 'equipment')} • {item.quality || 'Common'}
+                {itemData?.type || item.type || (item.itemId?.includes('sword') || item.itemId?.includes('staff') ? 'weapon' : 
+                               item.itemId?.includes('armor') ? 'armor' : 'equipment')} • {item.quality || itemData?.rarity || 'Common'}
+                {item.level && ` • Lv${item.level}`}
               </div>
             </div>
           </div>
@@ -481,7 +507,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
           {/* 설명 */}
           <div>
             <p className="text-gray-300">
-              {item.description || `${item.itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}입니다.`}
+              {itemData?.description || item.description || `${(item.itemId || item.materialId)?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}입니다.`}
             </p>
           </div>
 
@@ -713,7 +739,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
               <div className="p-4 space-y-4">
                 <div className="bg-gray-800 rounded-lg p-4">
                   <h4 className="text-md font-semibold mb-3 text-white">
-                    {item.itemId ? item.itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''}
+                    {itemData?.name || item.name || (item.itemId || item.materialId)?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">

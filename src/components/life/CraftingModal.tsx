@@ -4,6 +4,7 @@ import { useGameStore } from '../../stores'
 import { LifeSkillType } from '../../types'
 import { loadItem } from '../../utils/dataLoader'
 import { generateItem } from '../../utils/itemGenerator'
+import { getItemName } from '../../utils/itemSystem'
 
 interface CraftingRecipe {
   id: string
@@ -42,6 +43,37 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'weapon' | 'armor' | 'accessory'>('all')
   const [showMaterialSelection, setShowMaterialSelection] = useState(false)
   const [materialSelections, setMaterialSelections] = useState<MaterialSelection[]>([])
+  const [materialNames, setMaterialNames] = useState<Record<string, string>>({})
+
+  // 재료 이름 로드
+  useEffect(() => {
+    if (!isOpen || !skillType) return
+
+    const loadMaterialNames = async () => {
+      const names: Record<string, string> = {}
+      
+      // 모든 레시피의 재료 이름을 로드
+      for (const recipe of recipes) {
+        for (const materialId of Object.keys(recipe.craftingMaterials)) {
+          if (!names[materialId]) {
+            try {
+              const materialName = await getItemName(materialId)
+              names[materialId] = materialName
+            } catch (error) {
+              console.warn(`재료 이름 로드 실패: ${materialId}`, error)
+              names[materialId] = materialId.replace(/_/g, ' ')
+            }
+          }
+        }
+      }
+      
+      setMaterialNames(names)
+    }
+
+    if (recipes.length > 0) {
+      loadMaterialNames()
+    }
+  }, [isOpen, skillType, recipes])
 
   // 스킬별 레시피 로드 (실제 아이템 데이터에서)
   useEffect(() => {
@@ -132,7 +164,7 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
         // 반지류
         'flame_ring', 'frost_ring', 'shadow_ring', 'thunder_ring', 'toxic_ring', 'verdant_ring'
       ],
-      alchemy: ['health_potion', 'mana_potion', 'greater_health_potion', 'greater_mana_potion', 'stamina_potion', 'energy_drink'],
+              alchemy: ['health_potion', 'mana_potion', 'energy_drink'],
       cooking: ['bread', 'meat_stew', 'fish_stew', 'herb_soup', 'divine_feast'],
       fishing: [],
       farming: [],
@@ -168,11 +200,19 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
   const skillLevel = currentSkill?.level || 1
 
   const canCraft = (recipe: CraftingRecipe) => {
-    if (skillLevel < recipe.requiredLevel) return false
-    
     return Object.entries(recipe.craftingMaterials).every(([materialId, required]) => {
-      const material = inventory.materials.find(m => m.materialId === materialId)
-      return material && material.count >= required
+      const availableMaterials = inventory.materials.filter(m => m.materialId === materialId)
+      
+      // 레벨별 개수 계산
+      const levelCounts = availableMaterials.reduce((acc, material) => {
+        const level = material.level || 1
+        acc[level] = (acc[level] || 0) + material.count
+        return acc
+      }, {} as Record<number, number>)
+      
+      // 가장 많은 개수를 가진 레벨 찾기
+      const maxCount = Math.max(...Object.values(levelCounts), 0)
+      return maxCount >= required
     })
   }
 
@@ -182,17 +222,12 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
     setSelectedRecipe(recipe)
     setShowMaterialSelection(true)
     
-    // 재료 선택 초기화
+    // 재료 선택 초기화 (선택되지 않은 상태로)
     const selections: MaterialSelection[] = []
     for (const [materialId, required] of Object.entries(recipe.craftingMaterials)) {
-      const availableMaterials = inventory.materials.filter(m => m.materialId === materialId)
       selections.push({
         materialId,
-        selectedItems: availableMaterials.slice(0, required).map(m => ({
-          uniqueId: m.uniqueId || '',
-          level: m.level || 1,
-          quality: m.quality || 'Common'
-        }))
+        selectedItems: []
       })
     }
     setMaterialSelections(selections)
@@ -300,23 +335,41 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
   const executeCrafting = async () => {
     if (!selectedRecipe || isCrafting) return
 
+    // 모든 재료가 선택되었는지 확인
+    const allMaterialsSelected = materialSelections.every(selection => selection.selectedItems.length > 0)
+    if (!allMaterialsSelected) {
+      console.warn('모든 재료가 선택되지 않았습니다.')
+      return
+    }
+
     setIsCrafting(true)
 
     try {
-      // 선택된 재료 소모
+      // 선택된 재료 소모 (필요한 개수만큼)
       materialSelections.forEach(selection => {
-        selection.selectedItems.forEach(item => {
-          removeMaterial(selection.materialId, 1)
-        })
+        const required = selectedRecipe.craftingMaterials[selection.materialId]
+        console.log(`재료 소모: ${selection.materialId}, 필요: ${required}, 선택된 개수: ${selection.selectedItems.length}`)
+        
+        // 선택된 재료의 레벨과 품질이 모두 같으므로, 필요한 개수만큼 소모
+        if (selection.selectedItems.length > 0) {
+          const selectedItem = selection.selectedItems[0] // 모든 선택된 아이템이 같은 레벨과 품질
+          console.log(`재료 제거: ${selection.materialId}, 레벨: ${selectedItem.level}, 개수: ${required}`)
+          removeMaterial(selection.materialId, required, selectedItem.level)
+        } else {
+          console.warn(`선택된 재료가 없음: ${selection.materialId}`)
+        }
       })
 
       // 품질 계산
       const quality = calculateQuality(materialSelections, skillLevel)
       
       // 아이템 레벨 계산 (재료 평균 레벨과 스킬 레벨의 평균 + 랜덤성)
-      const avgMaterialLevel = materialSelections.reduce((sum, selection) => {
-        return sum + selection.selectedItems.reduce((itemSum, item) => itemSum + item.level, 0)
-      }, 0) / materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0)
+      const totalSelectedItems = materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0)
+      const avgMaterialLevel = totalSelectedItems > 0 
+        ? Math.floor(materialSelections.reduce((sum, selection) => {
+            return sum + selection.selectedItems.reduce((itemSum, item) => itemSum + item.level, 0)
+          }, 0) / totalSelectedItems)
+        : skillLevel // 선택된 재료가 없으면 스킬 레벨 사용
       
       // 기본 레벨 계산
       const baseLevel = Math.floor((avgMaterialLevel + skillLevel) / 2)
@@ -348,8 +401,11 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
       })
 
       // 전투 로그에 제작 완료 메시지 추가
-      const { addCombatLog } = useGameStore.getState()
+      const { addCombatLog, saveGame } = useGameStore.getState()
       addCombatLog('loot', `✅ ${selectedRecipe.name} 제작 완료! (품질: ${quality}, 레벨: ${itemLevel})`)
+      
+      // 제작 완료 후 게임 저장
+      saveGame()
 
     } catch (error) {
       console.error('제작 실패:', error)
@@ -442,18 +498,27 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                   <div className="space-y-2 mb-3">
                     <div className="text-xs font-medium text-gray-300">필요 재료:</div>
                     {Object.entries(recipe.craftingMaterials).map(([materialId, quantity]) => {
-                      const have = inventory.materials.find(
-                        (m: any) => m.materialId === materialId
-                      )?.count || 0
-                      const hasEnough = have >= quantity
+                      const availableMaterials = inventory.materials.filter(m => m.materialId === materialId)
+                      
+                      // 레벨별 개수 계산
+                      const levelCounts = availableMaterials.reduce((acc, material) => {
+                        const level = material.level || 1
+                        acc[level] = (acc[level] || 0) + material.count
+                        return acc
+                      }, {} as Record<number, number>)
+                      
+                      // 가장 많은 개수를 가진 레벨 찾기
+                      const maxCount = Math.max(...Object.values(levelCounts), 0)
+                      const hasEnough = maxCount >= quantity
+                      const materialName = materialNames[materialId] || materialId.replace(/_/g, ' ')
 
                       return (
                         <div key={materialId} className="flex justify-between text-xs">
                           <span className="text-gray-400">
-                            {materialId.replace(/_/g, ' ')}
+                            {materialName}
                           </span>
                           <span className={hasEnough ? 'text-green-400' : 'text-red-400'}>
-                            {have}/{quantity}
+                            {maxCount}/{quantity}
                           </span>
                         </div>
                       )
@@ -466,10 +531,6 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                       <div className="text-xs text-green-400 flex items-center gap-1">
                         <Star size={12} />
                         제작 가능
-                      </div>
-                    ) : skillLevel < recipe.requiredLevel ? (
-                      <div className="text-xs text-yellow-400">
-                        ⚠️ 스킬 레벨 부족 (현재: {skillLevel})
                       </div>
                     ) : (
                       <div className="text-xs text-red-400">
@@ -524,57 +585,100 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                     const availableMaterials = inventory.materials.filter(m => m.materialId === selection.materialId)
                     const required = selectedRecipe.craftingMaterials[selection.materialId]
                     
+                    // 레벨별로 정렬 (높은 레벨이 앞에 오도록)
+                    const sortedMaterials = availableMaterials.sort((a, b) => (b.level || 1) - (a.level || 1))
+                    
+                    // 레벨별 개수 계산
+                    const levelCounts = sortedMaterials.reduce((acc, material) => {
+                      const level = material.level || 1
+                      acc[level] = (acc[level] || 0) + material.count
+                      return acc
+                    }, {} as Record<number, number>)
+                    
                     return (
                       <div key={index} className="bg-gray-800 rounded-lg p-4">
                         <h4 className="text-white font-medium mb-2">
-                          {selection.materialId.replace(/_/g, ' ')} (필요: {required}개)
+                          {materialNames[selection.materialId] || selection.materialId.replace(/_/g, ' ')} (필요: {required}개)
                         </h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {availableMaterials.map((material, matIndex) => {
-                            const isSelected = selection.selectedItems.some(item => 
-                              item.uniqueId === material.uniqueId || 
-                              (material.uniqueId === undefined && matIndex < required)
-                            )
-                            
-                            return (
-                              <button
-                                key={matIndex}
-                                onClick={() => {
-                                  const newSelections = [...materialSelections]
-                                  const currentSelection = newSelections[index]
-                                  
-                                  if (isSelected) {
-                                    // 선택 해제
-                                    currentSelection.selectedItems = currentSelection.selectedItems.filter(item => 
-                                      item.uniqueId !== material.uniqueId && 
-                                      !(material.uniqueId === undefined && matIndex < required)
-                                    )
-                                  } else {
-                                    // 선택 추가 (필요 개수만큼만)
-                                    if (currentSelection.selectedItems.length < required) {
-                                      currentSelection.selectedItems.push({
-                                        uniqueId: material.uniqueId || '',
-                                        level: material.level || 1,
-                                        quality: material.quality || 'Common'
-                                      })
+                        <div className="text-xs text-gray-400 mb-2">
+                          보유: {Object.entries(levelCounts).map(([level, count]) => 
+                            `Lv${level} ${count}개`
+                          ).join(', ')}
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {(() => {
+                            // 레벨별로 그룹화하여 중복 제거
+                            const groupedMaterials = sortedMaterials.reduce((acc, material) => {
+                              const key = `${material.level || 1}_${material.quality || 'Common'}`
+                              if (!acc[key]) {
+                                acc[key] = {
+                                  level: material.level || 1,
+                                  quality: material.quality || 'Common',
+                                  count: 0,
+                                  materials: []
+                                }
+                              }
+                              acc[key].count += material.count
+                              acc[key].materials.push(material)
+                              return acc
+                            }, {} as Record<string, { level: number, quality: string, count: number, materials: any[] }>)
+
+                            return Object.values(groupedMaterials).map((group, groupIndex) => {
+                              const isSelected = selection.selectedItems.some(item => 
+                                item.level === group.level && item.quality === group.quality
+                              )
+                              const hasEnough = group.count >= required
+                              
+                              return (
+                                <button
+                                  key={groupIndex}
+                                  onClick={() => {
+                                    if (!hasEnough) return // 충분한 개수가 없으면 선택 불가
+                                    
+                                    const newSelections = [...materialSelections]
+                                    const currentSelection = newSelections[index]
+                                    
+                                    console.log(`재료 선택 클릭: ${selection.materialId}, 레벨: ${group.level}, 현재 선택됨: ${isSelected}`)
+                                    
+                                    // 기존 선택 모두 해제하고 새로운 선택만 추가
+                                    currentSelection.selectedItems = []
+                                    
+                                    if (!isSelected) {
+                                      // 선택된 재료가 없거나 다른 재료가 선택된 경우에만 선택
+                                      if (currentSelection.selectedItems.length === 0) {
+                                        // 필요한 개수만큼 같은 레벨의 재료 선택
+                                        for (let i = 0; i < Math.min(required, group.count); i++) {
+                                          currentSelection.selectedItems.push({
+                                            uniqueId: group.materials[i]?.uniqueId || '',
+                                            level: group.level,
+                                            quality: group.quality
+                                          })
+                                        }
+                                        console.log(`재료 선택 완료: ${selection.materialId}, 선택된 개수: ${currentSelection.selectedItems.length}`)
+                                      }
+                                    } else {
+                                      console.log(`재료 선택 해제: ${selection.materialId}`)
                                     }
-                                  }
-                                  
-                                  setMaterialSelections(newSelections)
-                                }}
-                                className={`p-2 rounded border-2 transition-colors ${
-                                  isSelected 
-                                    ? 'border-green-500 bg-green-900/30 text-green-400' 
-                                    : 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
-                                }`}
-                              >
-                                <div className="text-xs">
-                                  <div>Lv {material.level || 1}</div>
-                                  <div className="text-xs opacity-75">{material.quality || 'Common'}</div>
-                                </div>
-                              </button>
-                            )
-                          })}
+                                    
+                                    setMaterialSelections(newSelections)
+                                  }}
+                                  className={`p-2 rounded border-2 transition-colors flex-shrink-0 ${
+                                    isSelected 
+                                      ? 'border-green-500 bg-green-900/30 text-green-400' 
+                                      : hasEnough
+                                        ? 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
+                                        : 'border-red-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                >
+                                  <div className="text-xs whitespace-nowrap">
+                                    <div>Lv {group.level}</div>
+                                    <div className="text-xs opacity-75">{group.quality}</div>
+                                    <div className="text-xs text-blue-400 mt-1">{group.count}개</div>
+                                  </div>
+                                </button>
+                              )
+                            })
+                          })()}
                         </div>
                       </div>
                     )
@@ -586,9 +690,9 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                   <p className="text-blue-400 font-medium">예상 품질 (확률 포함)</p>
                   <div className="text-white text-lg mb-2">
                     {(() => {
-                      const avgMaterialLevel = materialSelections.reduce((sum, selection) => 
+                      const avgMaterialLevel = Math.floor(materialSelections.reduce((sum, selection) => 
                         sum + selection.selectedItems.reduce((itemSum, item) => itemSum + item.level, 0), 0
-                      ) / materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0) || 0
+                      ) / materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0) || 0)
                       
                       const avgMaterialQuality = materialSelections.reduce((sum, selection) => 
                         sum + selection.selectedItems.reduce((itemSum, item) => itemSum + getQualityValue(item.quality), 0), 0
@@ -617,12 +721,21 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                     })()}
                   </div>
                   <p className="text-gray-300 text-xs">
-                    재료 레벨: {materialSelections.reduce((sum, selection) => 
+                    재료 레벨: {Math.floor(materialSelections.reduce((sum, selection) => 
                       sum + selection.selectedItems.reduce((itemSum, item) => itemSum + item.level, 0), 0
-                    ) / materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0) || 0} | 
+                    ) / materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0) || 0)} | 
                     스킬 레벨: {skillLevel}
                   </p>
                 </div>
+
+                {/* 재료 선택 상태 표시 */}
+                {!materialSelections.every(selection => selection.selectedItems.length > 0) && (
+                  <div className="text-center mb-3">
+                    <p className="text-yellow-400 text-sm">
+                      ⚠️ 모든 재료를 선택해주세요
+                    </p>
+                  </div>
+                )}
 
                 {/* 버튼들 */}
                 <div className="flex gap-2">
@@ -639,7 +752,7 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                   </button>
                   <button
                     onClick={executeCrafting}
-                    disabled={isCrafting}
+                    disabled={isCrafting || !materialSelections.every(selection => selection.selectedItems.length > 0)}
                     className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white rounded-lg transition-colors"
                   >
                     {isCrafting ? '제작 중...' : '제작하기'}
@@ -648,6 +761,65 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
               </div>
             </div>
           )}
+
+      {/* 제작 완료 결과 모달 */}
+      {craftedItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-70">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="text-4xl mb-4">🎉</div>
+              <h3 className="text-xl font-bold text-white mb-4">제작 완료!</h3>
+              
+              {/* 제작된 아이템 정보 */}
+              <div className="bg-gray-700 rounded-lg p-4 mb-4">
+                <div className="text-lg font-semibold text-white mb-2">
+                  {craftedItem.name}
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">품질:</span>
+                    <span className={`font-medium ${
+                      craftedItem.quality === 'Legendary' ? 'text-yellow-400' :
+                      craftedItem.quality === 'Masterwork' ? 'text-purple-400' :
+                      craftedItem.quality === 'Fine' ? 'text-green-400' :
+                      'text-gray-300'
+                    }`}>
+                      {craftedItem.quality}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">레벨:</span>
+                    <span className="text-blue-400 font-medium">{craftedItem.level}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">수량:</span>
+                    <span className="text-green-400 font-medium">{craftedItem.quantity}개</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 경험치 획득 */}
+              <div className="bg-blue-900/30 border border-blue-500 rounded-lg p-3 mb-4">
+                <div className="text-blue-400 font-medium mb-2">획득 경험치</div>
+                <div className="text-lg text-blue-300 font-semibold">
+                  +25 {skillType === 'smithing' ? '제작' : skillType === 'alchemy' ? '연금술' : '요리'} XP
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setCraftedItem(null)
+                  setShowMaterialSelection(false)
+                  setSelectedRecipe(null)
+                }}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

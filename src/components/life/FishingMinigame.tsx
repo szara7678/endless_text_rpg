@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { X, ArrowLeft, ArrowUp, ArrowRight, Fish } from 'lucide-react'
+import { useGameStore } from '../../stores'
+import { loadDropTable } from '../../utils/dataLoader'
+import { getItemName } from '../../utils/itemSystem'
 
 interface FishingMinigameProps {
   isOpen: boolean
@@ -9,6 +12,7 @@ interface FishingMinigameProps {
 }
 
 const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onComplete, skillLevel }) => {
+  const { addMaterial, addSkillPage, addCombatLog, saveGame } = useGameStore()
   const [sequence, setSequence] = useState<string[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playerInput, setPlayerInput] = useState<string[]>([])
@@ -16,6 +20,28 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
   const [timeLeft, setTimeLeft] = useState(3000) // 3초
   const [score, setScore] = useState(0)
   const [perfect, setPerfect] = useState(true)
+  const [rewards, setRewards] = useState<any[]>([])
+
+  // 낚시 보상 테이블
+  const fishingRewards = {
+    fish: [
+      { id: 'small_fish', name: '작은 물고기', chance: 60, minLevel: 1 },
+      { id: 'medium_fish', name: '중간 물고기', chance: 30, minLevel: 3 },
+      { id: 'large_fish', name: '큰 물고기', chance: 15, minLevel: 5 },
+      { id: 'rare_fish', name: '희귀한 물고기', chance: 8, minLevel: 8 }
+    ],
+    gems: [
+      { id: 'flame_gem', name: '화염 보석', chance: 5, minLevel: 5 },
+      { id: 'frost_gem', name: '서리 보석', chance: 5, minLevel: 5 },
+      { id: 'thunder_gem', name: '번개 보석', chance: 5, minLevel: 5 },
+      { id: 'shadow_gem', name: '어둠 보석', chance: 3, minLevel: 8 },
+      { id: 'toxic_gem', name: '독 보석', chance: 3, minLevel: 8 },
+      { id: 'verdant_gem', name: '자연 보석', chance: 3, minLevel: 8 }
+    ],
+    skillPages: [
+      { id: 'skill_page_random', name: '스킬 페이지', chance: 2, minLevel: 10 }
+    ]
+  }
 
   // 방향키 맵핑
   const directions = ['←', '↑', '→']
@@ -23,6 +49,118 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
     '←': ArrowLeft,
     '↑': ArrowUp,
     '→': ArrowRight
+  }
+
+  // 보상 계산 함수
+  const calculateRewards = async (score: number, perfect: boolean, skillLevel: number) => {
+    const rewards: any[] = []
+    
+    try {
+      // 드롭 테이블 로드
+      const dropTable = await loadDropTable('fishing_rewards')
+      if (!dropTable || !dropTable.drops) {
+        console.warn('낚시 드롭 테이블을 찾을 수 없습니다.')
+        return rewards
+      }
+
+      // 점수와 스킬 레벨에 따른 레벨 보정
+      const levelBonus = Math.min(5, Math.floor(skillLevel / 2)) // 스킬 레벨 2당 +1 레벨 (최대 +5)
+      const scoreBonus = Math.min(3, Math.floor(score / 30)) // 점수 30당 +1 레벨 (최대 +3)
+      const totalLevelBonus = levelBonus + scoreBonus
+      
+      console.log('낚시 보상 계산:', {
+        skillLevel,
+        score,
+        levelBonus,
+        scoreBonus,
+        totalLevelBonus
+      })
+
+      // 드롭 테이블에서 아이템 선택
+      for (const drop of dropTable.drops) {
+        if (Math.random() < drop.chance) {
+          const quantity = Math.floor(Math.random() * (drop.max - drop.min + 1)) + drop.min
+          
+          if (drop.type === 'skillPage') {
+            // 스킬 페이지는 레벨 보정 없음
+            const skillName = drop.itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+            rewards.push({
+              type: 'skillPage',
+              id: drop.itemId,
+              name: skillName,
+              koreanName: skillName, // 스킬 페이지는 영어 이름 사용
+              quantity: quantity
+            })
+                     } else {
+             // 아이템은 레벨 보정 적용
+             const adjustedLevel = Math.max(1, skillLevel + totalLevelBonus)
+             console.log('아이템 생성:', {
+               itemId: drop.itemId,
+               baseLevel: skillLevel,
+               adjustedLevel,
+               quantity
+             })
+             
+             // 한글 이름 가져오기
+             const koreanName = await getItemName(drop.itemId)
+             
+             rewards.push({
+               type: 'material',
+               id: drop.itemId,
+               name: drop.itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+               koreanName: koreanName,
+               quantity: quantity,
+               level: adjustedLevel
+             })
+           }
+        }
+      }
+
+      // 최소 1개의 물고기는 보장
+      if (rewards.filter(r => r.type === 'material' && r.id.includes('fish')).length === 0) {
+        const fishItems = dropTable.drops.filter(drop => drop.itemId.includes('fish'))
+        if (fishItems.length > 0) {
+          const fishDrop = fishItems[Math.floor(Math.random() * fishItems.length)]
+          const adjustedLevel = Math.max(1, skillLevel + totalLevelBonus)
+          const koreanName = await getItemName(fishDrop.itemId)
+          rewards.push({
+            type: 'material',
+            id: fishDrop.itemId,
+            name: fishDrop.itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            koreanName: koreanName,
+            quantity: fishDrop.min,
+            level: adjustedLevel
+          })
+        }
+      }
+
+    } catch (error) {
+      console.error('낚시 보상 계산 실패:', error)
+    }
+
+    return rewards
+  }
+
+  // 보상 지급 함수
+  const giveRewards = (rewards: any[]) => {
+    console.log('🎣 낚시 보상 지급:', rewards)
+    
+    rewards.forEach(reward => {
+      if (reward.type === 'material') {
+        addMaterial(reward.id, reward.quantity, reward.level)
+        const levelText = reward.level ? ` (Lv${reward.level})` : ''
+        addCombatLog('loot', `🎣 ${reward.name} ${reward.quantity}개${levelText} 획득!`)
+        console.log(`📦 ${reward.name} ${reward.quantity}개 (Lv${reward.level}) 인벤토리에 추가됨`)
+      } else if (reward.type === 'skillPage') {
+        addSkillPage(reward.id)
+        addCombatLog('loot', `📜 ${reward.name} 획득!`)
+        console.log(`📜 ${reward.name} 스킬 페이지 획득!`)
+      }
+    })
+    
+    // 게임 저장
+    saveGame()
+    console.log('💾 낚시 완료 후 게임 저장됨')
   }
 
   // 게임 시퀀스 생성 (레벨에 따라 길이 조정)
@@ -78,16 +216,25 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
 
     if (isCorrect) {
       // 정답 시 점수 계산 (레벨에 따라 보너스)
-      const baseScore = 100 / sequence.length // 각 정답당 기본 점수
+      const baseScore = Math.floor(100 / sequence.length) // 각 정답당 기본 점수 (정수)
       const levelBonus = Math.min(20, skillLevel * 2) // 레벨 보너스 (최대 20점)
       const scoreGain = baseScore + levelBonus
-      setScore(prev => Math.min(100, prev + scoreGain))
+      setScore(prev => Math.min(100, Math.floor(prev + scoreGain)))
       setCurrentIndex(prev => prev + 1)
 
       // 모든 시퀀스 완료 시 자동으로 게임 종료
       if (currentIndex + 1 >= sequence.length) {
-        setTimeout(() => {
+        setTimeout(async () => {
+          const success = score >= 50
+          if (success) {
+            const calculatedRewards = await calculateRewards(score, perfect, skillLevel)
+            setRewards(calculatedRewards)
+            // 보상 지급
+            giveRewards(calculatedRewards)
+          }
           setGameState('finished')
+          // 게임 완료 시 바로 보상 지급
+          onComplete(success, perfect)
         }, 500)
       }
     } else {
@@ -106,10 +253,19 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
       }, 100)
       return () => clearTimeout(timer)
     } else if (gameState === 'playing' && timeLeft <= 0) {
+      const success = score >= 50
+      if (success) {
+        calculateRewards(score, perfect, skillLevel).then(calculatedRewards => {
+          setRewards(calculatedRewards)
+          // 보상 지급
+          giveRewards(calculatedRewards)
+        })
+      }
       setGameState('finished')
-      // onComplete 자동 호출 제거 - 사용자가 완료 버튼을 눌러야 호출됨
+      // 시간 초과 시에도 보상 지급
+      onComplete(success, perfect)
     }
-  }, [gameState, timeLeft, onComplete])
+  }, [gameState, timeLeft])
 
   // 키보드 이벤트 리스너
   useEffect(() => {
@@ -244,8 +400,30 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
             <h4 className="text-lg font-bold text-white mb-2">
               {score >= 80 ? '완벽!' : score >= 50 ? '성공!' : '실패...'}
             </h4>
-            <p className="text-gray-300 mb-4">점수: {score}/100</p>
-            {perfect && <p className="text-yellow-400 text-sm mb-4">✨ 퍼펙트!</p>}
+            <p className="text-gray-300 mb-4">점수: {Math.floor(score)}/100</p>
+
+            
+            {/* 획득 보상 표시 */}
+            {score >= 50 && rewards.length > 0 && (
+              <div className="bg-green-900/30 border border-green-500 rounded-lg p-3 mb-4">
+                <p className="text-green-400 font-medium mb-2">획득 보상</p>
+                <div className="text-sm space-y-1">
+                  {rewards.map((reward, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span>{reward.type === 'skillPage' ? '📜' : '🎣'} {reward.koreanName || reward.name}:</span>
+                      <span className="text-green-400">
+                        {reward.quantity}개
+                        {reward.level && reward.type !== 'skillPage' && ` (Lv${reward.level})`}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between">
+                    <span>📚 낚시 경험치:</span>
+                    <span className="text-blue-400">+{perfect ? 50 : 30}</span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={startGame}
@@ -255,7 +433,6 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
               </button>
               <button
                 onClick={() => {
-                  onComplete(score >= 50, perfect)
                   setGameState('ready') // 게임 상태를 ready로 초기화
                   setScore(0)
                   setPerfect(true)
@@ -263,6 +440,7 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
                   setCurrentIndex(0)
                   setPlayerInput([])
                   setTimeLeft(3000)
+                  setRewards([])
                 }}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
               >

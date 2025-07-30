@@ -40,4 +40,27 @@ export function calculateItemSellPrice(item: any): number {
   }
   
   return Math.floor(basePrice * levelMultiplier * qualityMultiplier * enhancementMultiplier)
+}
+
+// 아이템 이름 가져오기 (한글 이름 우선)
+export async function getItemName(itemId: string): Promise<string> {
+  try {
+    // 동적으로 아이템 파일 로드 시도
+    try {
+      const itemData = (await import(`../data/items/${itemId}.json`)).default
+      return itemData.name || itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+    } catch (importError) {
+      // 개별 파일이 없으면 materials 폴더에서 시도
+      try {
+        const materialData = (await import(`../data/materials/${itemId}.json`)).default
+        return materialData.name || itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+      } catch (materialError) {
+        // materials에도 없으면 기본 이름 반환
+        return itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+      }
+    }
+  } catch (error) {
+    console.warn(`아이템 이름 로드 실패: ${itemId}`, error)
+    return itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
 } 

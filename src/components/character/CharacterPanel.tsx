@@ -19,7 +19,7 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
   const [showItemModal, setShowItemModal] = useState(false)
   const [showSkillModal, setShowSkillModal] = useState(false)
   const [skillFilter, setSkillFilter] = useState('all')
-  const [selectedElement, setSelectedElement] = useState('Flame')
+  const [selectedElement, setSelectedElement] = useState('All')
   const [allSkills, setAllSkills] = useState<any[]>([])
 
   if (!isOpen) return null
@@ -752,13 +752,20 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                                   해금
                                 </button>
                               )}
-                              {learnedSkill && canLevel.canLevel && (
+                              {learnedSkill && (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleLevelUpSkill(skill.skillId)
+                                    if (canLevel.canLevel) {
+                                      handleLevelUpSkill(skill.skillId)
+                                    }
                                   }}
-                                  className="absolute top-2 right-2 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
+                                  disabled={!canLevel.canLevel}
+                                  className={`absolute top-2 right-2 px-2 py-1 rounded text-xs flex items-center gap-1 ${
+                                    canLevel.canLevel 
+                                      ? 'bg-green-600 hover:bg-green-700 text-white' 
+                                      : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                  }`}
                                 >
                                   <ArrowUp size={12} />
                                   레벨업

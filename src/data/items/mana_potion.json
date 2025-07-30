@@ -1,25 +1,25 @@
 {
-  "id": "mana_potion",
+  "itemId": "mana_potion",
   "name": "마나 물약",
   "description": "MP를 30 회복시켜주는 마법 물약입니다.",
   "type": "consumable",
-  "subType": "potion",
-  "quality": "Common",
+  "subtype": "potion",
+  "rarity": "Common",
   "level": 1,
-  "requiredLevel": 1,
   "effects": [
     {
       "type": "heal_mp",
       "value": 30,
-      "target": "self"
+      "duration": 0
     }
   ],
   "sellPrice": 8,
   "stackable": true,
   "maxStack": 99,
-  "cooldown": 0,
-  "materials": {
-    "magic_herb": 1,
-    "water": 1
-  }
+  "craftingMaterials": {
+    "mana_flower": 2,
+    "blue_herb": 1
+  },
+  "requiredSkill": "alchemy",
+  "requiredSkillLevel": 1
 } 

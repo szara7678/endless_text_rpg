@@ -88,7 +88,6 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
         {/* 헤더 */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            {/* Star icon removed as per new_code */}
             생활 스킬
           </h2>
           <button
@@ -100,7 +99,7 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* 생활 스킬 그리드 */}
-        <div className="p-4 overflow-y-auto max-h-[calc(100vh-16rem)]">
+        <div className="p-4 overflow-y-auto max-h-[calc(100vh-12rem)]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {lifeSkills.map((skill) => {
               const IconComponent = skill.icon
@@ -195,16 +194,11 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
         skillLevel={life?.skills?.fishing?.level || 1}
         onComplete={(success, perfect) => {
           console.log('낚시 결과:', success ? '성공' : '실패', perfect ? '(퍼펙트!)' : '')
-          // 경험치와 아이템 보상
+          // 경험치만 추가 (아이템은 미니게임 내에서 처리)
           if (success) {
             const xpGain = perfect ? 50 : 30
-            const fishType = perfect ? 'raw_meat' : 'raw_meat' // 실제 아이템 ID 사용
-            console.log(`낚시 성공! +${xpGain} XP, ${fishType} 획득`)
-            
-            // 실제 경험치와 아이템 추가
             addLifeSkillXp('fishing', xpGain)
-            addMaterial(fishType, perfect ? 2 : 1) // 퍼펙트면 2개, 일반 성공이면 1개
-            addCombatLog('loot', `🎣 낚시 성공! ${fishType} ${perfect ? 2 : 1}개 획득 (+${xpGain} XP)`)
+            addCombatLog('loot', `🎣 낚시 성공! +${xpGain} XP`)
           }
         }}
       />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Package, Hammer, Pill, ArrowUpDown, Flame, Snowflake, Skull, Moon, Zap, Leaf, Trash2 } from 'lucide-react'
 import { useGameStore } from '../../stores'
 import ItemDetailModal from '../common/ItemDetailModal'
@@ -24,6 +24,44 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [showItemModal, setShowItemModal] = useState(false)
   const [showBulkSellModal, setShowBulkSellModal] = useState(false)
+  const [itemNames, setItemNames] = useState<{[key: string]: string}>({})
+
+  // 아이템 이름 로드
+  const loadItemName = async (itemId: string) => {
+    if (itemNames[itemId]) return itemNames[itemId]
+    
+    try {
+      const itemData = await loadItem(itemId)
+      const name = itemData?.name || itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+      setItemNames(prev => ({ ...prev, [itemId]: name }))
+      return name
+    } catch (error) {
+      const name = itemId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+      setItemNames(prev => ({ ...prev, [itemId]: name }))
+      return name
+    }
+  }
+
+  // 아이템 이름들 로드
+  useEffect(() => {
+    const loadAllItemNames = async () => {
+      const allItems = [
+        ...inventory.items.map(item => item.itemId),
+        ...inventory.materials.map(material => material.materialId),
+        ...inventory.consumables.map(consumable => consumable.itemId)
+      ]
+      
+      for (const itemId of allItems) {
+        if (itemId && !itemNames[itemId]) {
+          await loadItemName(itemId)
+        }
+      }
+    }
+    
+    if (isOpen) {
+      loadAllItemNames()
+    }
+  }, [isOpen, inventory, itemNames])
 
   if (!isOpen) return null
 
@@ -54,10 +92,19 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
       
       // 현재 탭에 따라 적절한 인벤토리에서 아이템 찾기
       if (activeMainTab === 'materials') {
-        // 재료는 inventory.materials에서 찾기
-        inventoryItem = inventory.materials.find(mat => 
-          mat.materialId === itemId
-        )
+        // 재료는 inventory.materials에서 찾기 (레벨별로 구분)
+        if (itemId.includes('_')) {
+          // displayId 형식인 경우 (예: small_fish_7)
+          const lastUnderscoreIndex = itemId.lastIndexOf('_')
+          const materialId = itemId.substring(0, lastUnderscoreIndex)
+          const level = parseInt(itemId.substring(lastUnderscoreIndex + 1)) || 1
+          inventoryItem = inventory.materials.find(mat => 
+            mat.materialId === materialId && mat.level === level
+          )
+        } else {
+          // 일반 materialId인 경우
+          inventoryItem = inventory.materials.find(mat => mat.materialId === itemId)
+        }
         console.log('재료 검색 결과:', inventoryItem)
       } else if (activeMainTab === 'equipment') {
         // 장비는 inventory.items에서 찾기
@@ -66,10 +113,19 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
         )
         console.log('장비 검색 결과:', inventoryItem)
       } else if (activeMainTab === 'consumables') {
-        // 소모품은 inventory.consumables에서 찾기
-        inventoryItem = inventory.consumables.find(con => 
-          con.itemId === itemId
-        )
+        // 소모품은 inventory.items에서 찾기 (레벨별로 구분)
+        if (itemId.includes('_')) {
+          // displayId 형식인 경우
+          const lastUnderscoreIndex = itemId.lastIndexOf('_')
+          const consumableId = itemId.substring(0, lastUnderscoreIndex)
+          const level = parseInt(itemId.substring(lastUnderscoreIndex + 1)) || 1
+          inventoryItem = inventory.items.find(item => 
+            item.itemId === consumableId && item.level === level && !item.uniqueId
+          )
+        } else {
+          // 일반 itemId인 경우
+          inventoryItem = inventory.items.find(item => item.itemId === itemId && !item.uniqueId)
+        }
         console.log('소모품 검색 결과:', inventoryItem)
       }
       
@@ -133,7 +189,8 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
           ...mat,
           type: 'material',
           level: mat.level || 1,
-          element: element
+          element: element,
+          displayId: `${mat.materialId}_${mat.level}` // 레벨별 고유 ID
         }
       })
 
@@ -185,7 +242,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
         items = items.filter(item => item.category === 'accessory')
       }
     } else if (activeMainTab === 'consumables') {
-      // 소모품은 potion류와 food류 items 합치기
+      // 소모품은 potion류와 food류 items 합치기 (레벨별로 구분)
       const potionItems = inventory.items
         .filter(item => item.itemId.includes('potion'))
         .map(item => ({
@@ -193,7 +250,8 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
           type: 'consumable',
           level: item.level || 1,
           consumableId: item.itemId,
-          category: 'potion'
+          category: 'potion',
+          displayId: `${item.itemId}_${item.level || 1}` // 레벨별 고유 ID
         }))
       
       const foodItems = inventory.items
@@ -203,16 +261,11 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
           type: 'consumable',
           level: item.level || 1,
           consumableId: item.itemId,
-          category: 'food'
+          category: 'food',
+          displayId: `${item.itemId}_${item.level || 1}` // 레벨별 고유 ID
         }))
       
       items = [
-        ...inventory.consumables.map(consumable => ({
-          ...consumable,
-          type: 'consumable',
-          level: consumable.level || 1,
-          category: consumable.itemId?.includes('food') ? 'food' : 'potion'
-        })),
         ...potionItems,
         ...foodItems
       ]
@@ -406,7 +459,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
                         ? 'border-yellow-400 border-2 bg-yellow-900/20 hover:bg-yellow-800/30' 
                         : 'border-gray-700 hover:bg-gray-700'
                     }`}
-                    onClick={() => handleItemClick(itemId)}
+                    onClick={() => handleItemClick(item.displayId || itemId)}
                   >
                     {/* 장착 상태 뱃지 */}
                     {equipped && (
@@ -419,7 +472,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
                     <div className="space-y-1">
                     {/* 아이템 이름 */}
                       <div className={`text-xs font-medium mb-1 ${equipped ? 'text-yellow-200' : 'text-white'}`}>
-                        {itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {itemNames[itemId] || itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </div>
                     
                     {/* 레벨 표시 */}

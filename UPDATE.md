@@ -2,6 +2,275 @@
 
 ## 최신 업데이트 내역
 
+### 🎮 **미니게임 및 생활 시스템 개선 - 2024년 12월 23일**
+
+**문제**:
+1. 채집 미니게임 모달에서 밖을 눌러도 닫히지 않음
+2. 낚시 미니게임 점수가 소수점으로 표시됨
+3. 낚시 미니게임 결과에 획득 아이템과 스킬 수련치가 표시되지 않음
+4. 낚시 게임 완료 버튼을 눌렀을 때 아이템을 획득하지 않음
+5. 농사에서 농작물 관련 행동을 할 때마다 게임이 저장되지 않음
+6. 제작, 연금술, 요리에서 제작 완료 시 상세 정보가 표시되지 않음
+7. 생활 탭의 패널이 밑부분이 잘려보임
+8. 낚시 미니게임에서 완료 버튼을 눌러야 아이템을 획득함
+9. 낚시 미니게임에 보상 테이블이 없어 확률적 보상이 없음
+10. 스태미나 관련 코드가 남아있어 문제 발생
+11. index.ts와 개별 파일들이 겹쳐서 설정이 혼란스러움
+12. 환생 포인트가 0으로 시작함
+13. 스킬 패널에 레벨업 버튼이 조건 미충족 시 표시되지 않음
+14. 스킬 탭 첫 페이지가 불속성으로 설정됨
+
+**해결 방법**:
+
+1. **채집 미니게임 모달 개선**:
+   - `src/components/life/HerbalismMinigame.tsx`에서 모달 밖 클릭 시 닫히도록 수정
+   - `onClick={onClose}` 추가
+
+2. **낚시 미니게임 점수 정수 처리**:
+   - `src/components/life/FishingMinigame.tsx`에서 점수 계산을 정수로 처리
+   - `Math.floor()` 함수 사용하여 소수점 제거
+   - 결과 표시에서도 `Math.floor(score)` 사용
+
+3. **낚시 미니게임 결과 표시 개선**:
+   - 게임 완료 시 획득 보상 섹션 추가
+   - 생선 개수와 낚시 경험치 표시
+   - 퍼펙트 여부에 따른 보상 차등 표시
+
+4. **낚시 게임 아이템 획득 수정**:
+   - 게임이 끝나고 결과가 나올 때 아이템을 획득하도록 수정
+   - `onComplete` 함수 호출 시점 조정
+
+5. **농사 시스템 자동 저장**:
+   - `src/components/life/FarmingSystem.tsx`에 `useGameStore` import 추가
+   - 씨앗 심기, 물주기, 수확 시 `saveGame()` 호출
+   - 농작물 관련 모든 행동 후 자동 저장
+
+6. **제작 시스템 상세 정보 표시**:
+   - `src/components/life/CraftingModal.tsx`에 제작 완료 결과 모달 추가
+   - 제작된 아이템의 품질, 레벨, 수량 표시
+   - 획득 경험치 표시
+   - 제작 완료 후 게임 저장 기능 추가
+
+7. **생활 패널 레이아웃 수정**:
+   - `src/components/life/LifePanel.tsx`에서 상점 패널 참고하여 레이아웃 수정
+   - `max-h-[calc(100vh-12rem)]`로 변경하여 밑부분 잘림 현상 해결
+
+8. **낚시 미니게임 보상 시스템 개선**:
+   - 게임 완료 시 바로 보상 지급하도록 수정
+   - 보상 테이블 추가 (물고기, 보석, 스킬 페이지)
+   - 스킬 레벨과 게임 성공도에 따른 확률적 보상
+   - 완료 버튼을 다시하기 버튼으로 변경
+
+9. **스태미나 관련 코드 삭제**:
+   - `src/data/items/stamina_potion.json` 파일 삭제
+   - `src/data/initial/index.ts`와 `src/data/initial/inventory.json`에서 스태미나 포션 제거
+   - `src/components/life/CraftingModal.tsx`에서 연금술 레시피에서 스태미나 포션 제거
+
+10. **초기 데이터 파일 구조 개선**:
+    - `src/data/initial/index.ts` 백업 후 삭제
+    - `src/stores/index.ts`에서 개별 JSON 파일 import로 변경
+    - `src/data/initial/character.json`에 base 스탯 추가
+
+11. **환생 포인트 초기값 설정**:
+    - `src/data/initial/character.json`에서 `ascensionPoints: 20`으로 설정
+
+12. **스킬 패널 레벨업 버튼 개선**:
+    - `src/components/character/CharacterPanel.tsx`에서 조건 미충족 시에도 비활성화된 버튼 표시
+    - 버튼 스타일을 활성화/비활성화 상태에 따라 변경
+
+13. **스킬 탭 기본 속성 변경**:
+    - `src/components/character/CharacterPanel.tsx`에서 `selectedElement` 초기값을 'All'로 변경
+
+14. **낚시 미니게임 보상 시스템 버그 수정**:
+    - `src/components/life/FishingMinigame.tsx`에서 무한 루프 오류 수정 (useEffect 의존성 배열에서 onComplete 제거)
+    - 보상 지급 함수 추가하여 실제 인벤토리에 아이템 추가
+    - 게임 완료 시 자동 저장 기능 추가
+    - 콘솔 로그 추가로 보상 지급 과정 추적 가능
+
+15. **새 게임 시작 시 생활 스킬 초기화 문제 수정**:
+    - `src/stores/index.ts`의 `startNewGame` 함수에서 `life` 상태 초기화 추가
+    - 모든 생활 스킬을 레벨 1, 경험치 0으로 초기화
+    - 제작, 연금술, 요리는 해금 상태, 나머지는 잠금 상태로 설정
+
+16. **아이템 상세 정보 및 한글 이름 표시 개선**:
+    - `src/components/common/ItemDetailModal.tsx`에서 아이템 데이터 로딩 기능 추가
+    - 아이템 상세 정보에서 한글 이름과 설명을 올바르게 표시
+    - `src/utils/itemSystem.ts`에 `getItemName` 함수 추가
+    - 전투 로그, 판매 로그에서 한글 이름 사용
+    - `src/stores/index.ts`에서 드롭 아이템 로그에 한글 이름 적용
+    - `src/components/inventory/SellModal.tsx`에서 판매 로그에 한글 이름 적용
+
+17. **인벤토리 한글 이름 표시 및 낚시 보상 시스템 개선**:
+    - `src/components/inventory/InventoryPanel.tsx`에서 아이템 이름 로딩 기능 추가
+    - 인벤토리에서 한글 이름 표시
+    - `src/data/drops/fishing_rewards.json` 낚시 보상 테이블 생성
+    - `src/components/life/FishingMinigame.tsx`에서 드롭 테이블 기반 보상 시스템 적용
+    - 스킬 레벨과 점수에 따른 아이템 레벨 보정 시스템 구현
+    - 스킬 페이지는 레벨 보정 없이 획득
+
+18. **낚시 결과 레벨 표시 및 디버깅 개선**:
+    - `src/components/life/FishingMinigame.tsx`에서 획득 아이템 레벨 표시 추가
+    - 보상 계산 과정의 디버깅 로그 추가
+    - 아이템 생성 시 레벨 정보 로그 출력
+    - 전투 로그에 아이템 레벨 정보 표시
+
+19. **아이템 레벨별 관리 시스템 개선**:
+    - `src/stores/index.ts`에서 `addMaterial` 함수를 레벨별로 별도 관리하도록 수정
+    - `removeMaterial` 함수에 레벨 매개변수 추가
+    - `src/components/inventory/InventoryPanel.tsx`에서 재료를 레벨별로 구분하여 표시
+    - 같은 아이템이라도 레벨이 다르면 별도 아이템으로 관리
+    - 인벤토리에서 레벨별로 정확한 아이템 정보 표시
+
+20. **재료 상세 모달 오류 수정 및 레벨 표시 개선**:
+    - `src/components/inventory/InventoryPanel.tsx`에서 displayId 파싱 로직 수정
+    - `src/stores/index.ts`에서 소모품도 레벨별로 관리하도록 수정
+    - `src/components/common/ItemDetailModal.tsx`에서 아이템 레벨 표시 추가
+    - 재료, 장비, 소모품 모두 상세 모달에서 레벨 정보 표시
+    - 소모품도 레벨별로 별도 관리되도록 개선
+
+21. **낚시 보상 한글화 및 스킬 로그 개선**:
+    - `src/components/life/FishingMinigame.tsx`에서 낚시 보상 결과에 한글 이름 표시
+    - `src/stores/index.ts`에서 스킬 관련 로그에 한글 이름 사용
+    - 스킬 페이지 획득, 스킬 해금, 스킬 레벨업 로그에 한글 이름 표시
+    - 스킬 경험치 획득 로그에 한글 이름 표시
+
+22. **물약 시스템 개선 및 제작 시스템 개선**:
+    - `src/data/items/health_potion.json`, `src/data/items/mana_potion.json` 수정하여 연금술로 제작 가능하도록 변경
+    - `src/data/items/greater_health_potion.json`, `src/data/items/greater_mana_potion.json` 삭제
+    - `src/components/life/CraftingModal.tsx`에서 재료 선택 시 수량 표시 및 레벨별 정렬 개선
+    - 제작 시 실제 필요한 재료 개수만큼만 감소하도록 수정
+    - `src/components/inventory/SellModal.tsx`에서 일괄 판매 시 장비 분류 오류 수정
+
+23. **소모품 인벤토리 구조 개선**:
+    - `src/stores/index.ts`에서 초기 소모품을 `inventory.items`에 통합
+    - `src/components/inventory/InventoryPanel.tsx`에서 소모품 표시 로직 수정
+    - 소모품 클릭 시 상세 모달 오류 해결
+    - 소모품과 장비를 모두 `inventory.items`에서 관리하도록 통합
+
+24. **재료 선택 UI 개선**:
+    - `src/components/life/CraftingModal.tsx`에서 재료 선택 시 각 레벨별 개수 표시
+    - 전체 보유량 대신 레벨별 개수 정보 제공
+    - 재료 선택 시 더 정확한 정보 표시
+
+25. **재료 이름 한글화**:
+    - `src/components/life/CraftingModal.tsx`에서 재료 이름을 한글로 표시
+    - 레시피 목록과 재료 선택 모달에서 모두 한글 이름 사용
+    - `getItemName` 함수를 활용하여 재료의 한글 이름 로드
+
+26. **재료 선택 UI 개선 (레벨별 개수 표시)**:
+    - `src/components/life/CraftingModal.tsx`에서 재료 선택 버튼에 레벨별 개수 표시
+    - 레벨과 품질이 같은 재료들을 그룹화하여 개수 표시
+    - 재료 선택 시 더 정확한 정보 제공
+
+27. **제작 스킬 레벨 제한 제거**:
+    - `src/components/life/CraftingModal.tsx`에서 제작 스킬 레벨 제한 제거
+    - `canCraft` 함수에서 스킬 레벨 체크 로직 제거
+    - 레시피 목록에서 스킬 레벨 부족 메시지 제거
+    - 모든 제작이 재료만 있으면 가능하도록 수정
+
+28. **재료 선택 UI 개선 (가로 스크롤 및 단일 레벨 선택)**:
+    - `src/components/life/CraftingModal.tsx`에서 재료 선택을 가로 스크롤 방식으로 변경
+    - 한 레벨의 재료만 선택할 수 있도록 수정 (여러 레벨 합산 불가)
+    - 재료 레벨 평균 계산을 정수로 표시하도록 수정
+    - 재료 소비 로직 개선으로 정확한 개수만큼 소비되도록 수정
+
+29. **재료 선택 시스템 버그 수정**:
+    - `src/components/life/CraftingModal.tsx`에서 재료 선택 초기화 시 선택되지 않은 상태로 시작
+    - 필요한 개수보다 적은 재료는 선택할 수 없도록 제한
+    - 재료 소비 로직 수정으로 정확한 개수만큼 소비되도록 개선
+    - 선택 불가능한 재료는 빨간색 테두리로 표시
+
+30. **제작 시스템 개선 및 버그 수정**:
+    - `src/components/life/CraftingModal.tsx`에서 NaN 문제 해결 (선택된 재료가 없을 때 스킬 레벨 사용)
+    - 레시피 목록에서 재료 보유량을 각 레벨별 최대 개수로 표시
+    - 제작 가능 여부 판단을 각 레벨별 최대 개수 기준으로 변경
+    - 재료 소비 로직에 디버깅 로그 추가
+
+31. **제작 버튼 제한 및 사용자 안내 개선**:
+    - `src/components/life/CraftingModal.tsx`에서 모든 재료가 선택되지 않으면 제작 버튼 비활성화
+    - 재료 선택이 완료되지 않았을 때 경고 메시지 표시
+    - 제작 버튼 클릭 시 재료 선택 완료 여부 확인
+
+32. **제작 시스템 안전장치 강화**:
+    - `src/components/life/CraftingModal.tsx`에서 executeCrafting 함수에 재료 선택 완료 여부 확인 로직 추가
+    - 재료 선택 과정에 디버깅 로그 추가
+    - 모든 재료가 선택되지 않으면 제작 중단 및 경고 메시지 출력
+
+**수정된 파일**:
+- `src/components/life/HerbalismMinigame.tsx`
+- `src/components/life/FishingMinigame.tsx`
+- `src/components/life/FarmingSystem.tsx`
+- `src/components/life/CraftingModal.tsx`
+- `src/components/life/LifePanel.tsx`
+- `src/components/character/CharacterPanel.tsx`
+- `src/data/initial/character.json`
+- `src/stores/index.ts`
+- `src/data/items/stamina_potion.json` (삭제)
+- `src/data/items/greater_health_potion.json` (삭제)
+- `src/data/items/greater_mana_potion.json` (삭제)
+- `src/data/initial/index.ts` (백업 후 삭제)
+- `src/components/common/ItemDetailModal.tsx`
+- `src/utils/itemSystem.ts`
+- `src/components/inventory/SellModal.tsx`
+- `src/components/inventory/InventoryPanel.tsx`
+- `src/data/drops/fishing_rewards.json`
+- `src/data/items/health_potion.json`
+- `src/data/items/mana_potion.json`
+- `src/data/initial/inventory.json`
+
+**문제**:
+1. 채집 미니게임 모달에서 밖을 눌러도 닫히지 않음
+2. 낚시 미니게임 점수가 소수점으로 표시됨
+3. 낚시 미니게임 결과에 획득 아이템과 스킬 수련치가 표시되지 않음
+4. 낚시 게임 완료 버튼을 눌렀을 때 아이템을 획득하지 않음
+5. 농사에서 농작물 관련 행동을 할 때마다 게임이 저장되지 않음
+6. 제작, 연금술, 요리에서 제작 완료 시 상세 정보가 표시되지 않음
+7. 생활 탭의 패널이 밑부분이 잘려보임
+
+**해결 방법**:
+
+1. **채집 미니게임 모달 개선**:
+   - `src/components/life/HerbalismMinigame.tsx`에서 모달 밖 클릭 시 닫히도록 수정
+   - `onClick={onClose}` 추가
+
+2. **낚시 미니게임 점수 정수 처리**:
+   - `src/components/life/FishingMinigame.tsx`에서 점수 계산을 정수로 처리
+   - `Math.floor()` 함수 사용하여 소수점 제거
+   - 결과 표시에서도 `Math.floor(score)` 사용
+
+3. **낚시 미니게임 결과 표시 개선**:
+   - 게임 완료 시 획득 보상 섹션 추가
+   - 생선 개수와 낚시 경험치 표시
+   - 퍼펙트 여부에 따른 보상 차등 표시
+
+4. **낚시 게임 아이템 획득 수정**:
+   - 게임이 끝나고 결과가 나올 때 아이템을 획득하도록 수정
+   - `onComplete` 함수 호출 시점 조정
+
+5. **농사 시스템 자동 저장**:
+   - `src/components/life/FarmingSystem.tsx`에 `useGameStore` import 추가
+   - 씨앗 심기, 물주기, 수확 시 `saveGame()` 호출
+   - 농작물 관련 모든 행동 후 자동 저장
+
+6. **제작 시스템 상세 정보 표시**:
+   - `src/components/life/CraftingModal.tsx`에 제작 완료 결과 모달 추가
+   - 제작된 아이템의 품질, 레벨, 수량 표시
+   - 획득 경험치 표시
+   - 제작 완료 후 게임 저장 기능 추가
+
+7. **생활 패널 레이아웃 수정**:
+   - `src/components/life/LifePanel.tsx`에서 상점 패널 참고하여 레이아웃 수정
+   - `max-h-[calc(100vh-12rem)]`로 변경하여 밑부분 잘림 현상 해결
+
+**수정된 파일**:
+- `src/components/life/HerbalismMinigame.tsx`
+- `src/components/life/FishingMinigame.tsx`
+- `src/components/life/FarmingSystem.tsx`
+- `src/components/life/CraftingModal.tsx`
+- `src/components/life/LifePanel.tsx`
+
+---
+
 ### 🔧 **스킬 시스템 완전 개편 및 아이템 판매 시스템 구현 - 2024년 12월 23일**
 
 **문제**: 

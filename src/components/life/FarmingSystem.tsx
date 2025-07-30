@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X, Sprout, Droplets, Scissors, Clock, Plus } from 'lucide-react'
+import { useGameStore } from '../../stores'
 
 interface FarmingSystemProps {
   isOpen: boolean
@@ -58,6 +59,7 @@ const CROPS: Crop[] = [
 ]
 
 const FarmingSystem: React.FC<FarmingSystemProps> = ({ isOpen, onClose, onComplete }) => {
+  const { saveGame } = useGameStore()
   const [plantedCrops, setPlantedCrops] = useState<PlantedCrop[]>([])
   const [selectedSeed, setSelectedSeed] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(Date.now())
@@ -95,6 +97,9 @@ const FarmingSystem: React.FC<FarmingSystemProps> = ({ isOpen, onClose, onComple
 
     setPlantedCrops(prev => [...prev, newCrop])
     setSelectedSeed(null)
+    
+    // 씨앗 심기 후 게임 저장
+    saveGame()
   }
 
   // 물주기
@@ -115,6 +120,9 @@ const FarmingSystem: React.FC<FarmingSystemProps> = ({ isOpen, onClose, onComple
       }
       return crop
     }))
+    
+    // 물주기 후 게임 저장
+    saveGame()
   }
 
   // 수확하기
@@ -129,6 +137,9 @@ const FarmingSystem: React.FC<FarmingSystemProps> = ({ isOpen, onClose, onComple
       
       // 작물 제거
       setPlantedCrops(prev => prev.filter(c => c.id !== plotId))
+      
+      // 수확 후 게임 저장
+      saveGame()
       
       console.log(`${cropData.name} 수확 완료!`, cropData.harvestReward)
     }

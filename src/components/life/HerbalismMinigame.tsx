@@ -247,6 +247,7 @@ const HerbalismMinigame: React.FC<HerbalismMinigameProps> = ({ isOpen, onClose, 
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60"
+      onClick={onClose}
     >
       <div 
         className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4"

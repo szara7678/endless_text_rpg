@@ -13,7 +13,22 @@ import { processAutoCombatTurn, generateNextMonster, processPlayerTurn, processM
 import { processItemDrops, processSkillPageDrops } from '../utils/dropSystem'
 import * as EquipmentSystem from '../utils/equipmentSystem'
 import { generateInitialItems } from '../utils/itemGenerator'
-import { initialCharacterData, initialInventoryData, initialSkillsData, initialTowerData } from '../data/initial'
+import { calculateItemSellPrice, getItemName } from '../utils/itemSystem'
+
+// 스킬 이름 가져오기 함수
+const getSkillName = async (skillId: string): Promise<string> => {
+  try {
+    const skillData = (await import(`../data/skills/${skillId}.json`)).default
+    return skillData.name || skillId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+  } catch (error) {
+    console.warn(`스킬 이름 로드 실패: ${skillId}`, error)
+    return skillId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+}
+import characterData from '../data/initial/character.json'
+import inventoryData from '../data/initial/inventory.json'
+import skillsData from '../data/initial/skills.json'
+import towerData from '../data/initial/tower.json'
 
 // equipmentSystem 함수들을 destructure
 const { 
@@ -50,7 +65,7 @@ interface GameStore {
   addItem: (itemId: string, quantity: number, level?: number, quality?: string) => void
   addMaterial: (materialId: string, count: number, level?: number) => void
   addSkillPage: (skillId: string) => void
-  removeMaterial: (materialId: string, count: number) => void
+  removeMaterial: (materialId: string, count: number, level?: number) => void
 
   // 스킬 시스템
   unlockSkill: (skillId: string) => void
@@ -192,26 +207,36 @@ export const useGameStore = create<GameStore>()(
           console.log('📦 초기 인벤토리 로드 중...')
           
           // 초기 아이템들 생성
-          const generatedItems = await generateInitialItems(initialInventoryData.initialItems)
+          const generatedItems = await generateInitialItems(inventoryData.initialItems)
+          
+          // 초기 소모품들을 items에 추가
+          const initialConsumables = inventoryData.initialConsumables.map((consumable: any) => ({
+            itemId: consumable.itemId,
+            level: consumable.level || 1,
+            quantity: consumable.quantity || 1
+          }))
+          
+          // 모든 아이템 합치기 (장비 + 소모품)
+          const allItems = [...generatedItems, ...initialConsumables]
           
           // 인벤토리 상태 업데이트
           set((state: any) => ({
             ...state,
             inventory: {
               ...state.inventory,
-              items: generatedItems,
-              materials: initialInventoryData.initialMaterials.map((m: any) => ({
+              items: allItems,
+              materials: inventoryData.initialMaterials.map((m: any) => ({
                 materialId: m.materialId,
                 name: m.materialId.replace(/_/g, ' '),
                 level: m.level,
                 count: m.count
               })),
-              consumables: initialInventoryData.initialConsumables,
-              usedSlots: generatedItems.length + initialInventoryData.initialMaterials.length + initialInventoryData.initialConsumables.length
+              consumables: [], // 소모품은 items에 통합
+              usedSlots: allItems.length + inventoryData.initialMaterials.length
             }
           }))
           
-          console.log(`✅ 초기 인벤토리 로드 완료: 아이템 ${generatedItems.length}개, 재료 ${initialInventoryData.initialMaterials.length}개, 소모품 ${initialInventoryData.initialConsumables.length}개`)
+          console.log(`✅ 초기 인벤토리 로드 완료: 아이템 ${generatedItems.length}개, 재료 ${inventoryData.initialMaterials.length}개, 소모품 ${inventoryData.initialConsumables.length}개`)
           
         } catch (error) {
           console.error('❌ 초기 인벤토리 로드 실패:', error)
@@ -240,10 +265,10 @@ export const useGameStore = create<GameStore>()(
           
           // 1단계: 초기 데이터 로드
           console.log('⏳ 1단계: 초기 데이터 로드 중...')
-          const initialCharacter = initialCharacterData
-          const initialInventory = initialInventoryData
-          const initialSkills = initialSkillsData
-          const initialTower = initialTowerData
+          const initialCharacter = characterData
+          const initialInventory = inventoryData
+          const initialSkills = skillsData
+          const initialTower = towerData
           
           console.log('✅ 1단계 완료: 초기 데이터 로드됨')
           
@@ -302,12 +327,12 @@ export const useGameStore = create<GameStore>()(
               // 최고 층수
               highestFloor: initialCharacter?.highestFloor || 1,
               
-              // 장비 (초기 장비 사용)
-              equipment: {
-                weapon: initialInventory?.equipment?.weapon || null,
-                armor: initialInventory?.equipment?.chest || null,
-                accessory: initialInventory?.equipment?.amulet || null
-              },
+                              // 장비 (초기값)
+                equipment: {
+                  weapon: null,
+                  armor: null,
+                  accessory: null
+                },
               
               // 환생 시스템
               rebirthLevel: initialCharacter?.ascensionPoints || 0,
@@ -331,6 +356,18 @@ export const useGameStore = create<GameStore>()(
               pagesOwned: initialSkills?.pagesOwned || {},
               skillPages: [],
               learnedSkills: []
+            },
+            life: {
+              skills: {
+                smithing: { id: 'smithing', name: '제작', level: 1, currentXp: 0, maxXp: 100, unlocked: true },
+                alchemy: { id: 'alchemy', name: '연금술', level: 1, currentXp: 0, maxXp: 100, unlocked: true },
+                cooking: { id: 'cooking', name: '요리', level: 1, currentXp: 0, maxXp: 100, unlocked: true },
+                fishing: { id: 'fishing', name: '낚시', level: 1, currentXp: 0, maxXp: 100, unlocked: false },
+                farming: { id: 'farming', name: '농사', level: 1, currentXp: 0, maxXp: 100, unlocked: false },
+                herbalism: { id: 'herbalism', name: '채집', level: 1, currentXp: 0, maxXp: 100, unlocked: false },
+                mining: { id: 'mining', name: '광산', level: 1, currentXp: 0, maxXp: 100, unlocked: false }
+              },
+              activeMinigame: null
             },
             tower: {
               currentFloor: initialTower?.currentFloor || 1,
@@ -816,21 +853,37 @@ export const useGameStore = create<GameStore>()(
             // 재료 드롭 처리
             for (const material of dropResults.materials) {
               get().addMaterial(material.itemId, 1, material.level)
-              get().addCombatLog('loot', `⛏️ ${material.itemId.replace('_', ' ')} (Lv${material.level}) 획득!`)
+              // 한글 이름 가져오기
+              getItemName(material.itemId).then(itemName => {
+                get().addCombatLog('loot', `⛏️ ${itemName} (Lv${material.level}) 획득!`)
+              }).catch(() => {
+                // 실패 시 기본 이름 사용
+                get().addCombatLog('loot', `⛏️ ${material.itemId.replace('_', ' ')} (Lv${material.level}) 획득!`)
+              })
             }
             
             // 아이템 드롭 처리
             for (const item of dropResults.items) {
               get().addItem(item.itemId, 1, item.level, item.quality)
               const qualityText = item.quality !== 'Common' ? ` (${item.quality})` : ''
-              get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText} 획득!`)
+              // 한글 이름 가져오기
+              getItemName(item.itemId).then(itemName => {
+                get().addCombatLog('loot', `🎁 ${itemName} (Lv${item.level})${qualityText} 획득!`)
+              }).catch(() => {
+                // 실패 시 기본 이름 사용
+                get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText} 획득!`)
+              })
             }
             
             // 스킬 페이지 드롭 처리
             const skillPages = processSkillPageDrops(monster)
             for (const skillId of skillPages) {
               get().addSkillPage(skillId)
-              get().addCombatLog('loot', `📚 ${skillId} 스킬 페이지 획득!`)
+              getSkillName(skillId).then(skillName => {
+          get().addCombatLog('loot', `📚 ${skillName} 스킬 페이지 획득!`)
+        }).catch(() => {
+          get().addCombatLog('loot', `📚 ${skillId} 스킬 페이지 획득!`)
+        })
             }
             
           } catch (error) {
@@ -1221,13 +1274,13 @@ export const useGameStore = create<GameStore>()(
               })
             }
           } else {
-            // 소모품은 기존 방식대로 수량 관리
-            const existingIndex = newItems.findIndex(item => item.itemId === itemId && !item.uniqueId)
+            // 소모품은 레벨별로 관리
+            const existingIndex = newItems.findIndex(item => item.itemId === itemId && item.level === level && !item.uniqueId)
             if (existingIndex >= 0) {
-              // 기존 소모품이 있으면 수량만 추가하고 레벨은 더 높은 것으로 유지
+              // 같은 레벨의 소모품이 있으면 수량만 추가
               newItems[existingIndex].quantity += quantity
-              newItems[existingIndex].level = Math.max(newItems[existingIndex].level || 1, level)
             } else {
+              // 다른 레벨이거나 없는 경우 새로 추가
               newItems.push({ itemId, quantity, level: level })
             }
           }
@@ -1245,13 +1298,14 @@ export const useGameStore = create<GameStore>()(
       addMaterial: (materialId: string, count: number, level: number = 1) => {
         set((state: any) => {
           const materials = [...state.inventory.materials]
-          const existingIndex = materials.findIndex(m => m.materialId === materialId)
+          // 레벨과 materialId 모두 일치하는 재료 찾기
+          const existingIndex = materials.findIndex(m => m.materialId === materialId && m.level === level)
           
           if (existingIndex >= 0) {
-            // 기존 재료가 있으면 수량만 추가하고 레벨은 더 높은 것으로 유지
+            // 같은 레벨의 재료가 있으면 수량만 추가
             materials[existingIndex].count += count
-            materials[existingIndex].level = Math.max(materials[existingIndex].level, level)
           } else {
+            // 다른 레벨이거나 없는 경우 새로 추가
             materials.push({
               materialId,
               name: materialId.replace('_', ' '),
@@ -1270,10 +1324,22 @@ export const useGameStore = create<GameStore>()(
         })
       },
 
-      removeMaterial: (materialId: string, count: number) => {
+      removeMaterial: (materialId: string, count: number, level?: number) => {
         set((state: any) => {
           const materials = [...state.inventory.materials]
-          const existingIndex = materials.findIndex(m => m.materialId === materialId)
+          // 레벨이 지정된 경우 해당 레벨의 재료만 찾기, 아니면 가장 높은 레벨부터
+          let existingIndex = -1
+          
+          if (level !== undefined) {
+            existingIndex = materials.findIndex(m => m.materialId === materialId && m.level === level)
+          } else {
+            // 레벨이 지정되지 않은 경우 가장 높은 레벨의 재료 찾기
+            const sameMaterial = materials.filter(m => m.materialId === materialId)
+            if (sameMaterial.length > 0) {
+              const highestLevel = Math.max(...sameMaterial.map(m => m.level))
+              existingIndex = materials.findIndex(m => m.materialId === materialId && m.level === highestLevel)
+            }
+          }
           
           if (existingIndex >= 0) {
             const currentCount = materials[existingIndex].count
@@ -1284,10 +1350,10 @@ export const useGameStore = create<GameStore>()(
                 materials.splice(existingIndex, 1)
               }
             } else {
-              console.warn(`재료 ${materialId}가 부족합니다. (${currentCount}/${count})`)
+              console.warn(`재료 ${materialId} (Lv${materials[existingIndex].level})가 부족합니다. (${currentCount}/${count})`)
             }
           } else {
-            console.warn(`재료 ${materialId}를 찾을 수 없습니다.`)
+            console.warn(`재료 ${materialId}${level !== undefined ? ` (Lv${level})` : ''}를 찾을 수 없습니다.`)
           }
           
           return {
@@ -1339,7 +1405,11 @@ export const useGameStore = create<GameStore>()(
         
         // 페이지 부족 체크
         if (pageCount < 3) {
+          getSkillName(skillId).then(skillName => {
+          get().addCombatLog('skill', `❌ ${skillName} 해금에 필요한 페이지가 부족합니다. (${pageCount}/3)`)
+        }).catch(() => {
           get().addCombatLog('skill', `❌ ${skillId} 해금에 필요한 페이지가 부족합니다. (${pageCount}/3)`)
+        })
           return
         }
 
@@ -1348,7 +1418,11 @@ export const useGameStore = create<GameStore>()(
                            skills.passiveSkills.some(s => s.skillId === skillId)
         
         if (alreadyOwned) {
+          getSkillName(skillId).then(skillName => {
+          get().addCombatLog('skill', `❌ ${skillName}은(는) 이미 보유한 스킬입니다.`)
+        }).catch(() => {
           get().addCombatLog('skill', `❌ ${skillId}은(는) 이미 보유한 스킬입니다.`)
+        })
           return
         }
 
@@ -1377,7 +1451,11 @@ export const useGameStore = create<GameStore>()(
           }
         }))
         
-        get().addCombatLog('skill', `🎉 ${skillId} 스킬을 해금했습니다! (Lv 1)`)
+        getSkillName(skillId).then(skillName => {
+          get().addCombatLog('skill', `🎉 ${skillName} 스킬을 해금했습니다! (Lv 1)`)
+        }).catch(() => {
+          get().addCombatLog('skill', `🎉 ${skillId} 스킬을 해금했습니다! (Lv 1)`)
+        })
       },
 
       // 스킬 레벨업
@@ -1477,7 +1555,11 @@ export const useGameStore = create<GameStore>()(
           }
         }))
 
-        get().addCombatLog('skill', `⬆️ ${skillId} 스킬이 Lv ${newLevel}로 상승했습니다!`)
+        getSkillName(skillId).then(skillName => {
+          get().addCombatLog('skill', `⬆️ ${skillName} 스킬이 Lv ${newLevel}로 상승했습니다!`)
+        }).catch(() => {
+          get().addCombatLog('skill', `⬆️ ${skillId} 스킬이 Lv ${newLevel}로 상승했습니다!`)
+        })
         get().addCombatLog('skill', `💰 AP ${apCost}, 골드 ${goldCost} 소모`)
       },
 
@@ -1531,7 +1613,11 @@ export const useGameStore = create<GameStore>()(
             kill: '처치'
           }
           
+          getSkillName(skillId).then(skillName => {
+          get().addCombatLog('skill', `📈 ${skillName} (${eventNames[event]}) +${xpGain} XP`)
+        }).catch(() => {
           get().addCombatLog('skill', `📈 ${skillId} (${eventNames[event]}) +${xpGain} XP`)
+        })
         }
       },
 

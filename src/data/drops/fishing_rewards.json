@@ -1,0 +1,20 @@
+{
+  "drops": [
+    { "itemId": "small_fish", "chance": 0.6, "min": 1, "max": 3 },
+    { "itemId": "medium_fish", "chance": 0.3, "min": 1, "max": 2 },
+    { "itemId": "large_fish", "chance": 0.15, "min": 1, "max": 1 },
+    { "itemId": "rare_fish", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "flame_gem", "chance": 0.02, "min": 1, "max": 1 },
+    { "itemId": "frost_gem", "chance": 0.02, "min": 1, "max": 1 },
+    { "itemId": "toxic_gem", "chance": 0.02, "min": 1, "max": 1 },
+    { "itemId": "shadow_gem", "chance": 0.02, "min": 1, "max": 1 },
+    { "itemId": "thunder_gem", "chance": 0.02, "min": 1, "max": 1 },
+    { "itemId": "verdant_gem", "chance": 0.02, "min": 1, "max": 1 },
+    { "itemId": "fireball", "chance": 0.01, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "ice_shard", "chance": 0.01, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "toxic_spit", "chance": 0.01, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "shadow_bite", "chance": 0.01, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "thunder_shock", "chance": 0.01, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "nature_blessing", "chance": 0.01, "min": 1, "max": 1, "type": "skillPage" }
+  ]
+} 

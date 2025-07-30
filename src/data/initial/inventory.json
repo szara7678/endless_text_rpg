@@ -19,6 +19,7 @@
     { "materialId": "iron_ore", "level": 1, "count": 20 },
     { "materialId": "wood", "level": 1, "count": 25 },
     { "materialId": "red_herb", "level": 1, "count": 15 },
+    { "materialId": "healing_herb", "level": 1, "count": 6 },
     { "materialId": "flame_crystal", "level": 2, "count": 10 },
     { "materialId": "frost_ore", "level": 1, "count": 12 },
     { "materialId": "toxic_shard", "level": 2, "count": 8 },
@@ -36,9 +37,8 @@
   "initialConsumables": [
     { "itemId": "health_potion", "level": 1, "quantity": 12 },
     { "itemId": "mana_potion", "level": 1, "quantity": 8 },
-    { "itemId": "greater_health_potion", "level": 2, "quantity": 5 },
-    { "itemId": "greater_mana_potion", "level": 2, "quantity": 3 },
-    { "itemId": "stamina_potion", "level": 1, "quantity": 6 },
+
+
     { "itemId": "energy_drink", "level": 2, "quantity": 2 },
     { "itemId": "bread", "level": 1, "quantity": 15 },
     { "itemId": "meat_stew", "level": 2, "quantity": 8 }

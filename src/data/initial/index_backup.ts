@@ -72,7 +72,7 @@ export const initialInventoryData = {
     { itemId: "mana_potion", level: 1, quantity: 8 },
     { itemId: "greater_health_potion", level: 2, quantity: 5 },
     { itemId: "greater_mana_potion", level: 2, quantity: 3 },
-    { itemId: "stamina_potion", level: 1, quantity: 6 },
+
     { itemId: "energy_drink", level: 2, quantity: 2 },
     { itemId: "bread", level: 1, quantity: 15 },
     { itemId: "meat_stew", level: 2, quantity: 8 }
