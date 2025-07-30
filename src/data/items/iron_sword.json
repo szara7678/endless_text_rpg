@@ -15,5 +15,11 @@
   },
   "sellPrice": 25,
   "enhanceable": true,
-  "maxEnhancement": 10
+  "maxEnhancement": 10,
+  "craftingMaterials": {
+    "iron_ore": 3,
+    "common_metal": 2
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 1
 } 

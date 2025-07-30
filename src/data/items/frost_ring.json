@@ -18,8 +18,10 @@
   "sellPrice": 200,
   "enhanceable": true,
   "maxEnhancement": 15,
-  "materials": [
-    { "materialId": "frost_gem", "quantity": 1 },
-    { "materialId": "steel_ore", "quantity": 2 }
-  ]
+  "craftingMaterials": {
+    "frost_gem": 1,
+    "steel_ore": 2
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 5
 } 

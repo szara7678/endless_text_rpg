@@ -18,8 +18,10 @@
   "sellPrice": 200,
   "enhanceable": true,
   "maxEnhancement": 15,
-  "materials": [
-    { "materialId": "shadow_gem", "quantity": 1 },
-    { "materialId": "steel_ore", "quantity": 2 }
-  ]
+  "craftingMaterials": {
+    "shadow_gem": 1,
+    "steel_ore": 2
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 5
 } 

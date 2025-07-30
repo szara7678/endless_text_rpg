@@ -18,8 +18,10 @@
   "sellPrice": 50,
   "enhanceable": true,
   "maxEnhancement": 10,
-  "materials": [
-    { "materialId": "frost_crystal", "quantity": 2 },
-    { "materialId": "wood", "quantity": 3 }
-  ]
+  "craftingMaterials": {
+    "frost_crystal": 2,
+    "wood": 3
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 2
 } 

@@ -19,5 +19,12 @@
   },
   "sellPrice": 40,
   "enhanceable": true,
-  "maxEnhancement": 10
+  "maxEnhancement": 10,
+  "craftingMaterials": {
+    "iron_ore": 2,
+    "frost_ore": 3,
+    "frost_crystal": 1
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 2
 } 

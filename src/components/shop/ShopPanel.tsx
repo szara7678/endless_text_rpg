@@ -192,7 +192,7 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className="absolute bottom-16 left-0 right-0 bg-gray-900 border-t border-gray-700 max-h-[70vh] overflow-hidden">
+    <div className="absolute top-16 left-0 right-0 bg-gray-900 border-t border-gray-700 max-h-[calc(100vh-8rem)] overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-center justify-between p-4 border-b border-gray-700">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -269,7 +269,7 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
       </div>
 
       {/* 상품 목록 */}
-      <div className="p-4 overflow-y-auto max-h-[calc(70vh-200px)]">
+      <div className="p-4 overflow-y-auto max-h-[calc(100vh-16rem)]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredItems.map((item) => {
             const canAfford = item.currency === 'gold' 

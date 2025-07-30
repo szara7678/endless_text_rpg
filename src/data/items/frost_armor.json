@@ -19,8 +19,10 @@
   "sellPrice": 45,
   "enhanceable": true,
   "maxEnhancement": 10,
-  "materials": [
-    { "materialId": "frost_ore", "quantity": 3 },
-    { "materialId": "leather", "quantity": 2 }
-  ]
+  "craftingMaterials": {
+    "frost_ore": 3,
+    "leather": 2
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 2
 } 

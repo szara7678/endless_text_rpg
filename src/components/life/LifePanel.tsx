@@ -84,7 +84,7 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <div className="absolute bottom-16 left-0 right-0 bg-gray-900 border-t border-gray-700 max-h-[70vh] overflow-hidden">
+      <div className="absolute top-16 left-0 right-0 bg-gray-900 border-t border-gray-700 max-h-[calc(100vh-8rem)] overflow-hidden">
         {/* 헤더 */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -100,7 +100,7 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* 생활 스킬 그리드 */}
-        <div className="p-4 overflow-y-auto max-h-[calc(70vh-80px)]">
+        <div className="p-4 overflow-y-auto max-h-[calc(100vh-16rem)]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {lifeSkills.map((skill) => {
               const IconComponent = skill.icon
@@ -192,6 +192,7 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
       <FishingMinigame
         isOpen={showFishingGame}
         onClose={() => setShowFishingGame(false)}
+        skillLevel={life?.skills?.fishing?.level || 1}
         onComplete={(success, perfect) => {
           console.log('낚시 결과:', success ? '성공' : '실패', perfect ? '(퍼펙트!)' : '')
           // 경험치와 아이템 보상

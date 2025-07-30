@@ -18,6 +18,7 @@ export interface PlayerSlice {
   ascend: () => void
   spendGold: (amount: number) => void
   gainGold: (amount: number) => void
+  updatePlayer: (updates: Partial<PlayerState>) => void
 }
 
 // 초기 플레이어 상태 (기획안: 레벨 없음, currentFloor → highestFloor)
@@ -34,6 +35,7 @@ export const initialPlayerState: PlayerState = {
   // 재화
   gold: 1000, // 초기 골드 지급
   gem: 0,
+  ascensionPoints: 20,
   
   // 기본 전투 스탯 (base~ 값들)
   basePhysicalAttack: 15,
@@ -192,5 +194,10 @@ export const playerSlice: StateCreator<PlayerSlice> = (set, get) => ({
         }
       }))
     }
-  }
+  },
+  
+  updatePlayer: (updates: Partial<PlayerState>) => 
+    set((state) => ({
+      player: { ...state.player, ...updates }
+    }))
 }) 

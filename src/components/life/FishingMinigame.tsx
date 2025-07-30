@@ -5,9 +5,10 @@ interface FishingMinigameProps {
   isOpen: boolean
   onClose: () => void
   onComplete: (success: boolean, perfect: boolean) => void
+  skillLevel: number
 }
 
-const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onComplete }) => {
+const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onComplete, skillLevel }) => {
   const [sequence, setSequence] = useState<string[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playerInput, setPlayerInput] = useState<string[]>([])
@@ -24,14 +25,15 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
     '→': ArrowRight
   }
 
-  // 게임 시퀀스 생성
+  // 게임 시퀀스 생성 (레벨에 따라 길이 조정)
   const generateSequence = useCallback(() => {
+    const sequenceLength = Math.min(10, Math.max(3, 3 + Math.floor(skillLevel / 2))) // 레벨에 따라 3~10개
     const newSequence = []
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < sequenceLength; i++) {
       newSequence.push(directions[Math.floor(Math.random() * directions.length)])
     }
     setSequence(newSequence)
-  }, [])
+  }, [skillLevel])
 
   // 게임 시작
   const startGame = () => {
@@ -75,13 +77,24 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
     setPlayerInput(prev => [...prev, direction])
 
     if (isCorrect) {
-      setScore(prev => Math.min(100, prev + 15))
+      // 정답 시 점수 계산 (레벨에 따라 보너스)
+      const baseScore = 100 / sequence.length // 각 정답당 기본 점수
+      const levelBonus = Math.min(20, skillLevel * 2) // 레벨 보너스 (최대 20점)
+      const scoreGain = baseScore + levelBonus
+      setScore(prev => Math.min(100, prev + scoreGain))
       setCurrentIndex(prev => prev + 1)
 
-      // 모든 시퀀스 완료해도 자동으로 끝나지 않음 - 사용자가 완료 버튼을 눌러야 함
+      // 모든 시퀀스 완료 시 자동으로 게임 종료
+      if (currentIndex + 1 >= sequence.length) {
+        setTimeout(() => {
+          setGameState('finished')
+        }, 500)
+      }
     } else {
       setPerfect(false)
-      setScore(prev => Math.max(0, prev - 10))
+      // 오답 시 페널티 (레벨이 높을수록 페널티 감소)
+      const penalty = Math.max(5, 15 - skillLevel)
+      setScore(prev => Math.max(0, prev - penalty))
     }
   }
 
@@ -111,6 +124,7 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60"
+      onClick={onClose}
     >
       <div 
         className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4"
@@ -135,8 +149,11 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
             <p className="text-gray-300 mb-4">
               화면에 나타나는 방향키 순서대로 입력하세요!
             </p>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-sm text-gray-400 mb-2">
               ← ↑ → 키를 사용하거나 버튼을 클릭하세요
+            </p>
+            <p className="text-sm text-blue-400 mb-6">
+              레벨 {skillLevel}: {Math.min(10, Math.max(3, 3 + Math.floor(skillLevel / 2)))}개 시퀀스
             </p>
             <button
               onClick={startGame}

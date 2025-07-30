@@ -2085,3 +2085,292 @@
   - 장비 장착 시 모든 속성이 플레이어 장비 슬롯에 정확히 반영
   - 캐릭터 패널 장비 표시에서 기본값 처리 추가 (level || 1, enhancement || 0)
   - 인벤토리, 캐릭터 패널, 최종 스탯 간의 완전한 동기화 구현
+
+### 🎯 **제작 시스템 완전 개편 - 룰렛 제거 및 재료 기반 품질 시스템 구현 - 2024년 12월 23일**
+
+**문제**: 
+1. 제작 시 룰렛 미니게임이 복잡하고 불필요함
+2. 재료 레벨과 제작 스킬 레벨이 품질에 반영되지 않음
+3. 사용할 재료를 선택할 수 없음
+4. 제작 시스템이 랜덤성에 의존하여 전략적 요소 부족
+
+**해결 방법**:
+1. **룰렛 시스템 완전 제거**: 
+   - 슬롯머신 미니게임 제거
+   - 랜덤성 기반 품질 계산 제거
+   - 더 전략적이고 예측 가능한 제작 시스템 구현
+
+2. **재료 기반 품질 시스템 구현**:
+   - 재료 레벨이 높으면 품질 확률이 떨어짐 (재료가 너무 고급이면 제작이 어려움)
+   - 제작 스킬 레벨이 높으면 품질 확률이 올라감
+   - 재료 품질과 스킬 레벨의 균형을 통한 전략적 제작
+
+3. **재료 선택 모달 구현**:
+   - 사용할 재료를 모달에서 직접 선택 가능
+   - 재료별 레벨과 품질 정보 표시
+   - 예상 품질 실시간 계산 및 표시
+   - 선택된 재료에 따른 품질 예측
+
+4. **품질 계산 알고리즘**:
+   - 재료 평균 레벨과 품질 계산
+   - 재료 레벨 페널티: `(평균재료레벨 - 스킬레벨) * 10`
+   - 스킬 레벨 보너스: `스킬레벨 * 5`
+   - 최종 품질 점수: `평균재료품질 + 스킬레벨보너스 - 재료레벨페널티`
+
+5. **아이템 레벨 계산**:
+   - 재료 평균 레벨과 스킬 레벨의 평균으로 계산
+   - `Math.max(1, Math.floor((평균재료레벨 + 스킬레벨) / 2))`
+
+**수정된 파일**:
+- `src/components/life/CraftingModal.tsx`: 룰렛 제거, 재료 선택 모달 구현, 품질 계산 시스템 구현
+- `src/types/index.ts`: MaterialInstance에 uniqueId와 quality 필드 추가
+
+**결과**: 
+- 룰렛 미니게임 제거로 더 직관적이고 전략적인 제작 시스템
+- 재료 레벨과 제작 스킬 레벨에 따른 정확한 품질 계산
+- 사용자가 직접 재료를 선택할 수 있는 모달 시스템
+- 예상 품질 실시간 표시로 전략적 제작 가능
+- 재료와 스킬 레벨의 균형을 통한 깊이 있는 게임플레이
+
+---
+
+### 🎲 **제작 시스템에 랜덤성 추가 - 2024년 12월 23일**
+
+**문제**: 
+1. 품질과 아이템 레벨 계산이 완전히 결정적이어서 예측 가능함
+2. 제작 결과에 대한 긴장감과 흥미 부족
+3. 스킬 레벨이 높아도 완전히 예측 가능한 결과
+
+**해결 방법**:
+1. **품질 계산에 랜덤성 추가**:
+   - 기본 품질 점수에 랜덤 보너스 추가
+   - 스킬 레벨이 높을수록 랜덤 범위가 줄어듦 (더 안정적인 제작)
+   - 확률 기반 품질 결정 시스템 구현
+
+2. **품질별 확률 계산 시스템**:
+   - 기본 점수에 따른 각 품질별 확률 계산
+   - 스킬 레벨에 따른 보정 적용
+   - 확률 정규화로 합계 100% 보장
+
+3. **아이템 레벨에 랜덤성 추가**:
+   - 기본 레벨 계산에 랜덤 보너스 추가
+   - 스킬 레벨이 높을수록 레벨 변동 범위 감소
+   - 최소 레벨 1 보장
+
+4. **UI 개선**:
+   - 예상 품질 표시에 확률 정보 추가
+   - 각 품질별 확률을 색상으로 구분 표시
+   - 기본 점수와 확률 분포 실시간 표시
+
+**랜덤성 메커니즘**:
+- **품질 랜덤 범위**: `Math.max(5, 20 - skillLevel * 0.5)`
+- **레벨 랜덤 범위**: `Math.max(1, 3 - skillLevel * 0.1)`
+- **확률 보정**: 스킬 레벨에 따른 Superior, Epic, Legendary 확률 증가
+
+**수정된 파일**:
+- `src/components/life/CraftingModal.tsx`: 랜덤성 추가, 확률 계산 시스템 구현, UI 개선
+
+**결과**: 
+- 제작 결과에 긴장감과 흥미 추가
+- 스킬 레벨이 높을수록 더 안정적이고 예측 가능한 결과
+- 확률 기반 품질 시스템으로 전략적 선택의 중요성 증가
+- 실시간 확률 표시로 사용자 경험 향상
+
+---
+
+### 🔧 **제작 시스템 개선 및 낚시 게임 수정 - 2024년 12월 23일**
+
+**문제**: 
+1. 제작 시스템에서 모든 아이템을 제작할 수 없음 (3개만 표시)
+2. 연금술과 요리는 필터링 탭이 불필요함 (물약/음식만 제작)
+3. 소모품 탭이 대장기술에 불필요함
+4. 낚시 게임에서 다 맞춰도 75%밖에 점수가 안 나옴
+5. 낚시 레벨이 올라도 맞춰야 하는 갯수가 증가하지 않음
+
+**해결 방법**:
+1. **제작 시스템 개선**:
+   - 모든 아이템을 제작할 수 있도록 아이템 목록 확장
+   - 대장기술: 모든 무기, 갑옷, 악세서리 제작 가능
+   - 연금술: 모든 물약 제작 가능 (health_potion, mana_potion, greater_health_potion, greater_mana_potion, stamina_potion, energy_drink)
+   - 요리: 모든 음식 제작 가능 (bread, meat_stew, fish_stew, herb_soup, divine_feast)
+
+2. **필터링 시스템 개선**:
+   - 소모품 탭 제거
+   - 대장기술만 필터링 탭 표시 (무기, 방어구, 악세서리)
+   - 연금술과 요리는 필터링 탭 제거 (단일 아이템 타입만 제작)
+
+3. **낚시 게임 점수 시스템 개선**:
+   - 점수 계산 방식 변경: `100 / 시퀀스길이 + 레벨보너스`
+   - 레벨 보너스: `Math.min(20, skillLevel * 2)`
+   - 오답 페널티: `Math.max(5, 15 - skillLevel)` (레벨이 높을수록 페널티 감소)
+   - 모든 시퀀스 완료 시 자동 게임 종료
+
+4. **낚시 게임 난이도 조정**:
+   - 레벨에 따른 시퀀스 길이 조정: `Math.min(10, Math.max(3, 3 + Math.floor(skillLevel / 2)))`
+   - 레벨 1: 3개 시퀀스
+   - 레벨 10: 8개 시퀀스
+   - 레벨 15+: 10개 시퀀스 (최대)
+
+5. **UI 개선**:
+   - 낚시 게임에 현재 레벨과 시퀀스 개수 표시
+   - 제작 모달에서 스킬 타입에 따른 필터링 탭 조건부 표시
+
+**수정된 파일**:
+- `src/components/life/CraftingModal.tsx`: 필터링 시스템 개선, 소모품 탭 제거
+- `src/components/life/FishingMinigame.tsx`: 점수 시스템 개선, 레벨 기반 난이도 조정
+- `src/components/life/LifePanel.tsx`: FishingMinigame에 skillLevel 전달
+
+**결과**: 
+- 모든 아이템을 제작할 수 있는 완전한 제작 시스템
+- 스킬 타입에 맞는 적절한 필터링 시스템
+- 레벨에 따른 낚시 게임 난이도 조정
+- 공정하고 예측 가능한 점수 시스템
+- 사용자 경험 향상
+
+---
+
+### 📱 **UI 레이아웃 수정 - 패널 하단 잘림 문제 해결 - 2024년 12월 23일**
+
+**문제**: 
+1. 상점과 제작 패널의 하단 부분이 하단 네비게이션 바와 겹쳐서 잘림
+2. 패널의 최대 높이가 하단 네비게이션 바를 고려하지 않음
+3. 사용자가 패널의 하단 내용을 볼 수 없음
+
+**해결 방법**:
+1. **패널 최대 높이 조정**:
+   - 기존: `max-h-[calc(100vh-4rem)]` (상단 HUD만 고려)
+   - 수정: `max-h-[calc(100vh-8rem)]` (상단 HUD + 하단 네비게이션 바 고려)
+   - 하단 네비게이션 바 높이: 4rem (64px)
+
+2. **제작 모달 내부 스크롤 영역 조정**:
+   - 기존: `max-h-[calc(90vh-180px)]`
+   - 수정: `max-h-[calc(90vh-220px)]`
+   - 추가 여백 확보로 하단 내용이 잘리지 않도록 조정
+
+3. **적용된 패널들**:
+   - `ShopPanel.tsx`: 상점 패널 높이 조정
+   - `LifePanel.tsx`: 생활 스킬 패널 높이 조정
+   - `CraftingModal.tsx`: 제작 모달 내부 스크롤 영역 조정
+
+**수정된 파일**:
+- `src/components/shop/ShopPanel.tsx`: 패널 최대 높이 조정
+- `src/components/life/LifePanel.tsx`: 패널 최대 높이 조정
+- `src/components/life/CraftingModal.tsx`: 내부 스크롤 영역 조정
+
+**결과**: 
+- 상점과 제작 패널의 하단 내용이 하단 네비게이션 바와 겹치지 않음
+- 모든 패널 내용을 스크롤하여 볼 수 있음
+- 일관된 UI 레이아웃으로 사용자 경험 향상
+
+---
+
+### 🔧 **제작 시스템 완전 확장 - 모든 장비 제작 가능 - 2024년 12월 23일**
+
+**문제**: 
+1. 제작 시스템에서 그림자 검, 번개 지팡이, 자연 방어구만 제작 가능
+2. 대부분의 아이템 파일에 `craftingMaterials` 필드가 없음
+3. 일부 아이템은 `materials` 필드를 사용하여 제작 시스템과 호환되지 않음
+4. 모든 장비를 제작할 수 있어야 함
+
+**해결 방법**:
+1. **모든 아이템 파일에 `craftingMaterials` 추가**:
+   - 기존 `materials` 필드를 `craftingMaterials`로 변환
+   - `requiredSkill`과 `requiredSkillLevel` 필드 추가
+   - 제작 시스템과 호환되도록 통일
+
+2. **추가된 아이템들**:
+   - **검류**: wooden_sword, iron_sword, flame_sword, frost_sword, shadow_sword, thunder_sword, toxic_sword, verdant_sword
+   - **지팡이류**: flame_staff, frost_staff, shadow_staff, thunder_staff, toxic_staff, verdant_staff
+   - **갑옷류**: leather_armor, flame_armor, frost_armor, shadow_armor, thunder_armor, toxic_armor, verdant_armor
+   - **반지류**: flame_ring, frost_ring, shadow_ring, thunder_ring, toxic_ring, verdant_ring
+
+3. **제작 재료 체계**:
+   - **기본 재료**: wood, iron_ore, leather, common_metal
+   - **원소 재료**: flame_ore, frost_ore, shadow_ore, thunder_ore, toxic_ore, verdant_ore
+   - **정제 재료**: flame_crystal, frost_crystal, shadow_crystal, thunder_crystal, toxic_crystal, verdant_crystal
+   - **고급 재료**: flame_gem, frost_gem, shadow_gem, thunder_gem, toxic_gem, verdant_gem, steel_ore, mithril_ore
+
+4. **스킬 레벨 요구사항**:
+   - **레벨 1**: wooden_sword, iron_sword, leather_armor
+   - **레벨 2**: flame_sword, frost_sword, toxic_sword, verdant_sword, flame_staff, frost_staff, shadow_staff, verdant_staff, flame_armor, frost_armor, shadow_armor, thunder_armor, toxic_armor
+   - **레벨 3**: thunder_staff, toxic_staff, verdant_armor
+   - **레벨 4**: thunder_staff
+   - **레벨 5**: 모든 반지류 (flame_ring, frost_ring, shadow_ring, thunder_ring, toxic_ring, verdant_ring)
+
+**수정된 파일**:
+- `src/data/items/wooden_sword.json`: craftingMaterials 추가
+- `src/data/items/iron_sword.json`: craftingMaterials 추가
+- `src/data/items/flame_sword.json`: craftingMaterials 추가
+- `src/data/items/frost_sword.json`: craftingMaterials 추가
+- `src/data/items/toxic_sword.json`: materials를 craftingMaterials로 변환
+- `src/data/items/verdant_sword.json`: materials를 craftingMaterials로 변환
+- `src/data/items/thunder_sword.json`: materials를 craftingMaterials로 변환
+- `src/data/items/flame_staff.json`: craftingMaterials 추가
+- `src/data/items/frost_staff.json`: materials를 craftingMaterials로 변환
+- `src/data/items/shadow_staff.json`: materials를 craftingMaterials로 변환
+- `src/data/items/verdant_staff.json`: materials를 craftingMaterials로 변환
+- `src/data/items/toxic_staff.json`: craftingMaterials 추가
+- `src/data/items/leather_armor.json`: materials를 craftingMaterials로 변환
+- `src/data/items/flame_armor.json`: craftingMaterials 추가
+- `src/data/items/frost_armor.json`: materials를 craftingMaterials로 변환
+- `src/data/items/shadow_armor.json`: materials를 craftingMaterials로 변환
+- `src/data/items/thunder_armor.json`: materials를 craftingMaterials로 변환
+- `src/data/items/toxic_armor.json`: craftingMaterials 추가
+- `src/data/items/flame_ring.json`: materials를 craftingMaterials로 변환
+- `src/data/items/frost_ring.json`: materials를 craftingMaterials로 변환
+- `src/data/items/shadow_ring.json`: materials를 craftingMaterials로 변환
+- `src/data/items/thunder_ring.json`: materials를 craftingMaterials로 변환
+- `src/data/items/toxic_ring.json`: materials를 craftingMaterials로 변환
+- `src/data/items/verdant_ring.json`: materials를 craftingMaterials로 변환
+
+**결과**: 
+- 모든 장비를 제작할 수 있는 완전한 제작 시스템
+- 일관된 제작 재료 체계로 게임 밸런스 향상
+- 스킬 레벨에 따른 점진적 제작 시스템
+- 다양한 원소별 장비 제작 가능
+
+---
+
+### 🎯 **제작과 상점 탭 레이아웃 개선 및 제작 시스템 확장 - 2024년 12월 23일**
+
+**문제**: 
+1. 제작과 상점 탭이 하단에 표시되어 캐릭터, 인벤토리 탭과 일관성이 없음
+2. 제작 시스템에서 모든 장비를 제작할 수 없음
+3. 제작 시스템에 내부 탭으로 필터링 기능이 없음
+4. 필요 레벨과 제작 시간이 표시되어 복잡함
+
+**해결 방법**:
+1. **레이아웃 통일**: 
+   - 제작과 상점 탭을 상단탭 밑까지 올리도록 수정
+   - `bottom-16` → `top-16`로 변경하여 캐릭터, 인벤토리 탭과 일관성 유지
+   - 최대 높이를 `max-h-[calc(100vh-4rem)]`로 조정
+
+2. **제작 시스템 확장**:
+   - 모든 장비 아이템을 제작할 수 있도록 아이템 목록 확장
+   - 검류: `wooden_sword`, `iron_sword`, `flame_sword`, `frost_sword`, `shadow_sword`, `thunder_sword`, `toxic_sword`, `verdant_sword`
+   - 지팡이류: `flame_staff`, `frost_staff`, `shadow_staff`, `thunder_staff`, `toxic_staff`, `verdant_staff`
+   - 갑옷류: `leather_armor`, `flame_armor`, `frost_armor`, `shadow_armor`, `thunder_armor`, `toxic_armor`, `verdant_armor`
+   - 반지류: `flame_ring`, `frost_ring`, `shadow_ring`, `thunder_ring`, `toxic_ring`, `verdant_ring`
+   - 요리: `bread`, `meat_stew`, `fish_stew`, `herb_soup`, `divine_feast`
+
+3. **내부 탭 필터링 시스템**:
+   - 카테고리별 필터링 탭 추가: 전체, 무기, 방어구, 악세서리, 소모품
+   - 아이템 데이터에서 카테고리 정보를 동적으로 로드
+   - 필터링된 레시피만 표시하는 시스템 구현
+
+4. **UI 간소화**:
+   - 필요 레벨 표시 제거
+   - 제작 시간 표시 제거
+   - 더 깔끔하고 직관적인 제작 인터페이스 제공
+
+**수정된 파일**:
+- `src/components/shop/ShopPanel.tsx`: 레이아웃을 상단으로 변경
+- `src/components/life/LifePanel.tsx`: 레이아웃을 상단으로 변경
+- `src/components/life/CraftingModal.tsx`: 제작 시스템 확장 및 필터링 기능 추가
+
+**결과**: 
+- 제작과 상점 탭이 캐릭터, 인벤토리 탭과 일관된 레이아웃 제공
+- 모든 장비를 제작할 수 있는 완전한 제작 시스템 구현
+- 내부 탭으로 장비를 종류별로 필터링하여 볼 수 있는 기능 추가
+- 필요 레벨과 제작 시간 제거로 더 깔끔한 UI 제공
+- 사용자 경험 개선 및 제작 시스템의 완전성 향상

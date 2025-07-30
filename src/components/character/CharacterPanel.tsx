@@ -69,8 +69,25 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
     unlockSkill(skillId)
   }
 
-  const handleLevelUpSkill = (skillId: string) => {
-    levelUpSkill(skillId)
+  const handleLevelUpSkill = async (skillId: string) => {
+    // AP를 사용하여 스킬 레벨업
+    const learnedSkill = [...skills.activeSkills, ...skills.passiveSkills].find(s => s.skillId === skillId)
+    if (learnedSkill) {
+      try {
+        const skillData = await import(`../../data/skills/${skillId}.json`)
+        const apCost = calculateLevelUpCost(skillData.default, learnedSkill.level)
+        
+        if (player.ascensionPoints >= apCost) {
+          // AP 차감 - 직접 상태 업데이트
+          const currentState = useGameStore.getState()
+          currentState.player.ascensionPoints -= apCost
+          // 스킬 레벨업
+          levelUpSkill(skillId)
+        }
+      } catch (error) {
+        console.error('스킬 레벨업 실패:', error)
+      }
+    }
   }
 
   // 모든 스킬 목록 로드

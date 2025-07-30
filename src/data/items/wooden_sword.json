@@ -15,5 +15,10 @@
   },
   "sellPrice": 10,
   "enhanceable": true,
-  "maxEnhancement": 5
+  "maxEnhancement": 5,
+  "craftingMaterials": {
+    "wood": 3
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 1
 } 

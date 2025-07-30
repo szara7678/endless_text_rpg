@@ -68,6 +68,7 @@ export interface PlayerState {
   // 재화
   gold: number
   gem: number
+  ascensionPoints: number
   
   // 기본 전투 스탯 (장비 적용 전)
   basePhysicalAttack: number
@@ -313,6 +314,8 @@ export interface MaterialInstance {
   name: string
   level: number
   count: number
+  uniqueId?: string // 재료 고유 ID
+  quality?: 'Common' | 'Fine' | 'Superior' | 'Epic' | 'Legendary' // 재료 품질
 }
 
 export interface SkillPageInstance {

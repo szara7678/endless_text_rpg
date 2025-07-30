@@ -19,5 +19,12 @@
   },
   "sellPrice": 40,
   "enhanceable": true,
-  "maxEnhancement": 10
+  "maxEnhancement": 10,
+  "craftingMaterials": {
+    "iron_ore": 2,
+    "flame_ore": 3,
+    "flame_crystal": 1
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 2
 } 

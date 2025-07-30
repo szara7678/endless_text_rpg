@@ -17,8 +17,10 @@
   "effects": [],
   "sellPrice": 8,
   "maxEnhancement": 10,
-  "materials": {
+  "craftingMaterials": {
     "leather": 3,
     "thread": 2
-  }
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 1
 } 

@@ -18,8 +18,10 @@
   "sellPrice": 40,
   "enhanceable": true,
   "maxEnhancement": 10,
-  "materials": [
-    { "materialId": "thunder_ore", "quantity": 3 },
-    { "materialId": "iron_ore", "quantity": 2 }
-  ]
+  "craftingMaterials": {
+    "thunder_ore": 3,
+    "iron_ore": 2
+  },
+  "requiredSkill": "smithing",
+  "requiredSkillLevel": 2
 } 
