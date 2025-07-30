@@ -1,10 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import { X, Mountain, Gem, Zap } from 'lucide-react'
+import { useGameStore } from '../../stores'
 
 interface MiningMinigameProps {
   isOpen: boolean
   onClose: () => void
   onComplete: (success: boolean, perfect: boolean) => void
+  skillLevel: number
+}
+
+interface RewardItem {
+  itemId: string
+  quantity: number
+  level: number
+  quality: string
+  type?: string
+}
+
+interface DropItem {
+  itemId: string
+  chance: number
+  min: number
+  max: number
+  type?: string
 }
 
 type GemType = '💎' | '💍' | '🟢' | '🔵' | '🟡' | '🔴'
@@ -16,7 +34,7 @@ interface GridCell {
   selected: boolean
 }
 
-const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComplete }) => {
+const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComplete, skillLevel }) => {
   const [grid, setGrid] = useState<GridCell[][]>([])
   const [selectedCells, setSelectedCells] = useState<string[]>([])
   const [score, setScore] = useState(0)
@@ -24,9 +42,33 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
   const [targetScore] = useState(300)
   const [gameState, setGameState] = useState<'ready' | 'playing' | 'finished'>('ready')
   const [matchedCount, setMatchedCount] = useState(0)
+  const [rewards, setRewards] = useState<RewardItem[]>([])
+  const [showResults, setShowResults] = useState(false)
+  const [dropTable, setDropTable] = useState<DropItem[]>([])
 
   const gems: GemType[] = ['💎', '💍', '🟢', '🔵', '🟡', '🔴']
   const gridSize = 6
+
+  // 드랍 테이블 로드
+  useEffect(() => {
+    fetch('/src/data/drops/mining_rewards.json')
+      .then(response => response.json())
+      .then(data => {
+        setDropTable(data.drops || [])
+      })
+      .catch(error => {
+        console.error('광산 보상 테이블 로드 실패:', error)
+        // 기본 드랍 테이블 설정
+        setDropTable([
+          { itemId: "iron_ore", chance: 0.4, min: 1, max: 1 },
+          { itemId: "steel_ore", chance: 0.3, min: 1, max: 1 },
+          { itemId: "mithril_ore", chance: 0.25, min: 1, max: 1 },
+          { itemId: "dragon_ore", chance: 0.2, min: 1, max: 1 },
+          { itemId: "common_metal", chance: 0.35, min: 1, max: 1 },
+          { itemId: "refined_metal", chance: 0.25, min: 1, max: 1 }
+        ])
+      })
+  }, [])
 
   // 그리드 초기화
   const initializeGrid = () => {
@@ -78,13 +120,66 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
     }
   }
 
+  // 단일 보상 계산
+  const calculateSingleReward = (matchedCount: number, skillLevel: number) => {
+    const itemLevel = Math.max(1, Math.floor((skillLevel + 1 + matchedCount) / 3))
+    
+    if (dropTable.length === 0) {
+      return { itemId: "iron_ore", quantity: 1, level: itemLevel, quality: 'Common' }
+    }
+
+    const random = Math.random()
+    let cumulativeChance = 0
+    let selectedItem = null
+
+    for (const drop of dropTable) {
+      cumulativeChance += drop.chance
+      if (random <= cumulativeChance) {
+        selectedItem = drop
+        break
+      }
+    }
+    if (!selectedItem) { selectedItem = dropTable[0] }
+
+    const quantity = Math.floor(Math.random() * (selectedItem.max - selectedItem.min + 1)) + selectedItem.min
+    return { itemId: selectedItem.itemId, quantity, level: itemLevel, quality: 'Common', type: selectedItem.type }
+  }
+
+  // 최종 보상 계산
+  const calculateRewards = (matchedCount: number, skillLevel: number) => {
+    const finalRewards: RewardItem[] = []
+    for (let i = 0; i < matchedCount; i++) {
+      finalRewards.push(calculateSingleReward(i, skillLevel))
+    }
+    return finalRewards
+  }
+
+  // 게임 종료
+  const endGame = () => {
+    setGameState('finished')
+    
+    const finalRewards = calculateRewards(matchedCount, skillLevel)
+    setRewards(finalRewards)
+    setShowResults(true)
+    
+    // 경험치 추가
+    const { addLifeSkillXp, saveGame } = useGameStore.getState()
+    const xpGain = matchedCount * 15
+    addLifeSkillXp('mining', xpGain)
+    
+    saveGame()
+  }
+
   // 게임 시작
   const startGame = () => {
-    initializeGrid()
+    const newGrid = initializeGrid()
+    setGrid(newGrid)
     setSelectedCells([])
     setScore(0)
     setMoves(15)
     setMatchedCount(0)
+    setRewards([])
+    setShowResults(false)
     setGameState('playing')
   }
 
@@ -170,6 +265,17 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
       setScore(prev => prev + points)
       setMatchedCount(prev => prev + uniqueMatches.length)
       
+      // 매치된 보석마다 즉시 보상 지급
+      const { addMaterial, addSkillPage } = useGameStore.getState()
+      uniqueMatches.forEach((_, index) => {
+        const reward = calculateSingleReward(index, skillLevel)
+        if (reward.type === 'skillPage') {
+          addSkillPage(reward.itemId)
+        } else {
+          addMaterial(reward.itemId, reward.quantity, reward.level)
+        }
+      })
+      
       // 매치된 보석 제거 및 새로운 보석 떨어뜨리기
       setGrid(prev => {
         const newGrid = prev.map(row => [...row])
@@ -228,6 +334,11 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
         }
       }
       
+      // 새로운 보석이 떨어진 후 연쇄 매치 확인
+      setTimeout(() => {
+        checkAndRemoveMatches(newGrid)
+      }, 300)
+      
       return newGrid
     })
   }
@@ -235,12 +346,8 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
   // 게임 종료 체크
   useEffect(() => {
     if (gameState === 'playing') {
-      if (score >= targetScore) {
-        setGameState('finished')
-        // 자동 onComplete 호출 제거 - 사용자가 완료 버튼을 눌러야 호출됨
-      } else if (moves <= 0) {
-        setGameState('finished')
-        // 자동 onComplete 호출 제거 - 사용자가 완료 버튼을 눌러야 호출됨
+      if (score >= targetScore || moves <= 0) {
+        endGame()
       }
     }
   }, [score, moves, targetScore, gameState])
@@ -310,25 +417,27 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
             </div>
 
             {/* 게임 그리드 */}
-            <div className="grid grid-cols-6 gap-1 mb-4">
-              {grid.map((row, rowIndex) =>
-                row.map((cell, colIndex) => (
-                  <button
-                    key={cell.id}
-                    onClick={() => handleCellClick(rowIndex, colIndex)}
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg transition-all duration-200 ${
-                      cell.selected
-                        ? 'bg-yellow-400 border-2 border-yellow-200'
-                        : cell.matched
-                          ? 'bg-red-600 animate-pulse'
-                          : 'bg-gray-700 hover:bg-gray-600 border border-gray-600'
-                    }`}
-                    disabled={cell.matched}
-                  >
-                    {cell.gem}
-                  </button>
-                ))
-              )}
+            <div className="flex justify-center mb-4">
+              <div className="grid grid-cols-6 gap-1" style={{ width: 'fit-content' }}>
+                {grid.map((row, rowIndex) =>
+                  row.map((cell, colIndex) => (
+                    <button
+                      key={cell.id}
+                      onClick={() => handleCellClick(rowIndex, colIndex)}
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl transition-all duration-200 ${
+                        cell.selected
+                          ? 'bg-yellow-400 border-2 border-yellow-200'
+                          : cell.matched
+                            ? 'bg-red-600 animate-pulse'
+                            : 'bg-gray-700 hover:bg-gray-600 border border-gray-600'
+                      }`}
+                      disabled={cell.matched}
+                    >
+                      {cell.gem}
+                    </button>
+                  ))
+                )}
+              </div>
             </div>
 
             <div className="text-center text-xs text-gray-500">
@@ -337,7 +446,7 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
           </div>
         )}
 
-        {gameState === 'finished' && (
+        {gameState === 'finished' && !showResults && (
           <div className="text-center">
             <div className="text-2xl mb-4">
               {score >= targetScore ? '🎉' : '😅'}
@@ -359,12 +468,57 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
                 다시하기
               </button>
               <button
+                onClick={() => setShowResults(true)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
+              >
+                결과 보기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showResults && (
+          <div className="text-center">
+            <div className="text-2xl mb-4">📦</div>
+            <h4 className="text-lg font-bold text-white mb-2">
+              광산 결과
+            </h4>
+            <p className="text-gray-300 mb-4">
+              매치한 보석: {matchedCount}개
+            </p>
+            <p className="text-sm text-gray-400 mb-4">
+              경험치 획득: +{matchedCount * 15} XP
+            </p>
+            
+            {rewards.length > 0 && (
+              <div className="mb-4">
+                <p className="text-sm text-gray-400 mb-2">획득한 아이템:</p>
+                <div className="bg-gray-700 rounded p-3 max-h-32 overflow-y-auto">
+                  {rewards.map((reward, index) => (
+                    <div key={index} className="text-sm text-gray-300 mb-1">
+                      {reward.type === 'skillPage' ? '📖' : '⛏️'} {reward.itemId} {reward.quantity}개 (레벨: {reward.level})
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              <button
+                onClick={startGame}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors"
+              >
+                다시하기
+              </button>
+              <button
                 onClick={() => {
                   onComplete(score >= targetScore, score >= targetScore * 1.5)
-                  setGameState('ready') // 게임 상태를 ready로 초기화
+                  setGameState('ready')
                   setScore(0)
                   setMoves(15)
                   setMatchedCount(0)
+                  setRewards([])
+                  setShowResults(false)
                   setGrid(initializeGrid())
                 }}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"

@@ -1,0 +1,21 @@
+{
+  "drops": [
+    { "itemId": "healing_herb", "chance": 0.4, "min": 1, "max": 1 },
+    { "itemId": "green_herb", "chance": 0.3, "min": 1, "max": 1 },
+    { "itemId": "red_herb", "chance": 0.25, "min": 1, "max": 1 },
+    { "itemId": "blue_herb", "chance": 0.2, "min": 1, "max": 1 },
+    { "itemId": "mana_flower", "chance": 0.15, "min": 1, "max": 1 },
+    { "itemId": "flame_essence", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "frost_essence", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "toxic_essence", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "shadow_essence", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "thunder_essence", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "verdant_essence", "chance": 0.05, "min": 1, "max": 1 },
+    { "itemId": "fireball", "chance": 0.02, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "ice_shard", "chance": 0.02, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "toxic_spit", "chance": 0.02, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "shadow_bite", "chance": 0.02, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "thunder_shock", "chance": 0.02, "min": 1, "max": 1, "type": "skillPage" },
+    { "itemId": "nature_blessing", "chance": 0.02, "min": 1, "max": 1, "type": "skillPage" }
+  ]
+} 

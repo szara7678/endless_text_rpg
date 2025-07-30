@@ -148,12 +148,9 @@ const FishingMinigame: React.FC<FishingMinigameProps> = ({ isOpen, onClose, onCo
     rewards.forEach(reward => {
       if (reward.type === 'material') {
         addMaterial(reward.id, reward.quantity, reward.level)
-        const levelText = reward.level ? ` (Lv${reward.level})` : ''
-        addCombatLog('loot', `🎣 ${reward.name} ${reward.quantity}개${levelText} 획득!`)
         console.log(`📦 ${reward.name} ${reward.quantity}개 (Lv${reward.level}) 인벤토리에 추가됨`)
       } else if (reward.type === 'skillPage') {
         addSkillPage(reward.id)
-        addCombatLog('loot', `📜 ${reward.name} 획득!`)
         console.log(`📜 ${reward.name} 스킬 페이지 획득!`)
       }
     })

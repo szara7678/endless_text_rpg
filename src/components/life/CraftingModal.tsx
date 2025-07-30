@@ -251,14 +251,14 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
     const avgMaterialLevel = totalMaterialLevel / materialCount
     const avgMaterialQuality = totalMaterialQuality / materialCount
 
-    // 재료 레벨이 높으면 품질 확률이 떨어짐 (재료가 너무 고급이면 제작이 어려움)
-    const materialLevelPenalty = Math.max(0, (avgMaterialLevel - skillLevel) * 10)
+    // 재료 레벨이 높으면 품질 확률이 올라감 (고급 재료는 더 좋은 품질)
+    const materialLevelBonus = Math.min(20, avgMaterialLevel * 2)
     
     // 제작 스킬 레벨이 높으면 품질 확률이 올라감
     const skillLevelBonus = skillLevel * 5
 
     // 기본 품질 점수 계산
-    const baseQualityScore = avgMaterialQuality + skillLevelBonus - materialLevelPenalty
+    const baseQualityScore = avgMaterialQuality + skillLevelBonus + materialLevelBonus
     
     // 랜덤성 추가 (스킬 레벨이 높을수록 랜덤 범위가 줄어듦)
     const randomRange = Math.max(5, 20 - skillLevel * 0.5) // 스킬 레벨이 높을수록 랜덤 범위 감소
@@ -400,11 +400,8 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
         level: itemLevel
       })
 
-      // 전투 로그에 제작 완료 메시지 추가
-      const { addCombatLog, saveGame } = useGameStore.getState()
-      addCombatLog('loot', `✅ ${selectedRecipe.name} 제작 완료! (품질: ${quality}, 레벨: ${itemLevel})`)
-      
       // 제작 완료 후 게임 저장
+      const { saveGame } = useGameStore.getState()
       saveGame()
 
     } catch (error) {
@@ -698,9 +695,9 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                         sum + selection.selectedItems.reduce((itemSum, item) => itemSum + getQualityValue(item.quality), 0), 0
                       ) / materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0) || 0
                       
-                      const materialLevelPenalty = Math.max(0, (avgMaterialLevel - skillLevel) * 10)
+                      const materialLevelBonus = Math.min(20, avgMaterialLevel * 2)
                       const skillLevelBonus = skillLevel * 5
-                      const baseScore = avgMaterialQuality + skillLevelBonus - materialLevelPenalty
+                      const baseScore = avgMaterialQuality + skillLevelBonus + materialLevelBonus
                       const chances = calculateQualityChances(baseScore, skillLevel)
                       
                       return (

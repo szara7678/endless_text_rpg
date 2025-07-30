@@ -167,16 +167,6 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
               )
             })}
           </div>
-
-          {/* 안내 메시지 */}
-          <div className="mt-4 text-center text-gray-400">
-            <p className="text-sm">
-              🔨 생활 스킬을 클릭하여 실행하세요! 각 스킬마다 고유한 쿨다운이 있습니다.
-            </p>
-            <p className="text-xs mt-2">
-              💡 미니게임 시스템은 Phase 2-6에서 구현될 예정입니다.
-            </p>
-          </div>
         </div>
       </div>
 
@@ -198,7 +188,6 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
           if (success) {
             const xpGain = perfect ? 50 : 30
             addLifeSkillXp('fishing', xpGain)
-            addCombatLog('loot', `🎣 낚시 성공! +${xpGain} XP`)
           }
         }}
       />
@@ -218,35 +207,25 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
             // 실제 경험치와 아이템 추가
             addLifeSkillXp('farming', xpGain)
             addMaterial(cropType, 3) // 농사는 기본적으로 3개 획득
-            addCombatLog('loot', `🌾 농사 성공! ${cropType} 3개 획득 (+${xpGain} XP)`)
           }
         }}
       />
 
       {/* 광산 미니게임 */}
-      <MiningMinigame
-        isOpen={showMiningGame}
-        onClose={() => setShowMiningGame(false)}
-        onComplete={(success, perfect) => {
-          console.log('광산 결과:', success ? '성공' : '실패', perfect ? '(퍼펙트!)' : '')
-          // 경험치와 아이템 보상
-          if (success) {
-            const xpGain = perfect ? 60 : 40
-            const oreType = perfect ? 'iron_ore' : 'iron_ore' // 실제 아이템 ID 사용
-            console.log(`광산 성공! +${xpGain} XP, ${oreType} 획득`)
-            
-            // 실제 경험치와 아이템 추가
-            addLifeSkillXp('mining', xpGain)
-            addMaterial(oreType, perfect ? 2 : 1) // 퍼펙트면 2개, 일반 성공이면 1개
-            addCombatLog('loot', `⛏️ 광산 성공! ${oreType} ${perfect ? 2 : 1}개 획득 (+${xpGain} XP)`)
-          }
-        }}
-      />
+              <MiningMinigame
+          isOpen={showMiningGame}
+          onClose={() => setShowMiningGame(false)}
+          skillLevel={life?.skills?.mining?.level || 1}
+          onComplete={(success, perfect) => {
+            console.log('광산 결과:', success ? '성공' : '실패', perfect ? '(퍼펙트!)' : '')
+          }}
+        />
 
       {/* 채집 미니게임 */}
       <HerbalismMinigame
         isOpen={showHerbalismGame}
         onClose={() => setShowHerbalismGame(false)}
+        skillLevel={life?.skills?.herbalism?.level || 1}
         onComplete={(success, perfect) => {
           console.log('채집 결과:', success ? '성공' : '실패', perfect ? '(퍼펙트!)' : '')
           // 경험치와 아이템 보상
@@ -258,7 +237,6 @@ const LifePanel: React.FC<LifePanelProps> = ({ isOpen, onClose }) => {
             // 실제 경험치와 아이템 추가
             addLifeSkillXp('herbalism', xpGain)
             addMaterial(herbType, perfect ? 2 : 1) // 퍼펙트면 2개, 일반 성공이면 1개
-            addCombatLog('loot', `🌿 채집 성공! ${herbType} ${perfect ? 2 : 1}개 획득 (+${xpGain} XP)`)
           }
         }}
       />

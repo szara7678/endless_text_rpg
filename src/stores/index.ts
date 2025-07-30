@@ -1214,9 +1214,6 @@ export const useGameStore = create<GameStore>()(
           }
           localStorage.setItem('endless_rpg_save', JSON.stringify(saveData))
           console.log('💾 수동 저장 완료!')
-          
-          // 저장 완료 알림 (UI에 표시)
-          get().addCombatLog('combat', '💾 게임이 저장되었습니다.')
         } catch (error) {
           console.error('❌ 게임 저장 실패:', error)
         }
