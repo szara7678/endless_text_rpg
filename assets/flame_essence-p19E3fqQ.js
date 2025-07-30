@@ -1,0 +1,1 @@
+const e="flame_essence",t="화염 정수",a="정제된 불의 순수한 에너지",s="material",c="essence",n="Flame",o="Superior",l=120,m=!0,r=99,i={id:e,name:t,description:a,type:s,category:c,theme:n,tier:o,baseValue:120,stackable:!0,maxStack:99};export{l as baseValue,c as category,i as default,a as description,e as id,r as maxStack,t as name,m as stackable,n as theme,o as tier,s as type};
