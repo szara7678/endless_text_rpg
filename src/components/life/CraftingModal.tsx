@@ -28,6 +28,13 @@ interface MaterialSelection {
   }>
 }
 
+interface CraftedItem {
+  name: string
+  quality: string
+  level: number
+  quantity: number
+}
+
 interface Props {
   isOpen: boolean
   onClose: () => void
@@ -39,11 +46,36 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
   const [recipes, setRecipes] = useState<CraftingRecipe[]>([])
   const [selectedRecipe, setSelectedRecipe] = useState<CraftingRecipe | null>(null)
   const [isCrafting, setIsCrafting] = useState(false)
-  const [craftedItem, setCraftedItem] = useState<any>(null)
+  const [craftedItems, setCraftedItems] = useState<CraftedItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'weapon' | 'armor' | 'accessory'>('all')
   const [showMaterialSelection, setShowMaterialSelection] = useState(false)
   const [materialSelections, setMaterialSelections] = useState<MaterialSelection[]>([])
   const [materialNames, setMaterialNames] = useState<Record<string, string>>({})
+  const [craftQuantity, setCraftQuantity] = useState(1)
+
+  // 동시 제작 가능한 최대 수량 계산
+  const calculateMaxCraftQuantity = () => {
+    if (!selectedRecipe) return 1
+    
+    let maxQuantity = Infinity
+    for (const [materialId, required] of Object.entries(selectedRecipe.craftingMaterials)) {
+      const availableMaterials = inventory.materials.filter(m => m.materialId === materialId)
+      
+      // 레벨별 개수 계산
+      const levelCounts = availableMaterials.reduce((acc, material) => {
+        const level = material.level || 1
+        acc[level] = (acc[level] || 0) + material.count
+        return acc
+      }, {} as Record<number, number>)
+      
+      // 가장 많은 개수를 가진 레벨 찾기
+      const maxCount = Math.max(...Object.values(levelCounts), 0)
+      const possibleQuantity = Math.floor(maxCount / required)
+      maxQuantity = Math.min(maxQuantity, possibleQuantity)
+    }
+    
+    return Math.max(1, maxQuantity)
+  }
 
   // 재료 이름 로드
   useEffect(() => {
@@ -221,6 +253,7 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
 
     setSelectedRecipe(recipe)
     setShowMaterialSelection(true)
+    setCraftQuantity(1) // 동시 제작 수량 초기화
     
     // 재료 선택 초기화 (선택되지 않은 상태로)
     const selections: MaterialSelection[] = []
@@ -345,60 +378,67 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
     setIsCrafting(true)
 
     try {
-      // 선택된 재료 소모 (필요한 개수만큼)
-      materialSelections.forEach(selection => {
-        const required = selectedRecipe.craftingMaterials[selection.materialId]
-        console.log(`재료 소모: ${selection.materialId}, 필요: ${required}, 선택된 개수: ${selection.selectedItems.length}`)
+      const craftedItemsList: CraftedItem[] = []
+      
+      // 동시 제작 실행
+      for (let i = 0; i < craftQuantity; i++) {
+        // 선택된 재료 소모 (필요한 개수만큼)
+        materialSelections.forEach(selection => {
+          const required = selectedRecipe.craftingMaterials[selection.materialId]
+          console.log(`재료 소모: ${selection.materialId}, 필요: ${required}, 선택된 개수: ${selection.selectedItems.length}`)
+          
+          // 선택된 재료의 레벨과 품질이 모두 같으므로, 필요한 개수만큼 소모
+          if (selection.selectedItems.length > 0) {
+            const selectedItem = selection.selectedItems[0] // 모든 선택된 아이템이 같은 레벨과 품질
+            console.log(`재료 제거: ${selection.materialId}, 레벨: ${selectedItem.level}, 개수: ${required}`)
+            removeMaterial(selection.materialId, required, selectedItem.level)
+          } else {
+            console.warn(`선택된 재료가 없음: ${selection.materialId}`)
+          }
+        })
+
+        // 품질 계산 (각 제작마다 개별적으로)
+        const quality = calculateQuality(materialSelections, skillLevel)
         
-        // 선택된 재료의 레벨과 품질이 모두 같으므로, 필요한 개수만큼 소모
-        if (selection.selectedItems.length > 0) {
-          const selectedItem = selection.selectedItems[0] // 모든 선택된 아이템이 같은 레벨과 품질
-          console.log(`재료 제거: ${selection.materialId}, 레벨: ${selectedItem.level}, 개수: ${required}`)
-          removeMaterial(selection.materialId, required, selectedItem.level)
+        // 아이템 레벨 계산 (재료 평균 레벨과 스킬 레벨의 평균 + 랜덤성)
+        const totalSelectedItems = materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0)
+        const avgMaterialLevel = totalSelectedItems > 0 
+          ? Math.floor(materialSelections.reduce((sum, selection) => {
+              return sum + selection.selectedItems.reduce((itemSum, item) => itemSum + item.level, 0)
+            }, 0) / totalSelectedItems)
+          : skillLevel // 선택된 재료가 없으면 스킬 레벨 사용
+        
+        // 기본 레벨 계산
+        const baseLevel = Math.floor((avgMaterialLevel + skillLevel) / 2)
+        
+        // 랜덤성 추가 (스킬 레벨이 높을수록 랜덤 범위가 줄어듦)
+        const randomRange = Math.max(1, 3 - skillLevel * 0.1) // 스킬 레벨이 높을수록 레벨 변동이 줄어듦
+        const randomBonus = Math.floor((Math.random() - 0.5) * randomRange * 2) // -randomRange ~ +randomRange
+        
+        const itemLevel = Math.max(1, baseLevel + randomBonus)
+
+        // 아이템 생성
+        const itemData = await loadItem(selectedRecipe.resultItem.itemId)
+        if (itemData.type === 'consumable') {
+          addMaterial(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
         } else {
-          console.warn(`선택된 재료가 없음: ${selection.materialId}`)
+          addItem(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity, itemLevel, quality)
         }
-      })
 
-      // 품질 계산
-      const quality = calculateQuality(materialSelections, skillLevel)
-      
-      // 아이템 레벨 계산 (재료 평균 레벨과 스킬 레벨의 평균 + 랜덤성)
-      const totalSelectedItems = materialSelections.reduce((sum, selection) => sum + selection.selectedItems.length, 0)
-      const avgMaterialLevel = totalSelectedItems > 0 
-        ? Math.floor(materialSelections.reduce((sum, selection) => {
-            return sum + selection.selectedItems.reduce((itemSum, item) => itemSum + item.level, 0)
-          }, 0) / totalSelectedItems)
-        : skillLevel // 선택된 재료가 없으면 스킬 레벨 사용
-      
-      // 기본 레벨 계산
-      const baseLevel = Math.floor((avgMaterialLevel + skillLevel) / 2)
-      
-      // 랜덤성 추가 (스킬 레벨이 높을수록 랜덤 범위가 줄어듦)
-      const randomRange = Math.max(1, 3 - skillLevel * 0.1) // 스킬 레벨이 높을수록 레벨 변동이 줄어듦
-      const randomBonus = Math.floor((Math.random() - 0.5) * randomRange * 2) // -randomRange ~ +randomRange
-      
-      const itemLevel = Math.max(1, baseLevel + randomBonus)
-
-      // 아이템 생성
-      const itemData = await loadItem(selectedRecipe.resultItem.itemId)
-      if (itemData.type === 'consumable') {
-        addMaterial(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
-      } else {
-        addItem(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity, itemLevel, quality)
+        // 제작된 아이템 목록에 추가
+        craftedItemsList.push({
+          name: selectedRecipe.name,
+          quality: quality,
+          level: itemLevel,
+          quantity: selectedRecipe.resultItem.quantity
+        })
       }
 
-      // 경험치 추가
-      addLifeSkillXp(skillType!, 25)
+      // 경험치 추가 (제작 수량만큼)
+      addLifeSkillXp(skillType!, 25 * craftQuantity)
 
-      // 제작된 아이템 저장
-      setCraftedItem({
-        name: selectedRecipe.name,
-        quality: quality,
-        itemId: selectedRecipe.resultItem.itemId,
-        quantity: selectedRecipe.resultItem.quantity,
-        level: itemLevel
-      })
+      // 제작된 아이템 목록 저장
+      setCraftedItems(craftedItemsList)
 
       // 제작 완료 후 게임 저장
       const { saveGame } = useGameStore.getState()
@@ -725,6 +765,31 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                   </p>
                 </div>
 
+                {/* 동시 제작 수량 설정 */}
+                <div className="text-center mb-4 p-3 bg-gray-700 rounded-lg border border-gray-600">
+                  <p className="text-gray-300 font-medium mb-2">동시 제작 수량</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => setCraftQuantity(Math.max(1, craftQuantity - 1))}
+                      className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="text-white font-semibold min-w-[3rem] text-center">
+                      {craftQuantity}
+                    </span>
+                    <button
+                      onClick={() => setCraftQuantity(Math.min(calculateMaxCraftQuantity(), craftQuantity + 1))}
+                      className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    최대 {calculateMaxCraftQuantity()}개 제작 가능
+                  </p>
+                </div>
+
                 {/* 재료 선택 상태 표시 */}
                 {!materialSelections.every(selection => selection.selectedItems.length > 0) && (
                   <div className="text-center mb-3">
@@ -741,7 +806,7 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                       setShowMaterialSelection(false)
                       setSelectedRecipe(null)
                       setIsCrafting(false)
-                      setCraftedItem(null)
+                      setCraftedItems([])
                     }}
                     className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
                   >
@@ -752,7 +817,7 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
                     disabled={isCrafting || !materialSelections.every(selection => selection.selectedItems.length > 0)}
                     className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white rounded-lg transition-colors"
                   >
-                    {isCrafting ? '제작 중...' : '제작하기'}
+                    {isCrafting ? '제작 중...' : `${craftQuantity}개 제작하기`}
                   </button>
                 </div>
               </div>
@@ -760,60 +825,56 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
           )}
 
       {/* 제작 완료 결과 모달 */}
-      {craftedItem && (
+      {craftedItems.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-70">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="text-center">
-              <div className="text-4xl mb-4">🎉</div>
-              <h3 className="text-xl font-bold text-white mb-4">제작 완료!</h3>
-              
-              {/* 제작된 아이템 정보 */}
-              <div className="bg-gray-700 rounded-lg p-4 mb-4">
-                <div className="text-lg font-semibold text-white mb-2">
-                  {craftedItem.name}
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">품질:</span>
-                    <span className={`font-medium ${
-                      craftedItem.quality === 'Legendary' ? 'text-yellow-400' :
-                      craftedItem.quality === 'Masterwork' ? 'text-purple-400' :
-                      craftedItem.quality === 'Fine' ? 'text-green-400' :
-                      'text-gray-300'
-                    }`}>
-                      {craftedItem.quality}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">레벨:</span>
-                    <span className="text-blue-400 font-medium">{craftedItem.level}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">수량:</span>
-                    <span className="text-green-400 font-medium">{craftedItem.quantity}개</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 경험치 획득 */}
-              <div className="bg-blue-900/30 border border-blue-500 rounded-lg p-3 mb-4">
-                <div className="text-blue-400 font-medium mb-2">획득 경험치</div>
-                <div className="text-lg text-blue-300 font-semibold">
-                  +25 {skillType === 'smithing' ? '제작' : skillType === 'alchemy' ? '연금술' : '요리'} XP
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setCraftedItem(null)
-                  setShowMaterialSelection(false)
-                  setSelectedRecipe(null)
-                }}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
-              >
-                확인
-              </button>
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-2">🎉</div>
+              <h3 className="text-xl font-bold text-white mb-2">제작 완료!</h3>
+              <p className="text-sm text-gray-400 mb-4">
+                {craftedItems.length}개의 아이템을 제작했습니다
+              </p>
             </div>
+            
+            {/* 제작된 아이템 목록 */}
+            <div className="bg-gray-700 rounded p-3 mb-4 max-h-64 overflow-y-auto">
+              <div className="space-y-1">
+                {craftedItems.map((item, index) => (
+                  <div key={index} className="text-sm text-gray-300 flex justify-between items-center py-1 border-b border-gray-600 last:border-b-0">
+                    <span className="flex-1 text-left">{item.name}</span>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      item.quality === 'Legendary' ? 'bg-yellow-900 text-yellow-300' :
+                      item.quality === 'Epic' ? 'bg-purple-900 text-purple-300' :
+                      item.quality === 'Superior' ? 'bg-blue-900 text-blue-300' :
+                      item.quality === 'Fine' ? 'bg-green-900 text-green-300' :
+                      'bg-gray-600 text-gray-300'
+                    }`}>
+                      {item.quality}
+                    </span>
+                    <span className="text-blue-400 text-xs ml-2">Lv{item.level}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 경험치 획득 */}
+            <div className="bg-blue-900/30 border border-blue-500 rounded-lg p-3 mb-4">
+              <div className="text-blue-400 font-medium mb-2">획득 경험치</div>
+              <div className="text-lg text-blue-300 font-semibold">
+                +{25 * craftedItems.length} {skillType === 'smithing' ? '제작' : skillType === 'alchemy' ? '연금술' : '요리'} XP
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setCraftedItems([])
+                setShowMaterialSelection(false)
+                setSelectedRecipe(null)
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
+            >
+              확인
+            </button>
           </div>
         </div>
       )}

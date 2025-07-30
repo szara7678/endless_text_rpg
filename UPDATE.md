@@ -2,6 +2,68 @@
 
 ## 최신 업데이트 내역
 
+### 🔧 **10층 클리어 후 다음 층 진행 문제 수정 - 2024년 12월 23일**
+
+**문제**:
+- 10층 보스를 처치한 후 다음 층(11층)이 나타나지 않는 문제
+- `proceedToNextFloor` 함수에서 `player.highestFloor + 1`로 계산하여 잘못된 층으로 진행
+
+**해결 방법**:
+- `proceedToNextFloor` 함수에서 `tower.currentFloor + 1`로 수정
+- `player.highestFloor`는 최고 도달 층 기록용으로만 사용
+- 실제 층 진행은 `tower.currentFloor`를 기준으로 계산
+
+**수정된 파일**:
+- `src/stores/index.ts`: `proceedToNextFloor` 함수의 층 계산 로직 수정
+
+**결과**: 
+- 10층 클리어 후 정상적으로 11층으로 진행
+- 모든 층에서 올바른 다음 층으로 진행
+- 층 진행 시스템 정상 작동
+
+---
+
+### 🎮 **생활 재료 선택 모달 동시 제작 기능 구현 - 2024년 12월 23일**
+
+**목표**:
+- 재료 선택 모달에서 동시 제작 수량 설정 기능 추가
+- 각 제작마다 개별적으로 확률 계산하여 다양한 결과 생성
+- 결과 모달을 채집/광산 결과 모달처럼 간단한 세로 스크롤로 표시
+
+**주요 변경사항**:
+
+1. **동시 제작 수량 계산 시스템**:
+   - `calculateMaxCraftQuantity` 함수로 최대 제작 가능 수량 계산
+   - 재료 보유량을 기준으로 제작 가능한 최대 수량 자동 계산
+   - +/- 버튼으로 수량 조절 가능
+
+2. **동시 제작 로직 구현**:
+   - `executeCrafting` 함수에서 `craftQuantity`만큼 반복 제작
+   - 각 제작마다 개별적으로 품질과 레벨 확률 계산
+   - 재료 소모도 제작 수량만큼 증가
+
+3. **결과 모달 개선**:
+   - 채집/광산 결과 모달과 동일한 스타일 적용
+   - 세로 스크롤 패널로 모든 제작 결과 표시
+   - 각 아이템을 한 줄로 간단하게 표시 (이름, 품질, 레벨)
+   - 품질별 색상 구분으로 시각적 개선
+
+4. **UI/UX 개선**:
+   - 제작 버튼에 수량 표시 ("3개 제작하기")
+   - 최대 제작 가능 수량 안내
+   - 경험치 획득량도 제작 수량만큼 증가
+
+**수정된 파일**:
+- `src/components/life/CraftingModal.tsx`: 동시 제작 기능 및 결과 모달 개선
+
+**결과**: 
+- 재료 선택 모달에서 동시 제작 수량 설정 가능
+- 각 제작마다 개별적으로 확률에 따라 다양한 결과 생성
+- 결과 모달이 채집/광산 결과 모달과 동일한 스타일로 표시
+- 사용자 경험 향상 및 제작 효율성 증대
+
+---
+
 ### 🎮 **채집 게임 레이아웃 및 기능 개선 - 2024년 12월 23일**
 
 **문제**:
@@ -1036,39 +1098,6 @@
 
 ---
 
-### 🔧 **스킬 속성 필터 시스템 개선 - 2024년 12월 23일**
-
-**문제**: 
-1. 속성별 스킬 탭이 별도로 존재하여 복잡함
-2. 모든 탭에서 속성 필터를 사용할 수 없음
-3. 이모티콘 필터가 제한적으로만 사용됨
-
-**원인**: 
-- 속성별 스킬 탭이 독립적으로 존재
-- 필터링 로직이 탭별로 분리되어 있음
-- 이모티콘 필터가 특정 탭에서만 작동
-
-**해결 방법**:
-1. **속성별 탭 제거**: 
-   - 속성별 스킬 탭을 제거하고 이모티콘 필터로 통합
-   - 모든 탭(모든 스킬, 습득한 스킬, 미습득 스킬)에서 속성 필터 사용 가능
-
-2. **이모티콘 필터 개선**:
-   - 모든 탭에서 이모티콘 필터 적용 가능
-   - "All" 옵션 추가로 전체 속성 표시
-   - 각 속성별 색상과 이모지로 직관적 표시
-
-**수정된 파일**:
-- `src/components/character/CharacterPanel.tsx`: 속성별 탭 제거, 이모티콘 필터를 모든 탭에서 사용 가능하도록 수정
-
-**결과**: 
-- 속성별 스킬 탭 제거로 UI 단순화
-- 모든 탭에서 이모티콘 필터 사용 가능
-- 더 직관적이고 일관된 필터링 시스템
-- 사용자 경험 개선
-
----
-
 ### 🔧 **스킬 경험치 표시 수정 및 속성별 분류 개선 - 2024년 12월 23일**
 
 **문제**: 
@@ -1830,9 +1859,8 @@
   - 제작 완료 후 모달이 닫히지 않음
 - **해결**: 
   - `executeCraft`에서 자동 슬롯 시작 제거
-  - "더 만들기" 버튼을 "제작하기" 버튼으로 변경
-  - "제작하기" 버튼 클릭 시 재료 소모 후 룰렛 시작
-  - 룰렛 결과에 따른 품질 보너스 계산
+  - "슬롯 돌리기" 버튼을 "더 만들기" 버튼으로 변경
+  - "더 만들기" 버튼 클릭 시 모달을 닫지 않고 새로운 제작 시작
   - 제작 완료 시 모달 자동 닫기
   - `completeSlotGame`에서 `setShowSlotGame(false)` 추가
 - **파일**: `src/components/life/CraftingModal.tsx`
@@ -3099,127 +3127,9 @@
 3. **적용된 패널들**:
    - `ShopPanel.tsx`: 상점 패널 높이 조정
    - `LifePanel.tsx`: 생활 스킬 패널 높이 조정
-   - `CraftingModal.tsx`: 제작 모달 내부 스크롤 영역 조정
-
-**수정된 파일**:
-- `src/components/shop/ShopPanel.tsx`: 패널 최대 높이 조정
-- `src/components/life/LifePanel.tsx`: 패널 최대 높이 조정
-- `src/components/life/CraftingModal.tsx`: 내부 스크롤 영역 조정
+   - `CraftingModal.tsx`: 내부 스크롤 영역 조정
 
 **결과**: 
 - 상점과 제작 패널의 하단 내용이 하단 네비게이션 바와 겹치지 않음
 - 모든 패널 내용을 스크롤하여 볼 수 있음
 - 일관된 UI 레이아웃으로 사용자 경험 향상
-
----
-
-### 🔧 **제작 시스템 완전 확장 - 모든 장비 제작 가능 - 2024년 12월 23일**
-
-**문제**: 
-1. 제작 시스템에서 그림자 검, 번개 지팡이, 자연 방어구만 제작 가능
-2. 대부분의 아이템 파일에 `craftingMaterials` 필드가 없음
-3. 일부 아이템은 `materials` 필드를 사용하여 제작 시스템과 호환되지 않음
-4. 모든 장비를 제작할 수 있어야 함
-
-**해결 방법**:
-1. **모든 아이템 파일에 `craftingMaterials` 추가**:
-   - 기존 `materials` 필드를 `craftingMaterials`로 변환
-   - `requiredSkill`과 `requiredSkillLevel` 필드 추가
-   - 제작 시스템과 호환되도록 통일
-
-2. **추가된 아이템들**:
-   - **검류**: wooden_sword, iron_sword, flame_sword, frost_sword, shadow_sword, thunder_sword, toxic_sword, verdant_sword
-   - **지팡이류**: flame_staff, frost_staff, shadow_staff, thunder_staff, toxic_staff, verdant_staff
-   - **갑옷류**: leather_armor, flame_armor, frost_armor, shadow_armor, thunder_armor, toxic_armor, verdant_armor
-   - **반지류**: flame_ring, frost_ring, shadow_ring, thunder_ring, toxic_ring, verdant_ring
-
-3. **제작 재료 체계**:
-   - **기본 재료**: wood, iron_ore, leather, common_metal
-   - **원소 재료**: flame_ore, frost_ore, shadow_ore, thunder_ore, toxic_ore, verdant_ore
-   - **정제 재료**: flame_crystal, frost_crystal, shadow_crystal, thunder_crystal, toxic_crystal, verdant_crystal
-   - **고급 재료**: flame_gem, frost_gem, shadow_gem, thunder_gem, toxic_gem, verdant_gem, steel_ore, mithril_ore
-
-4. **스킬 레벨 요구사항**:
-   - **레벨 1**: wooden_sword, iron_sword, leather_armor
-   - **레벨 2**: flame_sword, frost_sword, toxic_sword, verdant_sword, flame_staff, frost_staff, shadow_staff, verdant_staff, flame_armor, frost_armor, shadow_armor, thunder_armor, toxic_armor
-   - **레벨 3**: thunder_staff, toxic_staff, verdant_armor
-   - **레벨 4**: thunder_staff
-   - **레벨 5**: 모든 반지류 (flame_ring, frost_ring, shadow_ring, thunder_ring, toxic_ring, verdant_ring)
-
-**수정된 파일**:
-- `src/data/items/wooden_sword.json`: craftingMaterials 추가
-- `src/data/items/iron_sword.json`: craftingMaterials 추가
-- `src/data/items/flame_sword.json`: craftingMaterials 추가
-- `src/data/items/frost_sword.json`: craftingMaterials 추가
-- `src/data/items/toxic_sword.json`: materials를 craftingMaterials로 변환
-- `src/data/items/verdant_sword.json`: materials를 craftingMaterials로 변환
-- `src/data/items/thunder_sword.json`: materials를 craftingMaterials로 변환
-- `src/data/items/flame_staff.json`: craftingMaterials 추가
-- `src/data/items/frost_staff.json`: materials를 craftingMaterials로 변환
-- `src/data/items/shadow_staff.json`: materials를 craftingMaterials로 변환
-- `src/data/items/verdant_staff.json`: materials를 craftingMaterials로 변환
-- `src/data/items/toxic_staff.json`: craftingMaterials 추가
-- `src/data/items/leather_armor.json`: materials를 craftingMaterials로 변환
-- `src/data/items/flame_armor.json`: craftingMaterials 추가
-- `src/data/items/frost_armor.json`: materials를 craftingMaterials로 변환
-- `src/data/items/shadow_armor.json`: materials를 craftingMaterials로 변환
-- `src/data/items/thunder_armor.json`: materials를 craftingMaterials로 변환
-- `src/data/items/toxic_armor.json`: craftingMaterials 추가
-- `src/data/items/flame_ring.json`: materials를 craftingMaterials로 변환
-- `src/data/items/frost_ring.json`: materials를 craftingMaterials로 변환
-- `src/data/items/shadow_ring.json`: materials를 craftingMaterials로 변환
-- `src/data/items/thunder_ring.json`: materials를 craftingMaterials로 변환
-- `src/data/items/toxic_ring.json`: materials를 craftingMaterials로 변환
-- `src/data/items/verdant_ring.json`: materials를 craftingMaterials로 변환
-
-**결과**: 
-- 모든 장비를 제작할 수 있는 완전한 제작 시스템
-- 일관된 제작 재료 체계로 게임 밸런스 향상
-- 스킬 레벨에 따른 점진적 제작 시스템
-- 다양한 원소별 장비 제작 가능
-
----
-
-### 🎯 **제작과 상점 탭 레이아웃 개선 및 제작 시스템 확장 - 2024년 12월 23일**
-
-**문제**: 
-1. 제작과 상점 탭이 하단에 표시되어 캐릭터, 인벤토리 탭과 일관성이 없음
-2. 제작 시스템에서 모든 장비를 제작할 수 없음
-3. 제작 시스템에 내부 탭으로 필터링 기능이 없음
-4. 필요 레벨과 제작 시간이 표시되어 복잡함
-
-**해결 방법**:
-1. **레이아웃 통일**: 
-   - 제작과 상점 탭을 상단탭 밑까지 올리도록 수정
-   - `bottom-16` → `top-16`로 변경하여 캐릭터, 인벤토리 탭과 일관성 유지
-   - 최대 높이를 `max-h-[calc(100vh-4rem)]`로 조정
-
-2. **제작 시스템 확장**:
-   - 모든 장비 아이템을 제작할 수 있도록 아이템 목록 확장
-   - 검류: `wooden_sword`, `iron_sword`, `flame_sword`, `frost_sword`, `shadow_sword`, `thunder_sword`, `toxic_sword`, `verdant_sword`
-   - 지팡이류: `flame_staff`, `frost_staff`, `shadow_staff`, `thunder_staff`, `toxic_staff`, `verdant_staff`
-   - 갑옷류: `leather_armor`, `flame_armor`, `frost_armor`, `shadow_armor`, `thunder_armor`, `toxic_armor`, `verdant_armor`
-   - 반지류: `flame_ring`, `frost_ring`, `shadow_ring`, `thunder_ring`, `toxic_ring`, `verdant_ring`
-   - 요리: `bread`, `meat_stew`, `fish_stew`, `herb_soup`, `divine_feast`
-
-3. **내부 탭 필터링 시스템**:
-   - 카테고리별 필터링 탭 추가: 전체, 무기, 방어구, 악세서리, 소모품
-   - 아이템 데이터에서 카테고리 정보를 동적으로 로드
-   - 필터링된 레시피만 표시하는 시스템 구현
-
-4. **UI 간소화**:
-   - 필요 레벨 표시 제거
-   - 제작 시간 표시 제거
-   - 더 깔끔하고 직관적인 제작 인터페이스 제공
-
-**수정된 파일**:
-- `src/components/shop/ShopPanel.tsx`: 레이아웃을 상단으로 변경
-- `src/components/life/LifePanel.tsx`: 레이아웃을 상단으로 변경
-- `src/components/life/CraftingModal.tsx`: 제작 시스템 확장 및 필터링 기능 추가
-
-**결과**: 
-- 제작과 상점 탭이 캐릭터, 인벤토리 탭과 일관된 레이아웃 제공
-- 모든 장비를 제작할 수 있는 완전한 제작 시스템 구현
-- 내부 탭으로 장비를 종류별로 필터링하여 볼 수 있는 기능 추가
-- 필요 레벨과 제작 시간 제거로 더 깔끔한 UI 제공
-- 사용자 경험 개선 및 제작 시스템의 완전성 향상

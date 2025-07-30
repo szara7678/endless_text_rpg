@@ -919,8 +919,11 @@ export const useGameStore = create<GameStore>()(
           // 몬스터 처치 횟수 증가
           const newKillCount = (tower.monsterKillCount || 0) + 1
           
+          console.log(`🔍 층 진행 체크: 현재층=${currentFloor}, 층주기=${floorInCycle}, 필요처치=${requiredKills}, 현재처치=${newKillCount}`)
+          
           if (newKillCount >= requiredKills) {
             // 충분한 몬스터를 처치했으면 다음 층으로
+            console.log(`✅ 층 클리어! ${currentFloor}층 → ${currentFloor + 1}층으로 진행`)
             set((state: any) => ({
               ...state,
               tower: {
@@ -931,6 +934,7 @@ export const useGameStore = create<GameStore>()(
             await get().proceedToNextFloor()
           } else {
             // 아직 더 처치해야 하면 다음 몬스터 생성
+            console.log(`⏳ 아직 더 처치 필요: ${newKillCount}/${requiredKills}`)
             set((state: any) => ({
               ...state,
               tower: {
@@ -952,6 +956,7 @@ export const useGameStore = create<GameStore>()(
               get().addCombatLog('combat', `👹 ${nextMonster.name}이(가) 나타났습니다!`)
             } else {
               // 몬스터 생성 실패 시 다음 층으로
+              console.log(`⚠️ 몬스터 생성 실패, 다음 층으로 진행`)
               await get().proceedToNextFloor()
             }
           }
@@ -1058,14 +1063,16 @@ export const useGameStore = create<GameStore>()(
       },
 
       proceedToNextFloor: async () => {
-        const { player } = get()
-        const nextFloor = player.highestFloor + 1
+        const { player, tower } = get()
+        const nextFloor = tower.currentFloor + 1
+        
+        console.log(`🚀 proceedToNextFloor 호출: ${tower.currentFloor}층 → ${nextFloor}층`)
 
         set((state: any) => ({
           ...state,
           player: {
             ...state.player,
-            highestFloor: nextFloor
+            highestFloor: Math.max(state.player.highestFloor, nextFloor)
           },
           tower: {
             ...state.tower,
