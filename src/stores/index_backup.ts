@@ -15,7 +15,6 @@ import { processItemDrops, processSkillPageDrops } from '../utils/dropSystem'
 import * as EquipmentSystem from '../utils/equipmentSystem'
 import { generateInitialItems } from '../utils/itemGenerator'
 import { calculateItemSellPrice, getItemName } from '../utils/itemSystem'
-import { updatePotionUsage } from '../utils/potionSystem'
 
 // 스킬 이름 가져오기 함수
 const getSkillName = async (skillId: string): Promise<string> => {
@@ -50,7 +49,6 @@ interface GameStore {
   ui: UIState
   life: any // LifeSkillState
   settings: any // SettingsState
-  potionUsageHistory: any[] // 물약 사용 기록
   gameState: 'menu' | 'playing' | 'loading'
 
   // 게임 플로우
@@ -591,15 +589,7 @@ export const useGameStore = create<GameStore>()(
 
           if (currentCombatState.phase === 'player_turn' && !currentCombatState.playerTurnComplete) {
             // 플레이어 턴 처리
-            const result = await processPlayerTurn(
-              player, 
-              tower.currentMonster, 
-              tower.currentFloor, 
-              skills,
-              get().inventory.items,
-              get().settings.potionSettings,
-              get().potionUsageHistory
-            )
+            const result = await processPlayerTurn(player, tower.currentMonster, tower.currentFloor, skills)
             
             // 상태 업데이트
             set((state: any) => ({
@@ -649,61 +639,6 @@ export const useGameStore = create<GameStore>()(
               }))
             }
 
-            // 물약 사용 처리
-            if (result.usedPotion) {
-              // 물약 사용 기록 업데이트
-              set((state: any) => ({
-                ...state,
-                potionUsageHistory: updatePotionUsage(result.usedPotion.itemId, tower.currentFloor, state.potionUsageHistory)
-              }))
-              
-              // 인벤토리에서 물약 제거 (uniqueId가 있으면 우선 사용, 없으면 itemId로 찾기)
-              set((state: any) => {
-                const currentItems = [...state.inventory.items]
-                let potionIndex = -1
-                
-                if (result.usedPotion.uniqueId) {
-                  // uniqueId로 정확한 물약 찾기
-                  potionIndex = currentItems.findIndex(item => 
-                    item.uniqueId === result.usedPotion.uniqueId
-                  )
-                }
-                
-                if (potionIndex === -1) {
-                  // uniqueId로 못 찾았으면 itemId, level, quality로 찾기
-                  potionIndex = currentItems.findIndex(item => 
-                    item.itemId === result.usedPotion.itemId &&
-                    item.level === result.usedPotion.level &&
-                    item.quality === result.usedPotion.quality
-                  )
-                }
-                
-                if (potionIndex === -1) {
-                  // 그래도 못 찾았으면 itemId만으로 찾기
-                  potionIndex = currentItems.findIndex(item => item.itemId === result.usedPotion.itemId)
-                }
-                
-                if (potionIndex !== -1) {
-                  const potion = currentItems[potionIndex]
-                  if (potion.quantity > 1) {
-                    currentItems[potionIndex] = { ...potion, quantity: potion.quantity - 1 }
-                  } else {
-                    currentItems.splice(potionIndex, 1)
-                  }
-                  
-                  return {
-                    ...state,
-                    inventory: {
-                      ...state.inventory,
-                      items: currentItems,
-                      usedSlots: currentItems.length + state.inventory.materials.length
-                    }
-                  }
-                }
-                return state
-              })
-            }
-
             // 몬스터가 살아있으면 지연 후 몬스터 턴으로 진행
             if (result.monsterHpAfter > 0) {
               // 게임 속도에 따른 지연 후 몬스터 턴 실행
@@ -741,11 +676,7 @@ export const useGameStore = create<GameStore>()(
             // 상태 업데이트
             set((state: any) => ({
               ...state,
-              player: { 
-                ...state.player, 
-                hp: result.playerHpAfter,
-                mp: result.playerMpAfter || state.player.mp
-              },
+              player: { ...state.player, hp: result.playerHpAfter },
               tower: {
                 ...state.tower,
                 combatState: {
@@ -812,10 +743,7 @@ export const useGameStore = create<GameStore>()(
             player,
             tower.currentMonster,
             tower.currentFloor,
-            skills,
-            get().inventory.items,
-            get().settings.potionSettings,
-            get().potionUsageHistory
+            skills
           )
 
           // 상태 업데이트
@@ -823,8 +751,7 @@ export const useGameStore = create<GameStore>()(
             ...state,
           player: { 
             ...state.player, 
-              hp: result.playerHpAfter,
-              mp: result.playerMpAfter || state.player.mp
+              hp: result.playerHpAfter
             },
             tower: {
               ...state.tower,
@@ -863,61 +790,6 @@ export const useGameStore = create<GameStore>()(
                 lastUsedSkill: result.lastUsedSkill
               }
             }))
-          }
-          
-          // 물약 사용 처리
-          if (result.usedPotion) {
-            // 물약 사용 기록 업데이트
-            set((state: any) => ({
-              ...state,
-              potionUsageHistory: updatePotionUsage(result.usedPotion.itemId, tower.currentFloor, state.potionUsageHistory)
-            }))
-            
-            // 인벤토리에서 물약 제거 (uniqueId가 있으면 우선 사용, 없으면 itemId로 찾기)
-            set((state: any) => {
-              const currentItems = [...state.inventory.items]
-              let potionIndex = -1
-              
-              if (result.usedPotion.uniqueId) {
-                // uniqueId로 정확한 물약 찾기
-                potionIndex = currentItems.findIndex(item => 
-                  item.uniqueId === result.usedPotion.uniqueId
-                )
-              }
-              
-              if (potionIndex === -1) {
-                // uniqueId로 못 찾았으면 itemId, level, quality로 찾기
-                potionIndex = currentItems.findIndex(item => 
-                  item.itemId === result.usedPotion.itemId &&
-                  item.level === result.usedPotion.level &&
-                  item.quality === result.usedPotion.quality
-                )
-              }
-              
-              if (potionIndex === -1) {
-                // 그래도 못 찾았으면 itemId만으로 찾기
-                potionIndex = currentItems.findIndex(item => item.itemId === result.usedPotion.itemId)
-              }
-              
-              if (potionIndex !== -1) {
-                const potion = currentItems[potionIndex]
-                if (potion.quantity > 1) {
-                  currentItems[potionIndex] = { ...potion, quantity: potion.quantity - 1 }
-                } else {
-                  currentItems.splice(potionIndex, 1)
-                }
-                
-                return {
-                  ...state,
-                  inventory: {
-                    ...state.inventory,
-                    items: currentItems,
-                    usedSlots: currentItems.length + state.inventory.materials.length
-                  }
-                }
-              }
-              return state
-            })
           }
           
           // 전투 결과 처리
@@ -1221,9 +1093,7 @@ export const useGameStore = create<GameStore>()(
             currentFloor: nextFloor,
             isInCombat: false,
             currentMonster: null
-          },
-          // 새로운 층으로 이동할 때 물약 사용 기록 초기화
-          potionUsageHistory: []
+          }
         }))
 
         get().addCombatLog('floor', `🗼 ${nextFloor}층에 도착했습니다!`)
@@ -1429,12 +1299,7 @@ export const useGameStore = create<GameStore>()(
               newItems[existingIndex].quantity += quantity
             } else {
               // 다른 레벨이거나 없는 경우 새로 추가
-              newItems.push({ 
-                itemId, 
-                quantity, 
-                level: level,
-                quality: quality // 물약에도 품질 적용
-              })
+              newItems.push({ itemId, quantity, level: level })
             }
           }
           
@@ -1638,23 +1503,17 @@ export const useGameStore = create<GameStore>()(
         }
 
         // 비용 계산
-        let apCost = 1
-        let goldCost = 0
-        
-        try {
-          const skillData = await import(`../data/skills/${skillId}.json`)
-          if (skillData.default && skillData.default.levelUpCost) {
-            const { baseAp, apScaling } = skillData.default.levelUpCost
-            apCost = Math.floor(baseAp * Math.pow(apScaling, targetSkill.level - 1))
-          }
-        } catch (error) {
-          console.error(`스킬 비용 계산 실패: ${skillId}`, error)
-          apCost = 1
-        }
+        const apCost = 1
+        const goldCost = Math.floor(100 * Math.pow(1.5, targetSkill.level - 1))
 
         // 비용 체크
-        if (player.ascensionPoints < apCost) {
-          get().addCombatLog('skill', `❌ AP가 부족합니다. (보유: ${player.ascensionPoints}, 필요: ${apCost})`)
+        if (player.rebirthLevel < apCost) {
+          get().addCombatLog('skill', `❌ AP가 부족합니다.`)
+          return
+        }
+        
+        if (player.gold < goldCost) {
+          get().addCombatLog('skill', `❌ 골드가 부족합니다.`)
           return
         }
 
@@ -1700,7 +1559,8 @@ export const useGameStore = create<GameStore>()(
           ...state,
           player: {
             ...state.player,
-            ascensionPoints: state.player.ascensionPoints - apCost
+            rebirthLevel: state.player.rebirthLevel - apCost,
+            gold: state.player.gold - goldCost
           },
           skills: {
             ...state.skills,
@@ -2275,27 +2135,27 @@ export const useGameStore = create<GameStore>()(
             get().addItem(item.itemData.itemId, item.itemData.quantity)
           }
           get().addCombatLog('loot', `✅ ${item.name} 구매 완료!`)
-        }
-      },
-
-      // 설정 시스템
-      updatePotionSettings: (newSettings: any) => 
-        set((state: any) => ({
-          ...state,
-          settings: {
-            ...state.settings,
-            potionSettings: {
-              ...state.settings.potionSettings,
-              ...newSettings
-            }
-          }
-        })),
+        },
         
-      resetToMenu: () => {
-        set((state: any) => ({
-          ...state,
-          gameState: 'menu'
-        }))
+        // 설정 시스템
+        updatePotionSettings: (newSettings: any) => 
+          set((state: any) => ({
+            ...state,
+            settings: {
+              ...state.settings,
+              potionSettings: {
+                ...state.settings.potionSettings,
+                ...newSettings
+              }
+            }
+          })),
+          
+        resetToMenu: () => {
+          set((state: any) => ({
+            ...state,
+            gameState: 'menu'
+          }))
+        }
       }
     }),
     { name: 'game-store' }

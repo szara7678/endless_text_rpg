@@ -7,6 +7,7 @@ import CharacterPanel from '../character/CharacterPanel'
 import InventoryPanel from '../inventory/InventoryPanel'
 import ShopPanel from '../shop/ShopPanel'
 import LifePanel from '../life/LifePanel'
+import SettingsPanel from '../settings/SettingsPanel'
 
 const Layout: React.FC = () => {
   const { gameState, forceResetToMenu, ui, setActivePanel } = useGameStore()
@@ -14,7 +15,7 @@ const Layout: React.FC = () => {
   // 게임 상태가 아니면 렌더링 안함
   if (gameState !== 'playing') return null
 
-  const handlePanelChange = (panel: 'character' | 'inventory' | 'shop' | 'life' | null) => {
+  const handlePanelChange = (panel: 'character' | 'inventory' | 'shop' | 'life' | 'settings' | null) => {
     // 같은 탭을 다시 클릭하면 닫기, 다른 탭을 클릭하면 해당 탭으로 변경
     if (ui.activePanel === panel) {
       setActivePanel(null)
@@ -67,16 +68,13 @@ const Layout: React.FC = () => {
           onClose={() => setActivePanel(null)} 
         />
       )}
-      
-      {/* 디버깅용 메뉴 복귀 버튼 (우하단 작은 버튼) */}
-      <div className="absolute bottom-20 right-4">
-        <button
-          onClick={() => forceResetToMenu()}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs opacity-70 hover:opacity-100 transition-opacity"
-        >
-          메뉴
-        </button>
-      </div>
+
+      {ui.activePanel === 'settings' && (
+        <SettingsPanel 
+          isOpen={true} 
+          onClose={() => setActivePanel(null)} 
+        />
+      )}
     </div>
   )
 }

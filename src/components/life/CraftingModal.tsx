@@ -419,9 +419,11 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
 
         // 아이템 생성
         const itemData = await loadItem(selectedRecipe.resultItem.itemId)
-        if (itemData.type === 'consumable') {
+        if (itemData.type === 'consumable' && !itemData.itemId.includes('_potion')) {
+          // 물약이 아닌 소모품은 재료로 처리
           addMaterial(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity)
         } else {
+          // 물약이나 장비는 아이템으로 처리 (품질과 레벨 적용)
           addItem(selectedRecipe.resultItem.itemId, selectedRecipe.resultItem.quantity, itemLevel, quality)
         }
 

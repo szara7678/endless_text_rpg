@@ -198,7 +198,8 @@ export function calculateLevelUpCost(skillData: any, currentLevel: number): numb
 export function canLevelUpSkill(
   skill: SkillInstance, 
   playerAP: number, 
-  playerGold: number
+  playerGold: number,
+  skillData?: any
 ): { 
   canLevel: boolean
   reason: string 
@@ -208,15 +209,16 @@ export function canLevelUpSkill(
     return { canLevel: false, reason: '경험치가 부족합니다.' }
   }
 
-  const costs = calculateLevelUpCost(skill.level)
+  const apCost = skillData ? calculateLevelUpCost(skillData, skill.level) : 1
 
   // AP 체크
-  if (playerAP < costs.apCost) {
+  if (playerAP < apCost) {
     return { canLevel: false, reason: 'AP가 부족합니다.' }
   }
 
-  // 골드 체크
-  if (playerGold < costs.goldCost) {
+  // 골드 체크 (골드 비용은 0으로 설정)
+  const goldCost = 0
+  if (playerGold < goldCost) {
     return { canLevel: false, reason: '골드가 부족합니다.' }
   }
 
@@ -227,12 +229,12 @@ export function canLevelUpSkill(
  * 스킬을 레벨업합니다
  * 무제한 레벨업 가능하지만 발동률은 특정 레벨에서만 상승
  */
-export function levelUpSkill(skill: SkillInstance): {
+export function levelUpSkill(skill: SkillInstance, skillData?: any): {
   newSkill: SkillInstance
   apCost: number
   goldCost: number
 } {
-  const costs = calculateLevelUpCost(skill.level)
+  const apCost = skillData ? calculateLevelUpCost(skillData, skill.level) : 1
   const newLevel = skill.level + 1
   
   // 새 레벨에 따른 발동률 계산
@@ -248,8 +250,8 @@ export function levelUpSkill(skill: SkillInstance): {
 
   return {
     newSkill,
-    apCost: costs.apCost,
-    goldCost: costs.goldCost
+    apCost: apCost,
+    goldCost: 0
   }
 }
 

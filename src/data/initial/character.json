@@ -14,7 +14,7 @@
   "critical": 5,
 
   "gold": 1000,
-  "gem": 0,
+  "gem": 100,
   "ascensionPoints": 20,
   "currentFloor": 1,
   "highestFloor": 1,

@@ -147,5 +147,28 @@ export const inventorySlice: StateCreator<InventorySlice> = (set, get) => ({
       return true
     }
     return false
+  },
+  
+  // 물약 사용 (레벨 기반)
+  usePotion: (itemId: string, level: number = 1) => {
+    const { inventory } = get()
+    const potionItem = inventory.items.find(item => 
+      item.itemId === itemId && item.level === level
+    )
+    
+    if (potionItem && potionItem.quantity > 0) {
+      set((state) => ({
+        inventory: {
+          ...state.inventory,
+          items: state.inventory.items.map(item => 
+            item.itemId === itemId && item.level === level
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          ).filter(item => item.quantity > 0)
+        }
+      }))
+      return true
+    }
+    return false
   }
 }) 

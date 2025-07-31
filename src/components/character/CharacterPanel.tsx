@@ -78,11 +78,13 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
         const apCost = calculateLevelUpCost(skillData.default, learnedSkill.level)
         
         if (player.ascensionPoints >= apCost) {
-          // AP 차감 - 직접 상태 업데이트
+          // 스킬 레벨업 실행 (AP 차감은 levelUpSkill 함수 내에서 처리)
           const currentState = useGameStore.getState()
-          currentState.player.ascensionPoints -= apCost
-          // 스킬 레벨업
-          levelUpSkill(skillId)
+          currentState.levelUpSkill(skillId)
+          
+          console.log(`✅ ${skillId} 레벨업 완료! AP ${apCost} 소모`)
+        } else {
+          console.log('AP 부족:', player.ascensionPoints, '필요:', apCost)
         }
       } catch (error) {
         console.error('스킬 레벨업 실패:', error)
@@ -718,10 +720,11 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                         goldCost: 0 // 골드 제거
                       } : null
                       
-                      const canLevel = learnedSkill ? { 
+                      const canLevel = learnedSkill && levelUpCost ? { 
                         canLevel: (learnedSkill.currentXp || 0) >= (learnedSkill.maxXp || 0) && 
-                                 player.rebirthLevel >= levelUpCost.apCost
-                      } : null
+                                 player.ascensionPoints >= levelUpCost.apCost &&
+                                 skill.skillId !== 'basic_attack'
+                      } : { canLevel: false }
                       
                                              const canUnlock = !isLearned && (skills.pagesOwned[skill.skillId] || 0) >= skillInfo.requiredPages
                       
@@ -752,7 +755,7 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                                   해금
                                 </button>
                               )}
-                              {learnedSkill && (
+                              {learnedSkill && skill.skillId !== 'basic_attack' && (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -790,7 +793,7 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                               </div>
                               
                               <div className="text-xs text-gray-500">
-                                다음 레벨업: AP {levelUpCost.apCost}
+                                다음 레벨업: AP {levelUpCost?.apCost || 0}
                               </div>
                             </>
                           )}

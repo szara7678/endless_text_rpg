@@ -196,6 +196,7 @@ export interface CombatResult {
   playerDamageDealt: number
   monsterDamageDealt: number
   playerHpAfter: number
+  playerMpAfter: number
   monsterHpAfter: number
   isPlayerTurn: boolean
   isCritical: boolean
@@ -205,6 +206,13 @@ export interface CombatResult {
   lastUsedSkill?: string | null // 마지막으로 사용된 스킬 (kill 수련치용)
   isMonsterDefeated: boolean
   isPlayerDefeated: boolean
+  usedPotion?: {
+    itemId: string
+    healAmount: number
+    uniqueId?: string
+    level?: number
+    quality?: string
+  }
 }
 
 export interface CombatEffect {
@@ -222,10 +230,17 @@ export interface CombatEffect {
 
 // === 아이템 & 장비 ===
 export interface Item {
+  itemId: string
   id: string
   name: string
   description: string
   type: 'weapon' | 'armor' | 'accessory' | 'material' | 'consumable'
+  subtype?: string
+  rarity?: string
+  quality?: string
+  level?: number
+  baseHeal?: number
+  uniqueId?: string
   
   // 재료 (장비용)
   materials?: MaterialRequirement[]
@@ -235,6 +250,25 @@ export interface Item {
   
   // 특성 슬롯 (품질에 따라)
   traitSlots?: number
+  
+  // 효과 (소비아이템용)
+  effects?: Array<{
+    type: string
+    value: number
+    duration: number
+  }>
+  
+  // 판매가격
+  sellPrice?: number
+  
+  // 스택 관련
+  stackable?: boolean
+  maxStack?: number
+  
+  // 제작 재료
+  craftingMaterials?: Record<string, number>
+  requiredSkill?: string
+  requiredSkillLevel?: number
 }
 
 export interface MaterialRequirement {
@@ -432,7 +466,7 @@ export interface CombatLogEntry {
 
 // === UI 상태 ===
 export interface UIState {
-  activePanel: 'character' | 'inventory' | 'shop' | 'life' | null
+  activePanel: 'character' | 'inventory' | 'shop' | 'life' | 'settings' | null
   notifications: Array<{
     id: string
     type: 'info' | 'success' | 'warning' | 'error'

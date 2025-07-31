@@ -456,7 +456,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
                 
                 return (
                   <div
-                    key={item.displayId || item.uniqueId || `${itemId}-${index}`}
+                    key={item.displayId || item.uniqueId || `${itemId}-${item.level || 1}-${item.quality || 'Common'}-${index}`}
                     className={`relative bg-gray-800 rounded-lg p-3 cursor-pointer transition-colors border ${
                       equipped 
                         ? 'border-yellow-400 border-2 bg-yellow-900/20 hover:bg-yellow-800/30' 

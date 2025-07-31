@@ -7,6 +7,7 @@ import {
   calculatePlayerElementalDamage,
   getElementalCombatLog 
 } from './elementalCombat'
+import { shouldAutoUsePotion, updatePotionUsage, calculatePotionHeal } from './potionSystem'
 
 // 선공 결정 함수
 export function determineFirstAttacker(player: PlayerState, monster: Monster, floor: number): 'player' | 'monster' {
@@ -20,12 +21,16 @@ export async function processPlayerTurn(
   player: PlayerState,
   monster: Monster,
   floor: number,
-  skills?: any
+  skills?: any,
+  inventory?: any[],
+  potionSettings?: any,
+  potionUsageHistory?: any[]
 ): Promise<CombatResult> {
   const result: CombatResult = {
     playerDamageDealt: 0,
     monsterDamageDealt: 0,
     playerHpAfter: player.hp,
+    playerMpAfter: player.mp,
     monsterHpAfter: monster.hp,
     isPlayerTurn: true,
     isCritical: false,
@@ -33,6 +38,51 @@ export async function processPlayerTurn(
     skillsTriggered: [],
     isMonsterDefeated: false,
     isPlayerDefeated: false
+  }
+
+  // 물약 자동 사용 체크
+  if (inventory && potionSettings && potionUsageHistory) {
+    const autoUseResult = shouldAutoUsePotion(
+      player.hp,
+      player.maxHp,
+      player.mp,
+      player.maxMp,
+      potionSettings,
+      inventory,
+      floor,
+      potionUsageHistory
+    )
+    
+    if (autoUseResult.shouldUse && autoUseResult.potionItem) {
+      const potionItem = autoUseResult.potionItem
+      const healAmount = await calculatePotionHeal(potionItem)
+      
+      if (potionItem.itemId === 'health_potion') {
+        result.playerHpAfter = Math.min(player.maxHp, player.hp + healAmount)
+        result.logs.push({
+          type: 'combat',
+          message: `🧪 LV ${potionItem.level || 1} 체력 물약 사용! (HP +${healAmount})`
+        })
+      } else if (potionItem.itemId === 'mana_potion') {
+        result.playerMpAfter = Math.min(player.maxMp, player.mp + healAmount)
+        result.logs.push({
+          type: 'combat',
+          message: `🧪 LV ${potionItem.level || 1} 마나 물약 사용! (MP +${healAmount})`
+        })
+      }
+      
+      // 물약 사용 기록 업데이트
+      updatePotionUsage(potionItem.itemId, floor, potionUsageHistory)
+      
+      // 사용된 물약 정보를 결과에 추가
+      result.usedPotion = {
+        itemId: potionItem.itemId,
+        healAmount: healAmount,
+        uniqueId: potionItem.uniqueId,
+        level: potionItem.level,
+        quality: potionItem.quality
+      }
+    }
   }
 
   // 플레이어 공격만 처리
@@ -51,6 +101,7 @@ export async function processMonsterTurn(
     playerDamageDealt: 0,
     monsterDamageDealt: 0,
     playerHpAfter: player.hp,
+    playerMpAfter: player.mp,
     monsterHpAfter: monster.hp,
     isPlayerTurn: false,
     isCritical: false,
@@ -358,12 +409,16 @@ export async function processAutoCombatTurn(
     player: PlayerState,
     monster: Monster,
     floor: number,
-    skills?: any
+    skills?: any,
+    inventory?: any[],
+    potionSettings?: any,
+    potionUsageHistory?: any[]
   ): Promise<CombatResult> {
   const result: CombatResult = {
     playerDamageDealt: 0,
     monsterDamageDealt: 0,
     playerHpAfter: player.hp,
+    playerMpAfter: player.mp,
     monsterHpAfter: monster.hp,
     isPlayerTurn: true,
     isCritical: false,
@@ -395,6 +450,51 @@ export async function processAutoCombatTurn(
     // 플레이어가 살아있으면 공격
     if (result.playerHpAfter > 0) {
       await processPlayerAttack(calculatedPlayer, scaledMonster, result, floor, skills)
+    }
+  }
+  
+  // 물약 자동 사용 체크 (전투 후)
+  if (inventory && potionSettings && potionUsageHistory) {
+    const autoUseResult = shouldAutoUsePotion(
+      result.playerHpAfter,
+      player.maxHp,
+      result.playerMpAfter || player.mp,
+      player.maxMp,
+      potionSettings,
+      inventory,
+      floor,
+      potionUsageHistory
+    )
+    
+    if (autoUseResult.shouldUse && autoUseResult.potionItem) {
+      const potionItem = autoUseResult.potionItem
+      const healAmount = await calculatePotionHeal(potionItem)
+      
+      if (potionItem.itemId === 'health_potion') {
+        result.playerHpAfter = Math.min(player.maxHp, result.playerHpAfter + healAmount)
+        result.logs.push({
+          type: 'combat',
+          message: `🧪 LV ${potionItem.level || 1} 체력 물약 사용! (HP +${healAmount})`
+        })
+      } else if (potionItem.itemId === 'mana_potion') {
+        result.playerMpAfter = Math.min(player.maxMp, (result.playerMpAfter || player.mp) + healAmount)
+        result.logs.push({
+          type: 'combat',
+          message: `🧪 LV ${potionItem.level || 1} 마나 물약 사용! (MP +${healAmount})`
+        })
+      }
+      
+      // 물약 사용 기록 업데이트
+      updatePotionUsage(potionItem.itemId, floor, potionUsageHistory)
+      
+      // 사용된 물약 정보를 결과에 추가
+      result.usedPotion = {
+        itemId: potionItem.itemId,
+        healAmount: healAmount,
+        uniqueId: potionItem.uniqueId,
+        level: potionItem.level,
+        quality: potionItem.quality
+      }
     }
   }
   

@@ -4,6 +4,49 @@ import { useGameStore } from '../../stores'
 import { calculateEnhancementCost, getBaseEquipmentStats, getEquipmentStats } from '../../utils/equipmentSystem'
 import { calculateItemSellPrice } from '../../utils/itemSystem'
 import { loadItem } from '../../utils/dataLoader'
+import { calculatePotionHeal } from '../../utils/potionSystem'
+
+// 물약 회복량 표시 컴포넌트
+const PotionHealDisplay: React.FC<{ item: any }> = ({ item }) => {
+  const [healAmount, setHealAmount] = useState<number>(0)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadHealAmount = async () => {
+      try {
+        const amount = await calculatePotionHeal(item)
+        setHealAmount(amount)
+      } catch (error) {
+        console.error('회복량 계산 실패:', error)
+        setHealAmount(0)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadHealAmount()
+  }, [item])
+
+  const isHealthPotion = item.itemId === 'health_potion'
+  const isManaPotion = item.itemId === 'mana_potion'
+
+  return (
+    <div>
+      <h4 className="text-white font-medium mb-2">회복량</h4>
+      <div className="space-y-1 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-400">회복량</span>
+          <span className={`font-bold ${isHealthPotion ? 'text-red-400' : isManaPotion ? 'text-blue-400' : 'text-green-400'}`}>
+            {isLoading ? '계산 중...' : 
+              isHealthPotion ? `HP +${healAmount}` : 
+              isManaPotion ? `MP +${healAmount}` : 
+              `+${healAmount}`}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 interface ItemDetailModalProps {
   isOpen: boolean
@@ -513,10 +556,10 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
 
           {/* 최종 능력치 (품질, 레벨, 강화 포함) */}
           {isEquipment && (
-                          <div>
-                <h4 className="text-white font-medium mb-2">
-                  {item.enhancement > 0 ? `능력치 (강화 +${item.enhancement})` : '능력치'}
-                </h4>
+            <div>
+              <h4 className="text-white font-medium mb-2">
+                {item.enhancement > 0 ? `능력치 (강화 +${item.enhancement})` : '능력치'}
+              </h4>
               <div className="space-y-1 text-sm">
                 {(() => {
                   const finalStats = getEquipmentStats(item)
@@ -570,6 +613,11 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
                 })()}
               </div>
             </div>
+          )}
+
+          {/* 물약 회복량 정보 */}
+          {(item.itemId?.includes('_potion') || itemData?.subtype === 'potion') && (
+            <PotionHealDisplay item={item} />
           )}
 
 

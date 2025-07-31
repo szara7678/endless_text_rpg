@@ -63,12 +63,12 @@ export async function processItemDrops(
           results.materials.push({ itemId: drop.itemId, level: itemLevel, count: quantity })
         }
       } else if (drop.itemId.includes('_potion') || drop.itemId.includes('_food')) {
-        // 소모품류 - 중복 제거
-        const existingItem = results.items.find(item => item.itemId === drop.itemId && item.level === itemLevel && item.quality === 'Common')
+        // 소모품류 - 품질 적용
+        const existingItem = results.items.find(item => item.itemId === drop.itemId && item.level === itemLevel && item.quality === quality)
         if (existingItem) {
           existingItem.quantity = (existingItem.quantity || 1) + quantity
         } else {
-          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: 'Common', quantity })
+          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: quality, quantity })
         }
       } else {
         // 장비류 - 중복 제거

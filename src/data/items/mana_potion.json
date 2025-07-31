@@ -6,6 +6,7 @@
   "subtype": "potion",
   "rarity": "Common",
   "level": 1,
+  "baseHeal": 30,
   "effects": [
     {
       "type": "heal_mp",

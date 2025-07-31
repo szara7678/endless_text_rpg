@@ -5,7 +5,7 @@ export interface UISlice {
   ui: UIState
   
   // 액션들
-  setActivePanel: (panel: 'life' | 'character' | 'shop' | 'inventory' | null) => void
+  setActivePanel: (panel: 'life' | 'character' | 'shop' | 'inventory' | 'settings' | null) => void
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void
   removeNotification: (id: string) => void
   updateSettings: (settings: Partial<GameSettings>) => void
@@ -28,7 +28,7 @@ const initialUIState: UIState = {
 export const uiSlice: StateCreator<UISlice> = (set, get) => ({
   ui: initialUIState,
   
-  setActivePanel: (panel: 'life' | 'character' | 'shop' | 'inventory' | null) =>
+  setActivePanel: (panel: 'life' | 'character' | 'shop' | 'inventory' | 'settings' | null) =>
     set((state) => ({
       ui: { ...state.ui, activePanel: panel }
     })),
