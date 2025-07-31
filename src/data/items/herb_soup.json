@@ -3,7 +3,7 @@
   "name": "약초 수프",
   "description": "치유 효과가 있는 약초 수프",
   "type": "consumable",
-  "category": "food",
+  "subtype": "food",
   "theme": "Physical",
   "tier": "Superior",
   "effect": {

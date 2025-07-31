@@ -3,7 +3,7 @@
   "name": "신성한 만찬",
   "description": "신성한 힘이 깃든 최고급 음식",
   "type": "consumable",
-  "category": "food",
+  "subtype": "food",
   "theme": "Physical",
   "tier": "Epic",
   "effect": {

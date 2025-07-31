@@ -102,17 +102,14 @@ const MainView: React.FC = () => {
     const killCount = tower.monsterKillCount || 0
     
     let requiredKills = 0
-    if (floorInCycle === 0) {
-      // 휴식층: 즉시 다음 층으로
-      return { current: 0, required: 0, text: '휴식층' }
-    } else if (floorInCycle >= 1 && floorInCycle <= 5) {
+    if (floorInCycle >= 1 && floorInCycle <= 6) {
       // 일반 몬스터층: 3마리 처치
       requiredKills = 3
-    } else if (floorInCycle >= 6 && floorInCycle <= 8) {
+    } else if (floorInCycle >= 7 && floorInCycle <= 9) {
       // 정예 몬스터층: 2마리 처치
       requiredKills = 2
-    } else if (floorInCycle === 9) {
-      // 보스층: 1마리 처치
+    } else if (floorInCycle === 0) {
+      // 보스층: 1마리 처치 (10, 20, 30...층)
       requiredKills = 1
     }
     

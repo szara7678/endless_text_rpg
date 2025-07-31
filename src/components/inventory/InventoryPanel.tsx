@@ -210,12 +210,15 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
         items = items.filter(item => item.materialId?.includes('ore'))
       }
     } else if (activeMainTab === 'equipment') {
-      // 장비는 items에서 health_potion, mana_potion 제외하고 가져오기
-      // 장비는 uniqueId로 개별 관리되므로 각각 별도 아이템으로 표시
+      // 장비는 consumable이 아닌 아이템들만 가져오기 (기존 로직 유지하되 개선)
       items = inventory.items
-        .filter(item => !item.itemId.includes('potion') && !item.itemId.includes('food'))
+        .filter(item => {
+          // 소모품 관련 키워드 제외
+          const consumableKeywords = ['potion', 'food', 'bread', 'stew', 'drink', 'soup', 'feast']
+          return !consumableKeywords.some(keyword => item.itemId.includes(keyword))
+        })
         .map(item => {
-          // 장비 카테고리 판별
+          // 장비 카테고리 판별 (기존 로직 개선)
           let category = 'accessory'
           if (item.itemId.includes('sword') || item.itemId.includes('staff') || item.itemId.includes('weapon')) {
             category = 'weapon'
@@ -242,9 +245,9 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
         items = items.filter(item => item.category === 'accessory')
       }
     } else if (activeMainTab === 'consumables') {
-      // 소모품은 potion류와 food류 items 합치기 (레벨별로 구분)
+      // 소모품은 potion, food, drink, soup, feast류 items 합치기 (레벨별로 구분)
       const potionItems = inventory.items
-        .filter(item => item.itemId.includes('potion'))
+        .filter(item => item.itemId.includes('potion') || item.itemId.includes('drink'))
         .map(item => ({
           ...item,
           type: 'consumable',
@@ -255,7 +258,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
         }))
       
       const foodItems = inventory.items
-        .filter(item => item.itemId.includes('food') || item.itemId.includes('bread') || item.itemId.includes('stew'))
+        .filter(item => item.itemId.includes('food') || item.itemId.includes('bread') || item.itemId.includes('stew') || item.itemId.includes('soup') || item.itemId.includes('feast'))
         .map(item => ({
           ...item,
           type: 'consumable',

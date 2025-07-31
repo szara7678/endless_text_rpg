@@ -3,12 +3,11 @@ import { ThemeType, Monster } from '../types'
 // 테마 순환 배열 (기획안: 6종 순환)
 const THEME_ORDER: ThemeType[] = ['Flame', 'Frost', 'Toxic', 'Shadow', 'Thunder', 'Verdant']
 
-// 층 구조 상수 (기획안: n0 휴식 → n1-5 일반 → n6-8 정예 → n9 보스)
+// 층 구조 상수 (기획안: n1-6 일반 → n7-9 정예 → n0 보스)
 const FLOOR_STRUCTURE = {
-  REST: 0,      // n0 - 휴식층
-  NORMAL: [1, 2, 3, 4, 5],  // n1-5 - 일반 몬스터
-  ELITE: [6, 7, 8],         // n6-8 - 정예 몬스터
-  BOSS: 9       // n9 - 보스
+  NORMAL: [1, 2, 3, 4, 5, 6],  // n1-6 - 일반 몬스터
+  ELITE: [7, 8, 9],            // n7-9 - 정예 몬스터
+  BOSS: 0                       // n0 - 보스 (10, 20, 30...층)
 }
 
 /**
@@ -23,19 +22,17 @@ export function getThemeForFloor(floor: number): ThemeType {
 
 /**
  * 층수로부터 몬스터 티어를 결정합니다
- * 기획안: n0 휴식 → n1-5 일반 → n6-8 정예 → n9 보스
+ * 기획안: n1-6 일반 → n7-9 정예 → n0 보스
  */
 export function getMonsterTierForFloor(floor: number): 'rest' | 'normal' | 'elite' | 'boss' {
   const floorInCycle = floor % 10
   
-  if (floorInCycle === FLOOR_STRUCTURE.REST) {
-    return 'rest'  // 휴식층
+  if (floorInCycle === FLOOR_STRUCTURE.BOSS) {
+    return 'boss'  // 보스 (10, 20, 30...층)
   } else if (FLOOR_STRUCTURE.NORMAL.includes(floorInCycle)) {
     return 'normal'  // 일반 몬스터
   } else if (FLOOR_STRUCTURE.ELITE.includes(floorInCycle)) {
     return 'elite'  // 정예 몬스터
-  } else if (floorInCycle === FLOOR_STRUCTURE.BOSS) {
-    return 'boss'  // 보스
   }
   
   return 'normal'  // 기본값
@@ -43,14 +40,12 @@ export function getMonsterTierForFloor(floor: number): 'rest' | 'normal' | 'elit
 
 /**
  * 층수로부터 몬스터 수를 결정합니다
- * 기획안: n1-5 일반(8-12) → n6-8 정예(3-5) → n9 보스(1)
+ * 기획안: n1-6 일반(8-12) → n7-9 정예(3-5) → n0 보스(1)
  */
 export function getMonsterCountForFloor(floor: number): number {
   const tier = getMonsterTierForFloor(floor)
   
   switch (tier) {
-    case 'rest':
-      return 0
     case 'normal':
       return Math.floor(Math.random() * 5) + 8  // 8-12마리
     case 'elite':

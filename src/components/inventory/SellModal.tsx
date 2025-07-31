@@ -176,7 +176,11 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
 
     // 장비 아이템 추가
     const equipmentItems = inventory.items
-      .filter(item => !item.itemId.includes('potion') && !item.itemId.includes('food') && !item.itemId.includes('bread') && !item.itemId.includes('stew'))
+      .filter(item => {
+        // 소모품 관련 키워드 제외
+        const consumableKeywords = ['potion', 'food', 'bread', 'stew', 'drink', 'soup', 'feast']
+        return !consumableKeywords.some(keyword => item.itemId.includes(keyword))
+      })
       .map(item => ({
         ...item,
         type: 'equipment',
@@ -194,7 +198,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
 
     // 소모품 아이템 추가
     const potionItems = inventory.items
-      .filter(item => item.itemId.includes('potion'))
+      .filter(item => item.itemId.includes('potion') || item.itemId.includes('drink'))
       .map(item => ({
         ...item,
         type: 'consumable',
@@ -204,7 +208,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
       }))
     
     const foodItems = inventory.items
-      .filter(item => item.itemId.includes('food') || item.itemId.includes('bread') || item.itemId.includes('stew'))
+      .filter(item => item.itemId.includes('food') || item.itemId.includes('bread') || item.itemId.includes('stew') || item.itemId.includes('soup') || item.itemId.includes('feast'))
       .map(item => ({
         ...item,
         type: 'consumable',
@@ -244,7 +248,13 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
 
     // 품질 필터
     if (filterQuality !== 'all') {
-      items = items.filter(item => item.quality === filterQuality)
+      items = items.filter(item => {
+        // 품질이 없는 아이템은 제외 (재료, 소모품 등)
+        if (!item.quality) return false
+        
+        // 정확히 일치하는 품질만 필터링
+        return item.quality === filterQuality
+      })
       console.log('품질 필터 후 아이템 수:', items.length)
     }
 
@@ -258,7 +268,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
         } else if (filterType === 'accessory') {
           return item.itemId.includes('ring')
         } else if (filterType === 'consumable') {
-          return item.itemId.includes('potion') || item.itemId.includes('bread') || item.itemId.includes('drink') || item.itemId.includes('stew') || item.itemId.includes('soup') || item.itemId.includes('feast')
+          return item.itemId.includes('potion') || item.itemId.includes('drink') || item.itemId.includes('food') || item.itemId.includes('bread') || item.itemId.includes('stew') || item.itemId.includes('soup') || item.itemId.includes('feast')
         } else if (filterType === 'material') {
           return (item as any).materialId || item.itemId.includes('ore') || item.itemId.includes('herb') || item.itemId.includes('fish') || item.itemId.includes('essence') || item.itemId.includes('crystal') || item.itemId.includes('gem') || item.itemId.includes('metal') || item.itemId.includes('leather') || item.itemId.includes('wood') || item.itemId.includes('flour') || item.itemId.includes('milk') || item.itemId.includes('vegetable') || item.itemId.includes('wheat') || item.itemId.includes('meat') || item.itemId.includes('sap') || item.itemId.includes('stone') || item.itemId.includes('shard')
         }
@@ -412,11 +422,11 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, item, isBulkSell
                       className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="all">전체</option>
-                      <option value="Common">일반</option>
-                      <option value="Uncommon">고급</option>
-                      <option value="Rare">희귀</option>
-                      <option value="Epic">에픽</option>
-                      <option value="Legendary">전설</option>
+                      <option value="Common">Common</option>
+                      <option value="Fine">Fine</option>
+                      <option value="Superior">Superior</option>
+                      <option value="Epic">Epic</option>
+                      <option value="Legendary">Legendary</option>
                     </select>
                   </div>
                   <div>

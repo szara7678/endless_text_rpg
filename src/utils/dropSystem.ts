@@ -7,10 +7,10 @@ export async function processItemDrops(
   monster: Monster, 
   inventory: InventoryState,
   currentFloor: number
-): Promise<{ items: Array<{itemId: string, level: number, quality: string}>, materials: Array<{itemId: string, level: number}>, gold: number }> {
+): Promise<{ items: Array<{itemId: string, level: number, quality: string, quantity?: number}>, materials: Array<{itemId: string, level: number, count?: number}>, gold: number }> {
   const results = { 
-    items: [] as Array<{itemId: string, level: number, quality: string}>, 
-    materials: [] as Array<{itemId: string, level: number}>, 
+    items: [] as Array<{itemId: string, level: number, quality: string, quantity?: number}>, 
+    materials: [] as Array<{itemId: string, level: number, count?: number}>, 
     gold: 0 
   }
   
@@ -55,19 +55,28 @@ export async function processItemDrops(
                  drop.itemId.includes('_essence') || drop.itemId.includes('_gem') ||
                  drop.itemId.includes('_herb') || drop.itemId.includes('_fish') ||
                  drop.itemId.includes('_wood') || drop.itemId.includes('_leather')) {
-        // 재료류
-        for (let i = 0; i < quantity; i++) {
-          results.materials.push({ itemId: drop.itemId, level: itemLevel })
+        // 재료류 - 중복 제거
+        const existingMaterial = results.materials.find(m => m.itemId === drop.itemId && m.level === itemLevel)
+        if (existingMaterial) {
+          existingMaterial.count = (existingMaterial.count || 1) + quantity
+        } else {
+          results.materials.push({ itemId: drop.itemId, level: itemLevel, count: quantity })
         }
       } else if (drop.itemId.includes('_potion') || drop.itemId.includes('_food')) {
-        // 소모품류
-        for (let i = 0; i < quantity; i++) {
-          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: 'Common' })
+        // 소모품류 - 중복 제거
+        const existingItem = results.items.find(item => item.itemId === drop.itemId && item.level === itemLevel && item.quality === 'Common')
+        if (existingItem) {
+          existingItem.quantity = (existingItem.quantity || 1) + quantity
+        } else {
+          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: 'Common', quantity })
         }
       } else {
-        // 장비류
-        for (let i = 0; i < quantity; i++) {
-          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: quality })
+        // 장비류 - 중복 제거
+        const existingItem = results.items.find(item => item.itemId === drop.itemId && item.level === itemLevel && item.quality === quality)
+        if (existingItem) {
+          existingItem.quantity = (existingItem.quantity || 1) + quantity
+        } else {
+          results.items.push({ itemId: drop.itemId, level: itemLevel, quality: quality, quantity })
         }
       }
     }

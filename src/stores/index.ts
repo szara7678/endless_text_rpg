@@ -852,26 +852,28 @@ export const useGameStore = create<GameStore>()(
             
             // 재료 드롭 처리
             for (const material of dropResults.materials) {
-              get().addMaterial(material.itemId, 1, material.level)
+              const count = material.count || 1
+              get().addMaterial(material.itemId, count, material.level)
               // 한글 이름 가져오기
               getItemName(material.itemId).then(itemName => {
-                get().addCombatLog('loot', `⛏️ ${itemName} (Lv${material.level}) 획득!`)
+                get().addCombatLog('loot', `⛏️ ${itemName} (Lv${material.level}) x${count} 획득!`)
               }).catch(() => {
                 // 실패 시 기본 이름 사용
-                get().addCombatLog('loot', `⛏️ ${material.itemId.replace('_', ' ')} (Lv${material.level}) 획득!`)
+                get().addCombatLog('loot', `⛏️ ${material.itemId.replace('_', ' ')} (Lv${material.level}) x${count} 획득!`)
               })
             }
             
             // 아이템 드롭 처리
             for (const item of dropResults.items) {
-              get().addItem(item.itemId, 1, item.level, item.quality)
+              const quantity = item.quantity || 1
+              get().addItem(item.itemId, quantity, item.level, item.quality)
               const qualityText = item.quality !== 'Common' ? ` (${item.quality})` : ''
               // 한글 이름 가져오기
               getItemName(item.itemId).then(itemName => {
-                get().addCombatLog('loot', `🎁 ${itemName} (Lv${item.level})${qualityText} 획득!`)
+                get().addCombatLog('loot', `🎁 ${itemName} (Lv${item.level})${qualityText} x${quantity} 획득!`)
               }).catch(() => {
                 // 실패 시 기본 이름 사용
-                get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText} 획득!`)
+                get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText} x${quantity} 획득!`)
               })
             }
             
@@ -902,17 +904,14 @@ export const useGameStore = create<GameStore>()(
           
           // 현재 층에서 처치해야 할 몬스터 수 결정
           let requiredKills = 0
-          if (floorInCycle === 0) {
-            // 휴식층: 즉시 다음 층으로
-            requiredKills = 0
-          } else if (floorInCycle >= 1 && floorInCycle <= 5) {
+          if (floorInCycle >= 1 && floorInCycle <= 6) {
             // 일반 몬스터층: 3마리 처치
             requiredKills = 3
-          } else if (floorInCycle >= 6 && floorInCycle <= 8) {
+          } else if (floorInCycle >= 7 && floorInCycle <= 9) {
             // 정예 몬스터층: 2마리 처치
             requiredKills = 2
-          } else if (floorInCycle === 9) {
-            // 보스층: 1마리 처치
+          } else if (floorInCycle === 0) {
+            // 보스층: 1마리 처치 (10, 20, 30...층)
             requiredKills = 1
           }
           

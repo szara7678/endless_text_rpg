@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Sword, Shield, Star, Zap } from 'lucide-react'
 import { useGameStore } from '../../stores'
-import { calculateEnhancementCost, getBaseEquipmentStats } from '../../utils/equipmentSystem'
+import { calculateEnhancementCost, getBaseEquipmentStats, getEquipmentStats } from '../../utils/equipmentSystem'
 import { calculateItemSellPrice } from '../../utils/itemSystem'
 import { loadItem } from '../../utils/dataLoader'
 
@@ -511,135 +511,58 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
             </p>
           </div>
 
-          {/* 기본 스탯 */}
+          {/* 최종 능력치 (품질, 레벨, 강화 포함) */}
           {isEquipment && (
-            <div>
-              <h4 className="text-white font-medium mb-2">기본 능력치</h4>
+                          <div>
+                <h4 className="text-white font-medium mb-2">
+                  {item.enhancement > 0 ? `능력치 (강화 +${item.enhancement})` : '능력치'}
+                </h4>
               <div className="space-y-1 text-sm">
                 {(() => {
-                  const baseStats = getBaseEquipmentStats(item.itemId)
-                  return (
-                    <>
-                      {baseStats.physicalAttack && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">물리 공격력</span>
-                          <span className="text-red-400">+{baseStats.physicalAttack}</span>
-                        </div>
-                      )}
-                      {baseStats.magicalAttack && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">마법 공격력</span>
-                          <span className="text-blue-400">+{baseStats.magicalAttack}</span>
-                        </div>
-                      )}
-                      {baseStats.physicalDefense && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">물리 방어력</span>
-                          <span className="text-green-400">+{baseStats.physicalDefense}</span>
-                        </div>
-                      )}
-                      {baseStats.magicalDefense && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">마법 방어력</span>
-                          <span className="text-purple-400">+{baseStats.magicalDefense}</span>
-                        </div>
-                      )}
-                      {baseStats.hp && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">HP</span>
-                          <span className="text-red-300">+{baseStats.hp}</span>
-                        </div>
-                      )}
-                      {baseStats.mp && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">MP</span>
-                          <span className="text-blue-300">+{baseStats.mp}</span>
-                        </div>
-                      )}
-                      {baseStats.speed && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">속도</span>
-                          <span className="text-yellow-400">+{baseStats.speed}</span>
-                        </div>
-                      )}
-                    </>
-                  )
-                })()}
-              </div>
-            </div>
-          )}
-
-          {/* 실제 스탯 (강화 포함) */}
-          {isEquipment && item.enhancement > 0 && (
-            <div>
-              <h4 className="text-white font-medium mb-2">실제 능력치 (강화 +{item.enhancement})</h4>
-              <div className="space-y-1 text-sm">
-                {(() => {
-                  const baseStats = getBaseEquipmentStats(item.itemId)
-                  const level = item.level || 1
-                  const enhancement = item.enhancement || 0
-                  const quality = item.quality || 'Common'
-                  
-                  // 품질 배수 계산
-                  const qualityMultiplier = {
-                    'Common': 1,
-                    'Fine': 1.2,
-                    'Superior': 1.5,
-                    'Epic': 2,
-                    'Legendary': 3
-                  }[quality] || 1
-                  
-                  // 레벨 보너스 (5% per level)
-                  const levelBonus = 1 + (level - 1) * 0.05
-                  
-                  // 강화 보너스 (8% per enhancement)
-                  const enhancementBonus = 1 + enhancement * 0.08
-                  
-                  // 최종 배수
-                  const totalMultiplier = qualityMultiplier * levelBonus * enhancementBonus
+                  const finalStats = getEquipmentStats(item)
                   
                   return (
                     <>
-                      {baseStats.physicalAttack && (
+                      {finalStats.physicalAttack && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">물리 공격력</span>
-                          <span className="text-red-400">+{Math.floor(baseStats.physicalAttack * totalMultiplier)}</span>
+                          <span className="text-red-400">+{finalStats.physicalAttack}</span>
                         </div>
                       )}
-                      {baseStats.magicalAttack && (
+                      {finalStats.magicalAttack && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">마법 공격력</span>
-                          <span className="text-blue-400">+{Math.floor(baseStats.magicalAttack * totalMultiplier)}</span>
+                          <span className="text-blue-400">+{finalStats.magicalAttack}</span>
                         </div>
                       )}
-                      {baseStats.physicalDefense && (
+                      {finalStats.physicalDefense && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">물리 방어력</span>
-                          <span className="text-green-400">+{Math.floor(baseStats.physicalDefense * totalMultiplier)}</span>
+                          <span className="text-green-400">+{finalStats.physicalDefense}</span>
                         </div>
                       )}
-                      {baseStats.magicalDefense && (
+                      {finalStats.magicalDefense && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">마법 방어력</span>
-                          <span className="text-purple-400">+{Math.floor(baseStats.magicalDefense * totalMultiplier)}</span>
+                          <span className="text-purple-400">+{finalStats.magicalDefense}</span>
                         </div>
                       )}
-                      {baseStats.hp && (
+                      {finalStats.hp && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">HP</span>
-                          <span className="text-red-300">+{Math.floor(baseStats.hp * totalMultiplier)}</span>
+                          <span className="text-red-300">+{finalStats.hp}</span>
                         </div>
                       )}
-                      {baseStats.mp && (
+                      {finalStats.mp && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">MP</span>
-                          <span className="text-blue-300">+{Math.floor(baseStats.mp * totalMultiplier)}</span>
+                          <span className="text-blue-300">+{finalStats.mp}</span>
                         </div>
                       )}
-                      {baseStats.speed && (
+                      {finalStats.speed && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">속도</span>
-                          <span className="text-yellow-400">+{Math.floor(baseStats.speed * totalMultiplier)}</span>
+                          <span className="text-yellow-400">+{finalStats.speed}</span>
                         </div>
                       )}
                     </>

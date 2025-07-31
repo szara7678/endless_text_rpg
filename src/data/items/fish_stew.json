@@ -3,7 +3,7 @@
   "name": "생선 스튜",
   "description": "영양가 높은 생선 스튜",
   "type": "consumable",
-  "category": "food",
+  "subtype": "food",
   "theme": "Physical",
   "tier": "Fine",
   "effect": {
