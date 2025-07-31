@@ -179,14 +179,27 @@ export function calculateEnhancementCost(equipment: EquipmentInstance): number {
 export function recalculatePlayerStats(player: PlayerState): PlayerState {
   const newPlayer = { ...player }
   
-  // 기본 스탯으로 초기화
-  newPlayer.physicalAttack = newPlayer.basePhysicalAttack
-  newPlayer.magicalAttack = newPlayer.baseMagicalAttack
-  newPlayer.physicalDefense = newPlayer.basePhysicalDefense
-  newPlayer.magicalDefense = newPlayer.baseMagicalDefense
-  newPlayer.speed = newPlayer.baseSpeed
-  newPlayer.maxHp = newPlayer.baseMaxHp
-  newPlayer.maxMp = newPlayer.baseMaxMp
+  // 음식 스탯 초기화 (없으면 생성)
+  if (!newPlayer.foodStats) {
+    newPlayer.foodStats = {
+      physicalAttack: 0,
+      magicalAttack: 0,
+      physicalDefense: 0,
+      magicalDefense: 0,
+      speed: 0,
+      maxHp: 0,
+      maxMp: 0
+    }
+  }
+  
+  // 기본 스탯 + 음식 스탯으로 초기화
+  newPlayer.physicalAttack = newPlayer.basePhysicalAttack + newPlayer.foodStats.physicalAttack
+  newPlayer.magicalAttack = newPlayer.baseMagicalAttack + newPlayer.foodStats.magicalAttack
+  newPlayer.physicalDefense = newPlayer.basePhysicalDefense + newPlayer.foodStats.physicalDefense
+  newPlayer.magicalDefense = newPlayer.baseMagicalDefense + newPlayer.foodStats.magicalDefense
+  newPlayer.speed = newPlayer.baseSpeed + newPlayer.foodStats.speed
+  newPlayer.maxHp = newPlayer.baseMaxHp + newPlayer.foodStats.maxHp
+  newPlayer.maxMp = newPlayer.baseMaxMp + newPlayer.foodStats.maxMp
   
   // 각 장비의 스탯 적용
   Object.values(newPlayer.equipment).forEach(equipment => {

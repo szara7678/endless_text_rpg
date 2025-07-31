@@ -1,24 +1,58 @@
 {
   "itemId": "divine_feast",
   "name": "신성한 만찬",
-  "description": "신성한 힘이 깃든 최고급 음식",
+  "description": "신성한 힘이 깃든 최고급 음식입니다. 모든 스탯을 크게 증가시킵니다.",
   "type": "consumable",
   "subtype": "food",
-  "theme": "Physical",
-  "tier": "Epic",
-  "effect": {
-    "type": "buff",
-    "duration": 10,
-    "stats": {
-      "physicalAttack": 25,
-      "magicalAttack": 25,
-      "physicalDefense": 20,
-      "magicalDefense": 20,
-      "speed": 15
+  "rarity": "Epic",
+  "level": 4,
+  "baseEffects": [
+    {
+      "type": "permanent",
+      "stat": "physicalAttack",
+      "value": 25
+    },
+    {
+      "type": "permanent",
+      "stat": "magicalAttack",
+      "value": 25
+    },
+    {
+      "type": "permanent",
+      "stat": "physicalDefense",
+      "value": 20
+    },
+    {
+      "type": "permanent",
+      "stat": "magicalDefense",
+      "value": 20
+    },
+    {
+      "type": "permanent",
+      "stat": "speed",
+      "value": 15
+    },
+    {
+      "type": "permanent",
+      "stat": "maxHp",
+      "value": 50
+    },
+    {
+      "type": "permanent",
+      "stat": "maxMp",
+      "value": 30
     }
+  ],
+  "sellPrice": 200,
+  "stackable": true,
+  "maxStack": 5,
+  "craftingMaterials": {
+    "rare_fish": 2,
+    "life_essence": 1,
+    "nature_essence": 2,
+    "healing_herb": 3,
+    "milk": 2
   },
-  "materials": [
-    { "materialId": "rare_fish", "quantity": 1 },
-    { "materialId": "life_essence", "quantity": 1 }
-  ]
+  "requiredSkill": "cooking",
+  "requiredSkillLevel": 8
 } 

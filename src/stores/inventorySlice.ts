@@ -110,10 +110,35 @@ export const inventorySlice: StateCreator<InventorySlice> = (set, get) => ({
     }))
   },
   
-  // 아이템 제거 (기본 구현)
+  // 아이템 제거
   removeItem: (itemId: string, quantity: number) => {
-    // TODO: 구현
-    return true
+    const { inventory } = get()
+    const itemIndex = inventory.items.findIndex(item => 
+      item.itemId === itemId && !item.uniqueId // 장비가 아닌 소모품만
+    )
+    
+    if (itemIndex >= 0 && inventory.items[itemIndex].quantity >= quantity) {
+      set((state) => {
+        const newItems = [...state.inventory.items]
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          quantity: newItems[itemIndex].quantity - quantity
+        }
+        
+        if (newItems[itemIndex].quantity === 0) {
+          newItems.splice(itemIndex, 1)
+        }
+        
+        return {
+          inventory: {
+            ...state.inventory,
+            items: newItems
+          }
+        }
+      })
+      return true
+    }
+    return false
   },
   
   // 소모품 추가

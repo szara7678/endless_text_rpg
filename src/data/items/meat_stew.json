@@ -1,21 +1,21 @@
 {
   "itemId": "meat_stew",
   "name": "고기 스튜",
-  "description": "푸짐한 고기 스튜입니다. 체력과 마나를 동시에 회복합니다.",
+  "description": "푸짐한 고기 스튜입니다. 체력과 공격력을 증가시킵니다.",
   "type": "consumable",
   "subtype": "food",
   "rarity": "Fine",
   "level": 2,
-  "effects": [
+  "baseEffects": [
     {
-      "type": "heal_hp",
-      "value": 80,
-      "duration": 0
+      "type": "permanent",
+      "stat": "maxHp",
+      "value": 25
     },
     {
-      "type": "heal_mp",
-      "value": 40,
-      "duration": 0
+      "type": "permanent",
+      "stat": "physicalAttack",
+      "value": 8
     }
   ],
   "sellPrice": 25,
@@ -24,7 +24,7 @@
   "craftingMaterials": {
     "raw_meat": 3,
     "vegetable": 2,
-    "water": 1
+    "wheat": 1
   },
   "requiredSkill": "cooking",
   "requiredSkillLevel": 3

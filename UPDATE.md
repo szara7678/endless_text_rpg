@@ -121,6 +121,16 @@
 ✅ 물약 사용 후 인벤토리 제거 및 React 키 중복 오류 수정
 ✅ 물약 자동 사용 시스템 개선 (높은 레벨/품질 우선 사용)
 ✅ 물약 사용 제한 및 정확한 물약 제거 시스템 구현
+✅ 인벤토리 패널 아이템 이름 로딩 개선
+✅ energy_drink 관련 코드 및 데이터 삭제
+✅ 음식 시스템 개선 - 영구 스탯 증가 효과 구현
+- **새로운 음식 시스템**: 아이템 레벨과 품질에 따른 영구 스탯 증가 효과
+- **음식 아이템 수정**: bread, meat_stew, fish_stew, herb_soup, divine_feast
+- **효과 시스템**: 물리/마법 공격력, 방어력, 속도, 최대 HP/MP 영구 증가
+- **UI 개선**: 아이템 상세 모달에서 음식 효과 표시 및 사용 버튼 추가
+- **밸런스 조정**: 다양한 재료 조합과 적절한 효과 수치 설정
+- **스탯 시스템 개선**: 음식 스탯을 장비 스탯과 별도로 관리하여 총합 스탯에 반영
+- **캐릭터 패널**: 음식으로 증가한 스탯을 🍽️ 아이콘으로 표시
 - `src/utils/combatEngine.ts`: 자동 물약 사용 시스템 통합
 - `src/components/character/CharacterPanel.tsx`: 스킬 레벨업 시스템 수정
 - `src/types/index.ts`: 물약 관련 타입 추가
@@ -425,7 +435,7 @@
 - 소모품 관련 키워드가 누락되어 잘못된 분류 발생
 
 **원인 분석**:
-- `energy_drink.json`: `type: "consumable"`, `category: "potion"`
+
 - 다른 아이템들: `type: "consumable"`, `subtype: "potion"`
 - 필터링 로직에서 `drink`, `soup`, `feast` 키워드 누락
 - 아이템 데이터의 구조 불일치
@@ -437,12 +447,12 @@
 - 인벤토리 패널과 판매 모달의 필터링 로직 일관성 확보
 
 **수정된 파일**:
-- `src/data/items/energy_drink.json`: `category` → `subtype`로 통일
+
 - `src/components/inventory/InventoryPanel.tsx`: 필터링 로직 개선
 - `src/components/inventory/SellModal.tsx`: 필터링 로직 개선
 
 **변경 사항**:
-- **아이템 데이터 구조**: `energy_drink.json`의 `category: "potion"` → `subtype: "potion"`
+
 - **소모품 키워드 확장**: `['potion', 'food', 'bread', 'stew', 'drink', 'soup', 'feast']`
 - **필터링 로직 통합**: 인벤토리 패널과 판매 모달에서 동일한 키워드 배열 사용
 - **일관성 확보**: 모든 소모품 관련 아이템이 올바른 탭에 표시
@@ -3493,7 +3503,7 @@
 1. **제작 시스템 개선**:
    - 모든 아이템을 제작할 수 있도록 아이템 목록 확장
    - 대장기술: 모든 무기, 갑옷, 악세서리 제작 가능
-   - 연금술: 모든 물약 제작 가능 (health_potion, mana_potion, greater_health_potion, greater_mana_potion, stamina_potion, energy_drink)
+   - 연금술: 모든 물약 제작 가능 (health_potion, mana_potion, greater_health_potion, greater_mana_potion, stamina_potion)
    - 요리: 모든 음식 제작 가능 (bread, meat_stew, fish_stew, herb_soup, divine_feast)
 
 2. **필터링 시스템 개선**:
@@ -3558,3 +3568,47 @@
 - 상점과 제작 패널의 하단 내용이 하단 네비게이션 바와 겹치지 않음
 - 모든 패널 내용을 스크롤하여 볼 수 있음
 - 일관된 UI 레이아웃으로 사용자 경험 향상
+
+---
+
+### 🔧 **JSON 파일 직접 import 오류 해결 - 2024년 12월 23일**
+
+**문제**: 
+- Vite 개발 서버에서 `[plugin:vite:json] Failed to parse JSON file` 오류 발생
+- `src/data/initial/inventory.json` 파일 파싱 실패
+- 브라우저에서 500 Internal Server Error 발생
+- 게임이 로드되지 않음
+
+**원인**: 
+- `src/stores/index.ts`에서 JSON 파일을 직접 import하고 있었음
+- Vite에서 JSON 파일을 직접 import할 때 파싱 오류가 발생할 수 있음
+- 동적 import 대신 정적 import를 사용하여 문제 발생
+
+**해결 방법**:
+1. **JSON 파일 직접 import 제거**:
+   - `import characterData from '../data/initial/character.json'` 제거
+   - `import inventoryData from '../data/initial/inventory.json'` 제거
+   - `import skillsData from '../data/initial/skills.json'` 제거
+   - `import towerData from '../data/initial/tower.json'` 제거
+
+2. **dataLoader 함수 사용으로 변경**:
+   - `import { loadInitialCharacter, loadInitialInventory, loadInitialSkills, loadInitialTower } from '../utils/dataLoader'` 추가
+   - `startNewGame` 함수에서 동적 로드 함수 사용
+   - `loadInitialInventory` 함수에서 동적 로드 함수 사용
+
+3. **비동기 데이터 로드**:
+   - `const initialCharacter = await loadInitialCharacter()` 사용
+   - `const initialInventory = await loadInitialInventory()` 사용
+   - `const initialSkills = await loadInitialSkills()` 사용
+   - `const initialTower = await loadInitialTower()` 사용
+
+**수정된 파일**:
+- `src/stores/index.ts`: JSON 파일 직접 import 제거, dataLoader 함수 사용으로 변경
+
+**결과**: 
+- JSON 파싱 오류 완전 해결
+- Vite 개발 서버 정상 작동
+- 게임 로드 정상화
+- 동적 import를 통한 안정적인 데이터 로딩
+
+---

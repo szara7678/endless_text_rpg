@@ -5,6 +5,7 @@ import ItemDetailModal from '../common/ItemDetailModal'
 import SellModal from './SellModal'
 import { loadItem } from '../../utils/dataLoader'
 import { calculateItemSellPrice } from '../../utils/itemSystem'
+import { useFood } from '../../utils/foodSystem'
 
 interface InventoryPanelProps {
   isOpen: boolean
@@ -25,6 +26,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
   const [showItemModal, setShowItemModal] = useState(false)
   const [showBulkSellModal, setShowBulkSellModal] = useState(false)
   const [itemNames, setItemNames] = useState<{[key: string]: string}>({})
+  const [isLoadingNames, setIsLoadingNames] = useState(false)
 
   // 아이템 이름 로드
   const loadItemName = async (itemId: string) => {
@@ -45,23 +47,33 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
   // 아이템 이름들 로드
   useEffect(() => {
     const loadAllItemNames = async () => {
-      const allItems = [
-        ...inventory.items.map(item => item.itemId),
-        ...inventory.materials.map(material => material.materialId),
-        ...inventory.consumables.map(consumable => consumable.itemId)
-      ]
+      if (!isOpen) return
       
-      for (const itemId of allItems) {
-        if (itemId && !itemNames[itemId]) {
-          await loadItemName(itemId)
-        }
+      setIsLoadingNames(true)
+      try {
+        const allItems = [
+          ...inventory.items.map(item => item.itemId),
+          ...inventory.materials.map(material => material.materialId),
+          ...inventory.consumables.map(consumable => consumable.itemId)
+        ]
+        
+        const uniqueItems = [...new Set(allItems.filter(itemId => itemId))]
+        
+        // 모든 아이템 이름을 병렬로 로드
+        const namePromises = uniqueItems.map(async (itemId) => {
+          if (!itemNames[itemId]) {
+            return loadItemName(itemId)
+          }
+        })
+        
+        await Promise.all(namePromises)
+      } finally {
+        setIsLoadingNames(false)
       }
     }
     
-    if (isOpen) {
-      loadAllItemNames()
-    }
-  }, [isOpen, inventory, itemNames])
+    loadAllItemNames()
+  }, [isOpen, inventory])
 
   if (!isOpen) return null
 
@@ -475,7 +487,11 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
                     <div className="space-y-1">
                     {/* 아이템 이름 */}
                       <div className={`text-xs font-medium mb-1 ${equipped ? 'text-yellow-200' : 'text-white'}`}>
-                        {itemNames[itemId] || itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {isLoadingNames && !itemNames[itemId] ? (
+                          <span className="text-gray-400">로딩 중...</span>
+                        ) : (
+                          itemNames[itemId] || itemId?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+                        )}
                     </div>
                     
                     {/* 레벨 표시 */}

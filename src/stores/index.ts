@@ -27,10 +27,7 @@ const getSkillName = async (skillId: string): Promise<string> => {
     return skillId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 }
-import characterData from '../data/initial/character.json'
-import inventoryData from '../data/initial/inventory.json'
-import skillsData from '../data/initial/skills.json'
-import towerData from '../data/initial/tower.json'
+import { loadInitialCharacter, loadInitialInventory, loadInitialSkills, loadInitialTower } from '../utils/dataLoader'
 
 // equipmentSystem 함수들을 destructure
 const { 
@@ -223,6 +220,12 @@ export const useGameStore = create<GameStore>()(
         try {
           console.log('📦 초기 인벤토리 로드 중...')
           
+          // 데이터 로더를 사용하여 초기 인벤토리 데이터 로드
+          const inventoryData = await loadInitialInventory()
+          if (!inventoryData) {
+            throw new Error('인벤토리 데이터 로드 실패')
+          }
+          
           // 초기 아이템들 생성
           const generatedItems = await generateInitialItems(inventoryData.initialItems)
           
@@ -282,10 +285,10 @@ export const useGameStore = create<GameStore>()(
           
           // 1단계: 초기 데이터 로드
           console.log('⏳ 1단계: 초기 데이터 로드 중...')
-          const initialCharacter = characterData
-          const initialInventory = inventoryData
-          const initialSkills = skillsData
-          const initialTower = towerData
+          const initialCharacter = await loadInitialCharacter()
+          const initialInventory = await loadInitialInventory()
+          const initialSkills = await loadInitialSkills()
+          const initialTower = await loadInitialTower()
           
           console.log('✅ 1단계 완료: 초기 데이터 로드됨')
           

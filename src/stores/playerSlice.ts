@@ -46,6 +46,17 @@ export const initialPlayerState: PlayerState = {
   baseMaxHp: 100,
   baseMaxMp: 50,
   
+  // 음식 효과 스탯 (영구 증가)
+  foodStats: {
+    physicalAttack: 0,
+    magicalAttack: 0,
+    physicalDefense: 0,
+    magicalDefense: 0,
+    speed: 0,
+    maxHp: 0,
+    maxMp: 0
+  },
+  
   // 계산된 전투 스탯 (초기값은 base와 동일)
   physicalAttack: 15,
   magicalAttack: 10,

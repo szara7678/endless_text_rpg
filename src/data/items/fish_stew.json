@@ -1,22 +1,31 @@
 {
   "itemId": "fish_stew",
   "name": "생선 스튜",
-  "description": "영양가 높은 생선 스튜",
+  "description": "영양가 높은 생선 스튜입니다. 마법 공격력과 속도를 증가시킵니다.",
   "type": "consumable",
   "subtype": "food",
-  "theme": "Physical",
-  "tier": "Fine",
-  "effect": {
-    "type": "buff",
-    "duration": 10,
-    "stats": {
-      "physicalAttack": 10,
-      "magicalAttack": 10,
-      "speed": 5
+  "rarity": "Fine",
+  "level": 2,
+  "baseEffects": [
+    {
+      "type": "permanent",
+      "stat": "magicalAttack",
+      "value": 12
+    },
+    {
+      "type": "permanent",
+      "stat": "speed",
+      "value": 5
     }
+  ],
+  "sellPrice": 30,
+  "stackable": true,
+  "maxStack": 10,
+  "craftingMaterials": {
+    "medium_fish": 2,
+    "vegetable": 2,
+    "milk": 1
   },
-  "materials": [
-    { "materialId": "medium_fish", "quantity": 1 },
-    { "materialId": "vegetable", "quantity": 2 }
-  ]
+  "requiredSkill": "cooking",
+  "requiredSkillLevel": 4
 } 

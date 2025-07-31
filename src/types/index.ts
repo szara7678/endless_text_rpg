@@ -79,6 +79,17 @@ export interface PlayerState {
   baseMaxHp: number // 추가
   baseMaxMp: number // 추가
   
+  // 음식 효과 스탯 (영구 증가)
+  foodStats: {
+    physicalAttack: number
+    magicalAttack: number
+    physicalDefense: number
+    magicalDefense: number
+    speed: number
+    maxHp: number
+    maxMp: number
+  }
+  
   // 계산된 전투 스탯 (장비 효과 적용 후)
   physicalAttack: number
   magicalAttack: number

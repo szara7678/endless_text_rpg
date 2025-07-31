@@ -288,22 +288,37 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                     <div className="bg-gray-800 rounded p-3">
                       <div className="text-sm text-gray-400">물리 공격</div>
                       <div className="text-lg font-bold text-red-400">{player.physicalAttack}</div>
+                      {player.foodStats?.physicalAttack > 0 && (
+                        <div className="text-xs text-green-400">🍽️ +{player.foodStats.physicalAttack}</div>
+                      )}
                     </div>
                     <div className="bg-gray-800 rounded p-3">
                       <div className="text-sm text-gray-400">마법 공격</div>
                       <div className="text-lg font-bold text-blue-400">{player.magicalAttack}</div>
+                      {player.foodStats?.magicalAttack > 0 && (
+                        <div className="text-xs text-green-400">🍽️ +{player.foodStats.magicalAttack}</div>
+                      )}
                     </div>
                     <div className="bg-gray-800 rounded p-3">
                       <div className="text-sm text-gray-400">물리 방어</div>
                       <div className="text-lg font-bold text-green-400">{player.physicalDefense}</div>
+                      {player.foodStats?.physicalDefense > 0 && (
+                        <div className="text-xs text-green-400">🍽️ +{player.foodStats.physicalDefense}</div>
+                      )}
                     </div>
                     <div className="bg-gray-800 rounded p-3">
                       <div className="text-sm text-gray-400">마법 방어</div>
                       <div className="text-lg font-bold text-cyan-400">{player.magicalDefense}</div>
+                      {player.foodStats?.magicalDefense > 0 && (
+                        <div className="text-xs text-green-400">🍽️ +{player.foodStats.magicalDefense}</div>
+                      )}
                     </div>
                     <div className="bg-gray-800 rounded p-3">
                       <div className="text-sm text-gray-400">속도</div>
                       <div className="text-lg font-bold text-yellow-400">{player.speed}</div>
+                      {player.foodStats?.speed > 0 && (
+                        <div className="text-xs text-green-400">🍽️ +{player.foodStats.speed}</div>
+                      )}
                     </div>
                   </div>
                 </div>

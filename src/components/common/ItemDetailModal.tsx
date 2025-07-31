@@ -5,6 +5,7 @@ import { calculateEnhancementCost, getBaseEquipmentStats, getEquipmentStats } fr
 import { calculateItemSellPrice } from '../../utils/itemSystem'
 import { loadItem } from '../../utils/dataLoader'
 import { calculatePotionHeal } from '../../utils/potionSystem'
+import { calculateFoodEffects, useFood } from '../../utils/foodSystem'
 
 // 물약 회복량 표시 컴포넌트
 const PotionHealDisplay: React.FC<{ item: any }> = ({ item }) => {
@@ -43,6 +44,83 @@ const PotionHealDisplay: React.FC<{ item: any }> = ({ item }) => {
               `+${healAmount}`}
           </span>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// 음식 효과 표시 컴포넌트
+const FoodEffectDisplay: React.FC<{ item: any }> = ({ item }) => {
+  const [effects, setEffects] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadEffects = async () => {
+      try {
+        const foodEffects = await calculateFoodEffects(item)
+        setEffects(foodEffects)
+      } catch (error) {
+        console.error('음식 효과 계산 실패:', error)
+        setEffects([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadEffects()
+  }, [item])
+
+  const getStatName = (stat: string) => {
+    const statNames: Record<string, string> = {
+      'physicalAttack': '물리 공격력',
+      'magicalAttack': '마법 공격력',
+      'physicalDefense': '물리 방어력',
+      'magicalDefense': '마법 방어력',
+      'speed': '속도',
+      'maxHp': '최대 HP',
+      'maxMp': '최대 MP'
+    }
+    return statNames[stat] || stat
+  }
+
+  const getStatColor = (stat: string) => {
+    const colors: Record<string, string> = {
+      'physicalAttack': 'text-red-400',
+      'magicalAttack': 'text-blue-400',
+      'physicalDefense': 'text-yellow-400',
+      'magicalDefense': 'text-purple-400',
+      'speed': 'text-green-400',
+      'maxHp': 'text-red-400',
+      'maxMp': 'text-blue-400'
+    }
+    return colors[stat] || 'text-white'
+  }
+
+  if (isLoading) {
+    return (
+      <div>
+        <h4 className="text-white font-medium mb-2">음식 효과</h4>
+        <div className="text-gray-400 text-sm">계산 중...</div>
+      </div>
+    )
+  }
+
+  if (effects.length === 0) {
+    return null
+  }
+
+  return (
+    <div>
+      <h4 className="text-white font-medium mb-2">음식 효과</h4>
+      <div className="space-y-1 text-sm">
+        {effects.map((effect, index) => (
+          <div key={index} className="flex justify-between">
+            <span className="text-gray-400">{getStatName(effect.stat)}</span>
+            <span className={`font-bold ${getStatColor(effect.stat)}`}>
+              +{effect.value}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -336,6 +414,52 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
     setShowSellModal(true)
   }
 
+  // 음식 사용
+  const handleUseFood = async () => {
+    try {
+      const result = await useFood(item, player)
+      
+      if (result.success && result.updatedPlayer) {
+        // 플레이어 스탯 업데이트
+        useGameStore.setState(state => ({
+          ...state,
+          player: result.updatedPlayer
+        }))
+        
+        // 인벤토리에서 아이템 제거
+        const { inventory } = useGameStore.getState()
+        const itemIndex = inventory.items.findIndex(invItem => 
+          invItem.itemId === item.itemId && !invItem.uniqueId
+        )
+        
+        if (itemIndex >= 0) {
+          useGameStore.setState(state => ({
+            ...state,
+            inventory: {
+              ...state.inventory,
+              items: state.inventory.items.map((invItem, index) => 
+                index === itemIndex 
+                  ? { ...invItem, quantity: invItem.quantity - 1 }
+                  : invItem
+              ).filter(invItem => invItem.quantity > 0)
+            }
+          }))
+        }
+        
+        // 전투 로그에 메시지 추가
+        addCombatLog('loot', result.message)
+        
+        onClose()
+      } else {
+        // 실패 시 로그만 추가
+        addCombatLog('loot', result.message)
+      }
+    } catch (error) {
+      console.error('음식 사용 실패:', error)
+      addCombatLog('loot', '음식 사용 중 오류가 발생했습니다.')
+    }
+  }
+
   // 강화 비용 계산
   const getEnhancementCost = (currentLevel: number) => {
     return Math.floor(100 * Math.pow(1.5, currentLevel))
@@ -620,6 +744,11 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
             <PotionHealDisplay item={item} />
           )}
 
+          {/* 음식 효과 정보 */}
+          {(item.itemId?.includes('_stew') || item.itemId?.includes('_soup') || item.itemId?.includes('_feast') || item.itemId === 'bread' || itemData?.subtype === 'food') && (
+            <FoodEffectDisplay item={item} />
+          )}
+
 
 
           {/* 가격 정보 */}
@@ -657,6 +786,16 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
               >
                 <Zap size={16} />
                 강화
+              </button>
+            )}
+
+            {/* 음식 사용 버튼: 음식인 경우만 */}
+            {(item.itemId?.includes('_stew') || item.itemId?.includes('_soup') || item.itemId?.includes('_feast') || item.itemId === 'bread' || itemData?.subtype === 'food') && (
+              <button
+                onClick={handleUseFood}
+                className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors"
+              >
+                🍽️ 먹기
               </button>
             )}
 

@@ -37,4 +37,50 @@ const nextFloor = tower.currentFloor + 1
 - `player.highestFloor`는 최고 기록용, `tower.currentFloor`는 현재 층용
 - 층 진행 시에는 항상 `tower.currentFloor`를 기준으로 계산
 
+---
+
+### 🔧 **JSON 파일 직접 import 오류 - 2024년 12월 23일**
+
+**문제 상황**:
+- Vite 개발 서버에서 `[plugin:vite:json] Failed to parse JSON file` 오류 발생
+- `src/data/initial/inventory.json` 파일 파싱 실패
+- 브라우저에서 500 Internal Server Error 발생
+- 게임이 로드되지 않음
+
+**원인 분석**:
+- `src/stores/index.ts`에서 JSON 파일을 직접 import하고 있었음
+- Vite에서 JSON 파일을 직접 import할 때 파싱 오류가 발생할 수 있음
+- 동적 import 대신 정적 import를 사용하여 문제 발생
+
+**해결 방법**:
+```typescript
+// 수정 전
+import characterData from '../data/initial/character.json'
+import inventoryData from '../data/initial/inventory.json'
+import skillsData from '../data/initial/skills.json'
+import towerData from '../data/initial/tower.json'
+
+// 수정 후
+import { loadInitialCharacter, loadInitialInventory, loadInitialSkills, loadInitialTower } from '../utils/dataLoader'
+
+// 사용 시
+const initialCharacter = await loadInitialCharacter()
+const initialInventory = await loadInitialInventory()
+const initialSkills = await loadInitialSkills()
+const initialTower = await loadInitialTower()
+```
+
+**수정된 파일**:
+- `src/stores/index.ts`: JSON 파일 직접 import 제거, dataLoader 함수 사용으로 변경
+
+**결과**:
+- JSON 파싱 오류 해결
+- Vite 개발 서버 정상 작동
+- 게임 로드 정상화
+
+**교훈**:
+- Vite에서 JSON 파일을 로드할 때는 동적 import를 사용하는 것이 안전
+- dataLoader 유틸리티를 통해 중앙화된 데이터 로딩 관리
+- 정적 import보다는 동적 import가 더 안정적
+
 --- 
