@@ -226,7 +226,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
       items = inventory.items
         .filter(item => {
           // 소모품 관련 키워드 제외
-          const consumableKeywords = ['potion', 'food', 'bread', 'stew', 'drink', 'soup', 'feast']
+          const consumableKeywords = ['potion', 'food', 'bread', 'stew', 'drink', 'soup', 'feast', 'scroll']
           return !consumableKeywords.some(keyword => item.itemId.includes(keyword))
         })
         .map(item => {
@@ -280,9 +280,21 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ isOpen, onClose }) => {
           displayId: `${item.itemId}_${item.level || 1}` // 레벨별 고유 ID
         }))
       
+      const scrollItems = inventory.items
+        .filter(item => item.itemId.includes('scroll') || item.itemId.includes('_scroll'))
+        .map(item => ({
+          ...item,
+          type: 'consumable',
+          level: item.level || 1,
+          consumableId: item.itemId,
+          category: 'scroll',
+          displayId: `${item.itemId}_${item.level || 1}` // 레벨별 고유 ID
+        }))
+      
       items = [
         ...potionItems,
-        ...foodItems
+        ...foodItems,
+        ...scrollItems
       ]
 
       // 소모품 하위 탭 필터링

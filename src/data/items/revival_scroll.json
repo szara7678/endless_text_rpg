@@ -1,0 +1,26 @@
+{
+  "itemId": "revival_scroll",
+  "name": "부활 스크롤",
+  "description": "보유 시 사망할 때 HP 100%로 부활하고 전투를 재개합니다.",
+  "type": "consumable",
+  "subtype": "scroll",
+  "rarity": "Legendary",
+  "level": 1,
+  "effects": [
+    {
+      "type": "revival",
+      "value": true,
+      "duration": 0
+    }
+  ],
+  "sellPrice": 25,
+  "stackable": true,
+  "maxStack": 99,
+  "craftingMaterials": {
+    "mana_flower": 5,
+    "blue_herb": 3,
+    "life_essence": 2
+  },
+  "requiredSkill": "alchemy",
+  "requiredSkillLevel": 5
+} 

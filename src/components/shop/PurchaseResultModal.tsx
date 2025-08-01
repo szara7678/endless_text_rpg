@@ -49,7 +49,7 @@ const PurchaseResultModal: React.FC<PurchaseResultModalProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <Gift className="text-yellow-400" size={20} />
-            패키지 획득 결과
+            구매 완료
           </h3>
           <button
             onClick={onClose}
@@ -59,13 +59,13 @@ const PurchaseResultModal: React.FC<PurchaseResultModalProps> = ({
           </button>
         </div>
 
-        {/* 패키지 정보 */}
+        {/* 구매 정보 */}
         <div className="bg-blue-900/30 border border-blue-600 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-3">
             <Package className="text-blue-400" size={24} />
             <div>
               <h4 className="font-semibold text-white">{result.packageName}</h4>
-              <p className="text-sm text-blue-400">패키지 구매 완료!</p>
+              <p className="text-sm text-blue-400">구매 완료!</p>
             </div>
           </div>
         </div>

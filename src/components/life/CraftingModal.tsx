@@ -196,7 +196,7 @@ const CraftingModal: React.FC<Props> = ({ isOpen, onClose, skillType }) => {
         // 반지류
         'flame_ring', 'frost_ring', 'shadow_ring', 'thunder_ring', 'toxic_ring', 'verdant_ring'
       ],
-              alchemy: ['health_potion', 'mana_potion', 'energy_drink'],
+              alchemy: ['health_potion', 'mana_potion'],
       cooking: ['bread', 'meat_stew', 'fish_stew', 'herb_soup', 'divine_feast'],
       fishing: [],
       farming: [],

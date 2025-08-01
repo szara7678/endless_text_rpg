@@ -10,9 +10,7 @@
   "baseSpeed": 12,
   "baseMaxHp": 100,
   "baseMaxMp": 50,
-
   "critical": 5,
-
   "gold": 1000,
   "gem": 100,
   "ascensionPoints": 20,

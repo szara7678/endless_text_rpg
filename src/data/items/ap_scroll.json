@@ -1,0 +1,25 @@
+{
+  "itemId": "ap_scroll",
+  "name": "AP 증가 스크롤",
+  "description": "사용 시 즉시 +5 AP를 획득합니다.",
+  "type": "consumable",
+  "subtype": "scroll",
+  "rarity": "Epic",
+  "level": 1,
+  "effects": [
+    {
+      "type": "ap_bonus",
+      "value": 5,
+      "duration": 0
+    }
+  ],
+  "sellPrice": 15,
+  "stackable": true,
+  "maxStack": 99,
+  "craftingMaterials": {
+    "mana_flower": 3,
+    "blue_herb": 2
+  },
+  "requiredSkill": "alchemy",
+  "requiredSkillLevel": 3
+} 

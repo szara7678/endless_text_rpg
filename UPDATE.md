@@ -2,6 +2,108 @@
 
 ## 최신 업데이트 내역
 
+### 🔧 **패키지 구매 오류 수정 및 스크롤 아이템 DB 생성 - 2024년 12월 23일**
+
+**추가 수정사항**:
+- 패키지 ID 불일치 문제 해결: `material_box` → `materialBox` 등 모든 패키지 ID 통일
+- 스크롤 구매 시 인벤토리 추가 문제 해결
+- AP 스크롤 구매 시 즉시 AP 증가 효과 적용
+- JSON 파싱 오류 해결을 위한 파일 정리
+
+**수정된 파일**:
+- `src/data/shop/packages.json`: 모든 패키지 ID를 camelCase로 통일
+- `src/components/shop/ShopPanel.tsx`: 스크롤 구매 시 즉시 효과 적용 로직 추가
+- `src/data/initial/inventory.json`: 불필요한 공백 제거로 JSON 파싱 오류 해결
+- `src/stores/index.ts`: 아이템 타입과 서브타입으로 분류하도록 수정
+- `src/data/items/ap_scroll.json`: 다른 포션들과 일관된 구조로 수정
+- `src/data/items/revival_scroll.json`: 다른 포션들과 일관된 구조로 수정
+- `src/components/common/ItemDetailModal.tsx`: 스크롤 아이템 사용 기능 추가
+- `src/components/inventory/InventoryPanel.tsx`: 스크롤 아이템을 소모품 탭에 올바르게 분류하도록 수정
+
+**목표**:
+- 패키지 구매 시 발생하는 ID 불일치 오류 해결
+- 스크롤 아이템들을 위한 별도 아이템 DB 생성
+- 초기 데이터를 `@/initial`에서 받아오도록 수정
+- 스크롤 아이템들을 패키지 시스템에서 분리하여 직접 처리
+
+**주요 변경사항**:
+
+1. **스크롤 아이템 DB 생성**:
+   - `src/data/items/ap_scroll.json`: AP 증가 스크롤 아이템 데이터 생성
+   - `src/data/items/revival_scroll.json`: 부활 스크롤 아이템 데이터 생성
+   - 스크롤 아이템들을 소비아이템으로 분류하여 인벤토리에 바로 추가
+
+2. **패키지 시스템에서 스크롤 제거**:
+   - `src/data/shop/packages.json`에서 스크롤 아이템들 제거
+   - `src/utils/packageSystem.ts`에서 스크롤 처리 로직 제거
+   - 패키지 시스템은 패키지 아이템만 처리하도록 분리
+
+3. **상점 패널 스크롤 처리 개선**:
+   - `src/components/shop/ShopPanel.tsx`에서 스크롤 아이템들을 별도로 정의
+   - 스크롤 구매 시 바로 인벤토리에 추가하는 로직 구현
+   - 패키지 시스템을 거치지 않고 직접 처리
+
+4. **초기 데이터 로딩 개선**:
+   - `src/utils/dataLoader.ts` 수정하여 `@/initial`에서 데이터 받아오기
+   - `loadInitialCharacter()`, `loadInitialInventory()`, `loadInitialSkills()`, `loadInitialTower()` 함수 수정
+   - 파일 로드 실패 시 기본값 사용하는 fallback 시스템 구현
+
+5. **타입 오류 수정**:
+   - `src/utils/packageSystem.ts`의 `applyScrollEffect` 함수에서 타입 안전성 개선
+   - `in` 연산자를 사용하여 속성 존재 여부 확인
+
+**수정된 파일**:
+- `src/data/items/ap_scroll.json`: AP 증가 스크롤 아이템 데이터 생성
+- `src/data/items/revival_scroll.json`: 부활 스크롤 아이템 데이터 생성
+- `src/data/shop/packages.json`: 스크롤 아이템들 제거
+- `src/components/shop/ShopPanel.tsx`: 스크롤 아이템 별도 처리 로직 구현
+- `src/utils/packageSystem.ts`: 스크롤 처리 로직 제거 및 타입 안전성 개선
+- `src/utils/dataLoader.ts`: 초기 데이터를 `@/initial`에서 로드하도록 수정
+
+### 🏪 **상점 시스템 대폭 개선 - 2024년 12월 23일**
+
+**목표**:
+- 상점 상단 재화 표시 패널 제거
+- 패키지와 스크롤 아이템만 판매하도록 상점 재구성
+- 모든 아이템에 상세 정보 모달 추가 (상세보기 → 구매)
+- 새로운 스크롤 아이템 추가 (AP 증가 스크롤, 부활 스크롤)
+- 부활 스크롤 기능 구현 (사망 시 자동 부활)
+
+**주요 변경사항**:
+
+1. **상점 UI 개선**:
+   - `src/components/shop/ShopPanel.tsx` 수정
+   - 상단 재화 표시 패널 완전 제거
+   - 패키지와 스크롤 아이템만 판매하도록 재구성
+   - 모든 아이템에 상세 정보 모달 추가
+
+2. **패키지 구매 시스템 개선**:
+   - `src/components/shop/PackageDetailModal.tsx` 수정
+   - 상세보기 → 구매 → 결과 표시 플로우 구현
+   - 외부 구매 처리 콜백 시스템 추가
+
+3. **새로운 스크롤 아이템 추가**:
+   - `src/data/shop/packages.json`에 새로운 스크롤 추가
+   - AP 증가 스크롤: 즉시 +5 AP 획득
+   - 부활 스크롤: 사망 시 HP 100%로 부활
+
+4. **부활 스크롤 기능 구현**:
+   - `src/stores/index.ts`의 `handlePlayerDeath` 함수 수정
+   - 부활 스크롤 보유 시 자동 부활 기능 구현
+   - `removeItem` 함수 추가로 스크롤 소모 처리
+
+5. **상점 아이템 분류 재구성**:
+   - 패키지: 재료 랜덤박스, 스킬 팩, 광석 팩, 요리 팩, 스크롤 팩, 물약 팩, 물고기 팩, 약초 팩
+   - 스크롤: AP 증가 스크롤, 부활 스크롤
+   - 각 아이템별 고유한 효과와 가격 시스템
+
+**수정된 파일**:
+- `src/components/shop/ShopPanel.tsx`: 상점 UI 개선 및 아이템 분류 재구성
+- `src/components/shop/PackageDetailModal.tsx`: 상세 정보 모달 개선
+- `src/data/shop/packages.json`: 새로운 스크롤 아이템 추가
+- `src/stores/index.ts`: 부활 스크롤 기능 및 removeItem 함수 구현
+- `README.md`: 상점 시스템 개선사항 반영
+
 ### 🔧 **소비 아이템 품질 시스템 개선 - 2024년 12월 23일**
 
 **목표**:

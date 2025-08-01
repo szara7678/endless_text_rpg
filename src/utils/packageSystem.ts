@@ -265,7 +265,7 @@ export const openPackage = (packageId: string) => {
   }> = []
 
   // 보장 아이템 추가
-  if (packageData.contents.guaranteed) {
+  if (packageData.contents?.guaranteed) {
     for (const item of packageData.contents.guaranteed) {
       const itemId = item.itemId || item.materialId || item.skillId
       const type = item.itemId ? 'item' : item.materialId ? 'material' : 'skill'
@@ -282,7 +282,7 @@ export const openPackage = (packageId: string) => {
   }
 
   // 랜덤 아이템 선택
-  if (packageData.contents.random) {
+  if (packageData.contents?.random) {
     const randomCount = getRandomCount(packageData.contents.randomCount)
     
     for (let i = 0; i < randomCount; i++) {
@@ -319,23 +319,23 @@ export const applyScrollEffect = (scrollId: string, player: any) => {
   const currentTime = Date.now()
 
   // 기존 효과 제거
-  if (effects.expBoost) {
+  if (effects && 'expBoost' in effects) {
     player.activeEffects = player.activeEffects?.filter((effect: any) => effect.type !== 'expBoost') || []
   }
-  if (effects.goldBoost) {
+  if (effects && 'goldBoost' in effects) {
     player.activeEffects = player.activeEffects?.filter((effect: any) => effect.type !== 'goldBoost') || []
   }
-  if (effects.dropBoost) {
+  if (effects && 'dropBoost' in effects) {
     player.activeEffects = player.activeEffects?.filter((effect: any) => effect.type !== 'dropBoost') || []
   }
-  if (effects.enhancementGuarantee) {
+  if (effects && 'enhancementGuarantee' in effects) {
     player.activeEffects = player.activeEffects?.filter((effect: any) => effect.type !== 'enhancementGuarantee') || []
   }
 
   // 새로운 효과 추가
   if (!player.activeEffects) player.activeEffects = []
 
-  if (effects.expBoost) {
+  if (effects && 'expBoost' in effects) {
     player.activeEffects.push({
       type: 'expBoost',
       multiplier: effects.expBoost.multiplier,
@@ -343,7 +343,7 @@ export const applyScrollEffect = (scrollId: string, player: any) => {
     })
   }
 
-  if (effects.goldBoost) {
+  if (effects && 'goldBoost' in effects) {
     player.activeEffects.push({
       type: 'goldBoost',
       multiplier: effects.goldBoost.multiplier,
@@ -351,7 +351,7 @@ export const applyScrollEffect = (scrollId: string, player: any) => {
     })
   }
 
-  if (effects.dropBoost) {
+  if (effects && 'dropBoost' in effects) {
     player.activeEffects.push({
       type: 'dropBoost',
       multiplier: effects.dropBoost.multiplier,
@@ -359,7 +359,7 @@ export const applyScrollEffect = (scrollId: string, player: any) => {
     })
   }
 
-  if (effects.enhancementGuarantee) {
+  if (effects && 'enhancementGuarantee' in effects) {
     player.activeEffects.push({
       type: 'enhancementGuarantee',
       guaranteed: effects.enhancementGuarantee.guaranteed,
@@ -367,7 +367,7 @@ export const applyScrollEffect = (scrollId: string, player: any) => {
     })
   }
 
-  if (effects.rebirthBonus) {
+  if (effects && 'rebirthBonus' in effects) {
     player.rebirthPoints += effects.rebirthBonus.apBonus
   }
 }

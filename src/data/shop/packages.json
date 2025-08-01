@@ -1,6 +1,6 @@
 {
   "materialBox": {
-    "id": "material_box",
+    "id": "materialBox",
     "name": "재료 랜덤박스",
     "description": "다양한 재료들을 랜덤으로 획득합니다.",
     "category": "package",
@@ -34,7 +34,7 @@
     }
   },
   "skillPack": {
-    "id": "skill_pack",
+    "id": "skillPack",
     "name": "스킬 페이지 랜덤팩",
     "description": "랜덤 스킬 페이지를 획득합니다.",
     "category": "package",
@@ -64,7 +64,7 @@
     }
   },
   "orePack": {
-    "id": "ore_pack",
+    "id": "orePack",
     "name": "광석 팩",
     "description": "다양한 광석들을 획득합니다.",
     "category": "package",
@@ -91,7 +91,7 @@
     }
   },
   "cookingPack": {
-    "id": "cooking_pack",
+    "id": "cookingPack",
     "name": "요리 팩",
     "description": "다양한 요리 재료와 완성된 요리를 획득합니다.",
     "category": "package",
@@ -143,7 +143,7 @@
     }
   },
   "potionPack": {
-    "id": "potion_pack",
+    "id": "potionPack",
     "name": "물약 팩",
     "description": "다양한 물약들을 획득합니다.",
     "category": "package",
@@ -168,7 +168,7 @@
     }
   },
   "fishPack": {
-    "id": "fish_pack",
+    "id": "fishPack",
     "name": "물고기 팩",
     "description": "다양한 물고기들을 획득합니다.",
     "category": "package",
@@ -190,7 +190,7 @@
     }
   },
   "herbPack": {
-    "id": "herb_pack",
+    "id": "herbPack",
     "name": "약초 팩",
     "description": "다양한 약초들을 획득합니다.",
     "category": "package",

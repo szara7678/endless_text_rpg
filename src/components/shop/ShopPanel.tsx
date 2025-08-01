@@ -13,239 +13,127 @@ interface ShopItem {
   id: string
   name: string
   description: string
-  category: 'equipment' | 'consumable' | 'material' | 'premium' | 'package'
+  category: 'package' | 'scroll'
   currency: 'gold' | 'gem'
   price: number
-  itemData: {
-    itemId: string
-    level: number
-    quantity: number
-  }
   rarity: 'Common' | 'Fine' | 'Superior' | 'Epic' | 'Legendary'
   icon: string
-  requirements?: {
-    level?: number
-    rebirthLevel?: number
-  }
+  effects?: any
+  contents?: any
 }
 
 // 패키지 데이터 가져오기
 import packagesData from '../../data/shop/packages.json'
 
 const SHOP_ITEMS: ShopItem[] = [
-  // 골드 상점
-  {
-    id: 'health_potion_shop',
-    name: '체력 물약',
-    description: 'HP를 즉시 50 회복합니다.',
-    category: 'consumable',
-    currency: 'gold',
-    price: 100,
-    itemData: { itemId: 'health_potion', level: 1, quantity: 1 },
-    rarity: 'Common',
-    icon: '🧪'
-  },
-  {
-    id: 'mana_potion_shop',
-    name: '마나 물약',
-    description: 'MP를 즉시 30 회복합니다.',
-    category: 'consumable',
-    currency: 'gold',
-    price: 80,
-    itemData: { itemId: 'mana_potion', level: 1, quantity: 1 },
-    rarity: 'Common',
-    icon: '💙'
-  },
-  {
-    id: 'iron_ore_shop',
-    name: '철 광석 팩',
-    description: '철 광석 5개 묶음입니다.',
-    category: 'material',
-    currency: 'gold',
-    price: 150,
-    itemData: { itemId: 'iron_ore', level: 1, quantity: 5 },
-    rarity: 'Fine',
-    icon: '⛏️'
-  },
-  {
-    id: 'wood_shop',
-    name: '나무 팩',
-    description: '나무 10개 묶음입니다.',
-    category: 'material',
-    currency: 'gold',
-    price: 100,
-    itemData: { itemId: 'wood', level: 1, quantity: 10 },
-    rarity: 'Common',
-    icon: '🪵'
-  },
-  {
-    id: 'iron_sword_shop',
-    name: '철 검',
-    description: '물리 공격력 15의 튼튼한 검입니다.',
-    category: 'equipment',
-    currency: 'gold',
-    price: 500,
-    itemData: { itemId: 'iron_sword', level: 1, quantity: 1 },
-    rarity: 'Fine',
-    icon: '⚔️',
-    requirements: { level: 3 }
-  },
-  
-  // 젬 상점 (프리미엄)
-  {
-    id: 'skill_page_pack',
-    name: '스킬 페이지 팩',
-    description: '랜덤 스킬 페이지 3개를 획득합니다.',
-    category: 'premium',
-    currency: 'gem',
-    price: 10,
-    itemData: { itemId: 'skill_page_random', level: 1, quantity: 3 },
-    rarity: 'Epic',
-    icon: '📜'
-  },
-  {
-    id: 'premium_material_pack',
-    name: '프리미엄 재료 팩',
-    description: '고급 재료들을 대량으로 획득합니다.',
-    category: 'premium',
-    currency: 'gem',
-    price: 20,
-    itemData: { itemId: 'premium_material_pack', level: 1, quantity: 1 },
-    rarity: 'Legendary',
-    icon: '💎'
-  },
-  {
-    id: 'enhancement_stone',
-    name: '강화석',
-    description: '장비 강화 성공률을 100%로 만듭니다.',
-    category: 'premium',
-    currency: 'gem',
-    price: 5,
-    itemData: { itemId: 'enhancement_stone', level: 1, quantity: 1 },
-    rarity: 'Epic',
-    icon: '✨'
-  },
-  {
-    id: 'exp_boost',
-    name: '경험치 부스터',
-    description: '1시간 동안 모든 경험치를 2배로 받습니다.',
-    category: 'premium',
-    currency: 'gem',
-    price: 15,
-    itemData: { itemId: 'exp_boost', level: 1, quantity: 1 },
-    rarity: 'Superior',
-    icon: '🚀'
-  },
-  {
-    id: 'rebirth_stone',
-    name: '환생석',
-    description: '즉시 +10 AP를 획득합니다.',
-    category: 'premium',
-    currency: 'gem',
-    price: 50,
-    itemData: { itemId: 'rebirth_stone', level: 1, quantity: 1 },
-    rarity: 'Legendary',
-    icon: '🌟',
-    requirements: { rebirthLevel: 1 }
-  },
-  
   // 패키지 아이템들
   {
-    id: 'material_box',
+    id: 'materialBox',
     name: '재료 랜덤박스',
     description: '다양한 재료들을 랜덤으로 획득합니다.',
     category: 'package',
     currency: 'gold',
     price: 500,
-    itemData: { itemId: 'material_box', level: 1, quantity: 1 },
     rarity: 'Fine',
     icon: '📦'
   },
   {
-    id: 'skill_pack',
+    id: 'skillPack',
     name: '스킬 페이지 랜덤팩',
     description: '랜덤 스킬 페이지를 획득합니다.',
     category: 'package',
     currency: 'gem',
     price: 10,
-    itemData: { itemId: 'skill_pack', level: 1, quantity: 1 },
     rarity: 'Epic',
     icon: '📜'
   },
   {
-    id: 'ore_pack',
+    id: 'orePack',
     name: '광석 팩',
     description: '다양한 광석들을 획득합니다.',
     category: 'package',
     currency: 'gold',
     price: 300,
-    itemData: { itemId: 'ore_pack', level: 1, quantity: 1 },
     rarity: 'Fine',
     icon: '⛏️'
   },
   {
-    id: 'cooking_pack',
+    id: 'cookingPack',
     name: '요리 팩',
     description: '다양한 요리 재료와 완성된 요리를 획득합니다.',
     category: 'package',
     currency: 'gold',
     price: 400,
-    itemData: { itemId: 'cooking_pack', level: 1, quantity: 1 },
     rarity: 'Superior',
     icon: '🍳'
   },
+
   {
-    id: 'scroll_pack',
-    name: '스크롤 팩',
-    description: '다양한 효과의 스크롤들을 획득합니다.',
-    category: 'package',
-    currency: 'gem',
-    price: 15,
-    itemData: { itemId: 'scroll_pack', level: 1, quantity: 1 },
-    rarity: 'Epic',
-    icon: '📜'
-  },
-  {
-    id: 'potion_pack',
+    id: 'potionPack',
     name: '물약 팩',
     description: '다양한 물약들을 획득합니다.',
     category: 'package',
     currency: 'gold',
     price: 250,
-    itemData: { itemId: 'potion_pack', level: 1, quantity: 1 },
     rarity: 'Fine',
     icon: '🧪'
   },
   {
-    id: 'fish_pack',
+    id: 'fishPack',
     name: '물고기 팩',
     description: '다양한 물고기들을 획득합니다.',
     category: 'package',
     currency: 'gold',
     price: 200,
-    itemData: { itemId: 'fish_pack', level: 1, quantity: 1 },
     rarity: 'Fine',
     icon: '🐟'
   },
   {
-    id: 'herb_pack',
+    id: 'herbPack',
     name: '약초 팩',
     description: '다양한 약초들을 획득합니다.',
     category: 'package',
     currency: 'gold',
     price: 180,
-    itemData: { itemId: 'herb_pack', level: 1, quantity: 1 },
     rarity: 'Fine',
     icon: '🌿'
+  },
+  
+  // 스크롤 아이템들
+  {
+    id: 'ap_scroll',
+    name: 'AP 증가 스크롤',
+    description: '사용 시 즉시 +5 AP를 획득합니다.',
+    category: 'scroll',
+    currency: 'gem',
+    price: 25,
+    rarity: 'Epic',
+    icon: '📜',
+    effects: {
+      apBonus: 5
+    }
+  },
+  {
+    id: 'revival_scroll',
+    name: '부활 스크롤',
+    description: '보유 시 사망할 때 HP 100%로 부활하고 전투를 재개합니다.',
+    category: 'scroll',
+    currency: 'gem',
+    price: 50,
+    rarity: 'Legendary',
+    icon: '📜',
+    effects: {
+      revival: true
+    }
   }
 ]
 
 const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
   const { player, purchaseItem, purchasePackage } = useGameStore()
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'equipment' | 'consumable' | 'material' | 'premium' | 'package'>('all')
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'package' | 'scroll'>('all')
   const [selectedCurrency, setSelectedCurrency] = useState<'all' | 'gold' | 'gem'>('all')
-  const [selectedPackage, setSelectedPackage] = useState<any>(null)
-  const [showPackageDetail, setShowPackageDetail] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [showItemDetail, setShowItemDetail] = useState(false)
   const [purchaseResult, setPurchaseResult] = useState<any>(null)
   const [showPurchaseResult, setShowPurchaseResult] = useState(false)
 
@@ -253,55 +141,90 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
   const filteredItems = SHOP_ITEMS.filter(item => {
     if (selectedCategory !== 'all' && item.category !== selectedCategory) return false
     if (selectedCurrency !== 'all' && item.currency !== selectedCurrency) return false
-    
-    // 레벨 요구사항 체크
-    if (item.requirements?.level && (player.rebirthLevel < item.requirements.level * 10)) return false
-    if (item.requirements?.rebirthLevel && player.rebirthLevel < item.requirements.rebirthLevel) return false
-    
     return true
   })
 
   // 구매 처리
   const handlePurchase = (item: ShopItem) => {
+    // 모든 아이템에 대해 상세 정보 모달 표시
     if (item.category === 'package') {
-      // 패키지 아이템인 경우 상세 모달 표시
       const packageData = packagesData[item.id]
       if (packageData) {
-        setSelectedPackage(packageData)
-        setShowPackageDetail(true)
+        setSelectedItem({ ...item, ...packageData })
+        setShowItemDetail(true)
+      } else {
+        console.error('패키지 데이터를 찾을 수 없습니다:', item.id)
       }
-      return
+    } else if (item.category === 'scroll') {
+      setSelectedItem(item)
+      setShowItemDetail(true)
     }
-
-    const canAfford = item.currency === 'gold' 
-      ? player.gold >= item.price 
-                       : (player.gem || 0) >= item.price
-
-    if (!canAfford) {
-      alert(`${item.currency === 'gold' ? '골드' : '젬'}가 부족합니다!`)
-      return
-    }
-
-    // 구매 실행
-    purchaseItem(item)
   }
 
-  // 패키지 구매 처리
-  const handlePackagePurchase = async (packageId: string) => {
+  // 아이템 구매 처리
+  const handleItemPurchase = async (item: any) => {
     try {
-      const { openPackage } = await import('../../utils/packageSystem')
-      const result = openPackage(packageId)
-      
-      // 패키지 구매 실행
-      await purchasePackage(packageId)
-      
-      // 결과 모달 표시
-      setPurchaseResult(result)
-      setShowPurchaseResult(true)
-      setShowPackageDetail(false)
+      if (item.category === 'package') {
+        // 패키지 구매 - packages.json의 키와 일치하는 ID 사용
+        const packageId = item.id // 이미 올바른 ID로 설정됨
+        const result = await purchasePackage(packageId)
+        if (result) {
+          setPurchaseResult(result)
+          setShowPurchaseResult(true)
+          setShowItemDetail(false)
+        }
+      } else if (item.category === 'scroll') {
+        // 스크롤 구매 - 바로 소비아이템으로 추가
+        const { player } = useGameStore.getState()
+        
+        // 비용 확인
+        const canAfford = item.currency === 'gold' 
+          ? player.gold >= item.price 
+          : (player.gem || 0) >= item.price
+
+        if (!canAfford) {
+          alert(`${item.currency === 'gold' ? '골드' : '젬'}가 부족합니다!`)
+          return
+        }
+
+        // 비용 차감
+        useGameStore.setState((state: any) => ({
+          ...state,
+          player: {
+            ...state.player,
+            gold: item.currency === 'gold' ? state.player.gold - item.price : state.player.gold,
+            gem: item.currency === 'gem' ? (state.player.gem || 0) - item.price : (state.player.gem || 0)
+          }
+        }))
+
+        // 스크롤 아이템을 인벤토리에 바로 추가
+        useGameStore.getState().addItem(item.id, 1, 1, item.rarity)
+        useGameStore.getState().addCombatLog('loot', `✅ ${item.name} 구매! 인벤토리에 추가됨`)
+        
+        console.log('스크롤 구매 완료:', {
+          itemId: item.id,
+          name: item.name,
+          rarity: item.rarity
+        })
+
+        const scrollResult = {
+          packageName: item.name,
+          items: [{
+            id: item.id,
+            name: item.name,
+            count: 1,
+            type: 'item',
+            rarity: item.rarity,
+            icon: item.icon
+          }]
+        }
+        setPurchaseResult(scrollResult)
+        setShowPurchaseResult(true)
+        setShowItemDetail(false)
+      }
     } catch (error) {
-      console.error('패키지 구매 오류:', error)
-      alert('패키지 구매 중 오류가 발생했습니다.')
+      console.error('아이템 구매 오류:', error)
+      alert('아이템 구매 중 오류가 발생했습니다.')
     }
   }
 
@@ -335,32 +258,11 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
         </button>
       </div>
 
-      {/* 통화 표시 */}
-      <div className="px-4 py-3 border-b border-gray-700 bg-gray-800">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Coins className="text-yellow-400" size={16} />
-              <span className="text-white font-medium">{player.gold.toLocaleString()}</span>
-              <span className="text-gray-400 text-xs">골드</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Gem className="text-cyan-400" size={16} />
-              <span className="text-white font-medium">{player.gem || 0}</span>
-              <span className="text-gray-400 text-xs">젬</span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-400">
-            💎 젬은 환생시 층수에 따라 획득 가능
-          </div>
-        </div>
-      </div>
-
       {/* 필터 */}
       <div className="px-4 py-3 border-b border-gray-700">
         <div className="flex flex-wrap gap-2 mb-3">
           <span className="text-sm text-gray-400 mr-2">카테고리:</span>
-          {['all', 'equipment', 'consumable', 'material', 'premium', 'package'].map((category) => (
+          {['all', 'package', 'scroll'].map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category as any)}
@@ -371,10 +273,7 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
               }`}
             >
               {category === 'all' ? '전체' : 
-               category === 'equipment' ? '장비' :
-               category === 'consumable' ? '소모품' :
-               category === 'material' ? '재료' : 
-               category === 'premium' ? '프리미엄' : '패키지'}
+               category === 'package' ? '패키지' : '스크롤'}
             </button>
           ))}
         </div>
@@ -404,16 +303,12 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
             const canAfford = item.currency === 'gold' 
               ? player.gold >= item.price 
               : (player.gem || 0) >= item.price
-            
-            const meetsRequirements = 
-              (!item.requirements?.level || (player.rebirthLevel >= item.requirements.level * 10)) &&
-              (!item.requirements?.rebirthLevel || player.rebirthLevel >= item.requirements.rebirthLevel)
 
             return (
               <div
                 key={item.id}
                 className={`bg-gray-800 rounded-lg p-4 border-2 transition-all duration-200 ${getRarityColor(item.rarity)} ${
-                  canAfford && meetsRequirements ? 'hover:scale-105' : 'opacity-75'
+                  canAfford ? 'hover:scale-105' : 'opacity-75'
                 }`}
               >
                 {/* 아이템 헤더 */}
@@ -425,7 +320,7 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
                       <span className={`text-xs px-2 py-1 rounded ${getRarityColor(item.rarity)} bg-opacity-20`}>
                         {item.rarity}
                       </span>
-                      {item.category === 'premium' && (
+                      {item.category === 'scroll' && (
                         <Star className="text-yellow-400" size={12} />
                       )}
                     </div>
@@ -434,25 +329,6 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
 
                 {/* 설명 */}
                 <p className="text-sm text-gray-400 mb-3">{item.description}</p>
-
-                {/* 수량 표시 */}
-                {item.itemData.quantity > 1 && (
-                  <div className="text-xs text-blue-400 mb-2">
-                    📦 수량: {item.itemData.quantity}개
-                  </div>
-                )}
-
-                {/* 요구사항 */}
-                {item.requirements && (
-                  <div className="text-xs text-gray-500 mb-3">
-                    {item.requirements.level && (
-                      <div>레벨 {item.requirements.level} 이상</div>
-                    )}
-                    {item.requirements.rebirthLevel && (
-                      <div>환생 레벨 {item.requirements.rebirthLevel} 이상</div>
-                    )}
-                  </div>
-                )}
 
                 {/* 가격 및 구매 버튼 */}
                 <div className="flex items-center justify-between">
@@ -466,16 +342,14 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
                   </div>
                   <button
                     onClick={() => handlePurchase(item)}
-                    disabled={!canAfford || !meetsRequirements}
+                    disabled={!canAfford}
                     className={`px-3 py-1 rounded text-sm transition-colors ${
-                      canAfford && meetsRequirements
+                      canAfford
                         ? 'bg-green-600 hover:bg-green-700 text-white'
                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    {!meetsRequirements ? '조건 미달' : 
-                     !canAfford ? '자금 부족' : 
-                     item.category === 'package' ? '상세보기' : '구매'}
+                    {!canAfford ? '자금 부족' : '상세보기'}
                   </button>
                 </div>
               </div>
@@ -506,12 +380,16 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      {/* 패키지 상세 모달 */}
+      {/* 아이템 상세 모달 */}
       <PackageDetailModal
-        isOpen={showPackageDetail}
-        onClose={() => setShowPackageDetail(false)}
-        packageData={selectedPackage}
-        onPurchase={handlePackagePurchase}
+        isOpen={showItemDetail}
+        onClose={() => setShowItemDetail(false)}
+        packageData={selectedItem}
+        onPurchaseResult={(result) => {
+          setPurchaseResult(result)
+          setShowPurchaseResult(true)
+        }}
+        onItemPurchase={handleItemPurchase}
       />
 
       {/* 구매 결과 모달 */}

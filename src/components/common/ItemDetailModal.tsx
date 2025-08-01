@@ -460,6 +460,56 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
     }
   }
 
+  const handleUseScroll = async () => {
+    if (!item) return
+
+    try {
+      const itemId = item.itemId || item.id
+      
+      if (itemId === 'ap_scroll') {
+        // AP 스크롤 사용
+        useGameStore.setState((state: any) => ({
+          ...state,
+          player: {
+            ...state.player,
+            rebirthLevel: state.player.rebirthLevel + 5
+          }
+        }))
+        addCombatLog('loot', `✨ AP 증가 스크롤 사용! +5 AP 획득`)
+        
+        // 아이템 제거
+        const { inventory } = useGameStore.getState()
+        const itemIndex = inventory.items.findIndex(invItem => 
+          invItem.itemId === itemId && !invItem.uniqueId
+        )
+        
+        if (itemIndex >= 0) {
+          useGameStore.setState(state => ({
+            ...state,
+            inventory: {
+              ...state.inventory,
+              items: state.inventory.items.map((invItem, index) => 
+                index === itemIndex 
+                  ? { ...invItem, quantity: invItem.quantity - 1 }
+                  : invItem
+              ).filter(invItem => invItem.quantity > 0)
+            }
+          }))
+        }
+        
+        onClose()
+      } else if (itemId === 'revival_scroll') {
+        // 부활 스크롤은 보유만으로 효과가 있으므로 사용 불가
+        addCombatLog('loot', `📜 부활 스크롤은 보유만으로 효과가 적용됩니다.`)
+      } else {
+        addCombatLog('loot', `❌ 알 수 없는 스크롤입니다.`)
+      }
+    } catch (error) {
+      console.error('스크롤 사용 실패:', error)
+      addCombatLog('loot', `❌ 스크롤 사용 중 오류 발생`)
+    }
+  }
+
   // 강화 비용 계산
   const getEnhancementCost = (currentLevel: number) => {
     return Math.floor(100 * Math.pow(1.5, currentLevel))
@@ -796,6 +846,16 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
                 className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors"
               >
                 🍽️ 먹기
+              </button>
+            )}
+
+            {/* 스크롤 사용 버튼: 스크롤인 경우만 */}
+            {(item.itemId?.includes('_scroll') || itemData?.subtype === 'scroll') && (
+              <button
+                onClick={handleUseScroll}
+                className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors"
+              >
+                📜 사용
               </button>
             )}
 

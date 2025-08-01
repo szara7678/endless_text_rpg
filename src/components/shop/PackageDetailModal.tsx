@@ -6,14 +6,18 @@ interface PackageDetailModalProps {
   isOpen: boolean
   onClose: () => void
   packageData: any
-  onPurchase?: (packageId: string) => Promise<void>
+  onPurchase?: (packageId: string) => Promise<any>
+  onPurchaseResult?: (result: any) => void
+  onItemPurchase?: (item: any) => Promise<void>
 }
 
 const PackageDetailModal: React.FC<PackageDetailModalProps> = ({ 
   isOpen, 
   onClose, 
   packageData,
-  onPurchase
+  onPurchase,
+  onPurchaseResult,
+  onItemPurchase
 }) => {
   const { player, purchasePackage } = useGameStore()
 
@@ -29,12 +33,26 @@ const PackageDetailModal: React.FC<PackageDetailModalProps> = ({
       return
     }
 
-    if (onPurchase) {
-      await onPurchase(packageData.id)
-    } else {
-      purchasePackage(packageData.id)
+    try {
+      if (onItemPurchase) {
+        // 외부에서 구매 처리
+        await onItemPurchase(packageData)
+      } else {
+        // 패키지 구매 실행
+        const result = await purchasePackage(packageData.id)
+        if (result) {
+          // 구매 결과 콜백 호출
+          if (onPurchaseResult) {
+            onPurchaseResult(result)
+          }
+          // 구매 성공 시 모달 닫기
+          onClose()
+        }
+      }
+    } catch (error) {
+      console.error('패키지 구매 오류:', error)
+      alert('패키지 구매 중 오류가 발생했습니다.')
     }
-    onClose()
   }
 
   const getRarityColor = (rarity: string) => {
@@ -69,6 +87,31 @@ const PackageDetailModal: React.FC<PackageDetailModalProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderScrollEffects = () => {
+    if (packageData.category !== 'scroll' || !packageData.effects) return null
+
+    return (
+      <div className="mb-4">
+        <h4 className="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-1">
+          <Star size={14} />
+          스크롤 효과
+        </h4>
+        <div className="bg-purple-900/30 border border-purple-600 rounded p-3">
+          {packageData.effects.apBonus && (
+            <div className="text-xs text-purple-400">
+              • AP +{packageData.effects.apBonus} 즉시 획득
+            </div>
+          )}
+          {packageData.effects.revival && (
+            <div className="text-xs text-purple-400">
+              • 사망 시 HP 100%로 부활
+            </div>
+          )}
         </div>
       </div>
     )
@@ -149,10 +192,11 @@ const PackageDetailModal: React.FC<PackageDetailModalProps> = ({
         <div className="mb-4">
           <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-1">
             <Crown size={14} />
-            패키지 구성품
+            {packageData.category === 'scroll' ? '스크롤 정보' : '패키지 구성품'}
           </h4>
           {renderGuaranteedItems()}
           {renderRandomItems()}
+          {renderScrollEffects()}
         </div>
 
         {/* 가격 정보 */}

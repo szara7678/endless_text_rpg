@@ -63,11 +63,12 @@ interface GameStore {
   // UI 관리
   setActivePanel: (panel: 'character' | 'inventory' | 'shop' | 'life' | 'settings' | null) => void
 
-  // 인벤토리 관리
-  addItem: (itemId: string, quantity: number, level?: number, quality?: string) => void
-  addMaterial: (materialId: string, count: number, level?: number) => void
-  addSkillPage: (skillId: string) => void
-  removeMaterial: (materialId: string, count: number, level?: number) => void
+      // 인벤토리 관리
+    addItem: (itemId: string, quantity: number, level?: number, quality?: string) => void
+    addMaterial: (materialId: string, count: number, level?: number) => void
+    addSkillPage: (skillId: string) => void
+    removeMaterial: (materialId: string, count: number, level?: number) => void
+    removeItem: (itemId: string, quantity: number) => void
 
   // 스킬 시스템
   unlockSkill: (skillId: string) => void
@@ -95,9 +96,9 @@ interface GameStore {
   canRebirth: () => { canRebirth: boolean, currentFloor: number, apGain: number }
   executeRebirth: (benefits: { ap: number, skillLevelBonus: number, materialBonus: number }) => void
 
-  // 상점 시스템
-  purchaseItem: (item: any) => void
-  purchasePackage: (packageId: string) => Promise<void>
+      // 상점 시스템
+    purchaseItem: (item: any) => any
+    purchasePackage: (packageId: string) => Promise<any>
 
   // 자동 전투 시스템
   getCombatDelay: (speed: number) => number
@@ -1138,7 +1139,30 @@ export const useGameStore = create<GameStore>()(
       handlePlayerDeath: async () => {
         console.log('💀 플레이어 사망!')
         
-        // 1. 사망 로그
+        const { player, inventory } = get()
+        
+        // 부활 스크롤 확인
+        const revivalScroll = inventory.consumables?.find((item: any) => item.itemId === 'revival_scroll')
+        
+        if (revivalScroll) {
+          // 부활 스크롤 사용
+          get().removeItem('revival_scroll', 1)
+          set((state: any) => ({
+            ...state,
+            player: {
+              ...state.player,
+              hp: state.player.maxHp,
+              mp: state.player.maxMp
+            }
+          }))
+          
+          get().addCombatLog('combat', `✨ 부활 스크롤 사용! HP가 완전히 회복되었습니다!`)
+          get().addCombatLog('combat', `⚔️ 전투를 계속합니다!`)
+          
+          return // 전투 계속
+        }
+        
+        // 부활 스크롤이 없으면 사망 처리
         get().addCombatLog('death', '💀 플레이어 사망!')
         
         // 2. 자동 전투 즉시 정지
@@ -1421,13 +1445,19 @@ export const useGameStore = create<GameStore>()(
         set((state: any) => {
           const newItems = [...state.inventory.items]
           
+          console.log('addItem 호출:', { itemId, quantity, level, quality })
+          
+          // 스크롤 아이템은 항상 소비아이템으로 처리
+          const isScroll = itemId.includes('scroll') || itemId.includes('_scroll')
+          
           // 장비류는 고유하게 관리 (중복 수량 없음)
-          const isEquipment = itemId.includes('sword') || 
+          const isEquipment = (itemId.includes('sword') || 
                             itemId.includes('armor') || 
                             itemId.includes('staff') ||
                             itemId.includes('weapon') ||
                             itemId.includes('chest') ||
-                            itemId.includes('accessory')
+                            itemId.includes('accessory')) &&
+                            !isScroll
           
           if (isEquipment) {
             // 장비는 각각 고유 ID로 개별 관리
@@ -1570,6 +1600,41 @@ export const useGameStore = create<GameStore>()(
             skills: {
               ...state.skills,
               pagesOwned
+            }
+          }
+        })
+      },
+
+      removeItem: (itemId: string, quantity: number) => {
+        set((state: any) => {
+          const items = [...state.inventory.items]
+          const consumables = [...state.inventory.consumables]
+          
+          // 소모품에서 찾기
+          const consumableIndex = consumables.findIndex(item => item.itemId === itemId)
+          if (consumableIndex >= 0) {
+            if (consumables[consumableIndex].quantity <= quantity) {
+              // 수량이 부족하거나 같으면 아이템 제거
+              consumables.splice(consumableIndex, 1)
+            } else {
+              // 수량만 감소
+              consumables[consumableIndex].quantity -= quantity
+            }
+          }
+          
+          // 장비에서 찾기 (고유 ID가 있는 경우)
+          const itemIndex = items.findIndex(item => item.itemId === itemId && item.uniqueId)
+          if (itemIndex >= 0) {
+            // 장비는 개별 아이템이므로 수량과 관계없이 제거
+            items.splice(itemIndex, 1)
+          }
+          
+          return {
+            ...state,
+            inventory: {
+              ...state.inventory,
+              items,
+              consumables
             }
           }
         })
@@ -2238,17 +2303,17 @@ export const useGameStore = create<GameStore>()(
 
         if (!canAfford) {
           get().addCombatLog('loot', `❌ ${item.currency === 'gold' ? '골드' : '젬'}가 부족합니다`)
-          return
+          return null
         }
 
         // 요구사항 확인
                  if (item.requirements?.level && player.rebirthLevel < (item.requirements.level * 10)) {
           get().addCombatLog('loot', `❌ 레벨 ${item.requirements.level} 이상 필요`)
-          return
+          return null
         }
         if (item.requirements?.rebirthLevel && player.rebirthLevel < item.requirements.rebirthLevel) {
           get().addCombatLog('loot', `❌ 환생 레벨 ${item.requirements.rebirthLevel} 이상 필요`)
-          return
+          return null
         }
 
         // 비용 차감
@@ -2260,6 +2325,15 @@ export const useGameStore = create<GameStore>()(
                          gem: item.currency === 'gem' ? (state.player.gem || 0) - item.price : (state.player.gem || 0)
           }
         }))
+
+        // 구매 결과 객체 생성
+        const purchaseResult = {
+          itemName: item.name,
+          itemIcon: item.icon,
+          itemRarity: item.rarity,
+          quantity: item.itemData.quantity,
+          category: item.category
+        }
 
         // 아이템별 특별 처리
         if (item.itemData.itemId === 'skill_page_random') {
@@ -2286,6 +2360,20 @@ export const useGameStore = create<GameStore>()(
             }
           }))
           get().addCombatLog('loot', `✅ ${item.name} 구매! +10 AP 획득`)
+        } else if (item.itemData.itemId === 'ap_scroll') {
+          // AP 증가 스크롤
+          set((state: any) => ({
+            ...state,
+            player: {
+              ...state.player,
+              rebirthLevel: state.player.rebirthLevel + 5
+            }
+          }))
+          get().addCombatLog('loot', `✅ ${item.name} 사용! +5 AP 획득`)
+        } else if (item.itemData.itemId === 'revival_scroll') {
+          // 부활 스크롤 - 인벤토리에 추가
+          get().addItem(item.itemData.itemId, item.itemData.quantity, item.itemData.level || 1, 'Common')
+          get().addCombatLog('loot', `✅ ${item.name} 구매! 부활 스크롤 획득`)
         } else {
           // 일반 아이템
           if (item.category === 'consumable') {
@@ -2300,6 +2388,8 @@ export const useGameStore = create<GameStore>()(
           }
           get().addCombatLog('loot', `✅ ${item.name} 구매 완료!`)
         }
+
+        return purchaseResult
       },
 
       // 패키지 구매
@@ -2311,7 +2401,7 @@ export const useGameStore = create<GameStore>()(
           
           if (!packageData) {
             get().addCombatLog('loot', `❌ 패키지를 찾을 수 없습니다`)
-            return
+            return null
           }
 
           // 패키지 데이터에서 가격 정보 가져오기
@@ -2320,7 +2410,7 @@ export const useGameStore = create<GameStore>()(
           
           if (!packageInfo) {
             get().addCombatLog('loot', `❌ 패키지 정보를 찾을 수 없습니다`)
-            return
+            return null
           }
 
           // 비용 확인
@@ -2330,7 +2420,7 @@ export const useGameStore = create<GameStore>()(
 
           if (!canAfford) {
             get().addCombatLog('loot', `❌ ${packageInfo.currency === 'gold' ? '골드' : '젬'}가 부족합니다`)
-            return
+            return null
           }
 
           // 비용 차감
@@ -2360,9 +2450,13 @@ export const useGameStore = create<GameStore>()(
           }
 
           get().addCombatLog('loot', `✅ ${packageData.packageName} 구매 완료! ${packageData.items.length}개 아이템 획득`)
+          
+          // 구매 결과 반환
+          return packageData
         } catch (error) {
           console.error('패키지 구매 오류:', error)
           get().addCombatLog('loot', `❌ 패키지 구매 중 오류가 발생했습니다`)
+          return null
         }
       },
 
