@@ -1,0 +1,1 @@
+const e=[{itemId:"flame_ore",chance:.4,min:1,max:2},{itemId:"flame_crystal",chance:.15,min:1,max:1},{itemId:"iron_ore",chance:.2,min:1,max:1},{itemId:"ember_toss",chance:.01,min:1,max:1,type:"skillPage"}],m={drops:e};export{m as default,e as drops};

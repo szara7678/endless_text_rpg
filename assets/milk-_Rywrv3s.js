@@ -1,1 +1,0 @@
-const t="milk",a="우유",e="신선한 우유",c="material",s="food",o="Physical",n="Common",i=3,m=!0,l=99,r={id:t,name:a,description:e,type:c,category:s,theme:o,tier:n,baseValue:3,stackable:!0,maxStack:99};export{i as baseValue,s as category,r as default,e as description,t as id,l as maxStack,a as name,m as stackable,o as theme,n as tier,c as type};
