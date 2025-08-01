@@ -1,0 +1,1 @@
+const l=[{skillId:"basic_attack",level:1},{skillId:"fireball",level:1}],s=[],e={},i={activeSkills:l,passiveSkills:s,pagesOwned:e};export{l as activeSkills,i as default,e as pagesOwned,s as passiveSkills};
