@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Settings, Home, Zap, Heart, Droplets } from 'lucide-react'
+import { X, Settings, Home, Zap, Heart, Droplets, RotateCcw, TrendingUp } from 'lucide-react'
 import { useGameStore } from '../../stores'
 
 interface SettingsPanelProps {
@@ -8,8 +8,9 @@ interface SettingsPanelProps {
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
-  const { settings, updatePotionSettings, resetToMenu } = useGameStore()
+  const { settings, updatePotionSettings, resetToMenu, tower, canRebirth, executeRebirth } = useGameStore()
   const [activeTab, setActiveTab] = useState<'general' | 'potion'>('general')
+  const [showRebirthConfirmation, setShowRebirthConfirmation] = useState(false)
 
   if (!isOpen) return null
 
@@ -21,6 +22,29 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
     if (confirm('정말로 메인 메뉴로 돌아가시겠습니까? 현재 진행 상황이 저장되지 않을 수 있습니다.')) {
       resetToMenu()
     }
+  }
+
+  // 환생 가능 여부 확인
+  const rebirthData = canRebirth()
+
+  // 환생 혜택 계산
+  const getRebirthBenefits = () => {
+    const apGain = rebirthData.apGain
+    const skillLevelBonus = Math.floor(apGain / 20) // 20 AP당 스킬 레벨 1 보너스
+    
+    return {
+      ap: apGain,
+      skillLevelBonus,
+      materialBonus: 0
+    }
+  }
+
+  // 환생 실행
+  const handleRebirth = () => {
+    const benefits = getRebirthBenefits()
+    executeRebirth(benefits)
+    setShowRebirthConfirmation(false)
+    onClose()
   }
 
   return (
@@ -85,6 +109,45 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                     <div className="text-sm text-gray-400 text-center">
                       ⚠️ 현재 진행 상황이 저장되지 않을 수 있습니다
                     </div>
+                  </div>
+                </div>
+
+                {/* 환생 시스템 */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <h3 className="text-md font-semibold mb-3 text-purple-400 flex items-center gap-2">
+                    <RotateCcw size={16} />
+                    환생 시스템
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="text-sm text-gray-300">
+                      현재 층수: <span className="text-white font-medium">{tower.currentFloor}층</span>
+                    </div>
+                    {rebirthData.canRebirth ? (
+                      <div className="space-y-2">
+                        <div className="text-sm text-gray-300">
+                          예상 AP 획득: <span className="text-purple-400 font-bold">+{rebirthData.apGain}</span>
+                        </div>
+                        <button
+                          onClick={() => setShowRebirthConfirmation(true)}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                        >
+                          <TrendingUp size={16} />
+                          <span>환생하기</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="text-sm text-gray-400">
+                          환생 조건: 100층 이상 달성 필요
+                        </div>
+                        <button
+                          disabled
+                          className="w-full bg-gray-700 text-gray-500 py-3 px-4 rounded-lg cursor-not-allowed"
+                        >
+                          환생 불가능
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -213,6 +276,44 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
+
+      {/* 환생 확인 모달 */}
+      {showRebirthConfirmation && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60"
+          onClick={() => setShowRebirthConfirmation(false)}
+        >
+          <div 
+            className="bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-white mb-4 text-center flex items-center justify-center gap-2">
+              <RotateCcw className="text-purple-400" size={24} />
+              환생 확인
+            </h3>
+            <div className="text-gray-300 text-center mb-6 space-y-2">
+              <p>정말로 환생하시겠습니까?</p>
+              <p className="text-purple-400 font-bold text-lg">+{getRebirthBenefits().ap} AP</p>
+              <p className="text-sm text-gray-400">현재 층수만 1층으로 초기화됩니다</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRebirthConfirmation(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleRebirth}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors flex items-center justify-center gap-2"
+              >
+                <TrendingUp size={16} />
+                환생
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

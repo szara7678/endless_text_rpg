@@ -1139,7 +1139,7 @@ export const useGameStore = create<GameStore>()(
       handlePlayerDeath: async () => {
         console.log('💀 플레이어 사망!')
         
-        const { player, inventory } = get()
+        const { player, inventory, tower } = get()
         
         // 부활 스크롤 확인
         const revivalScroll = inventory.consumables?.find((item: any) => item.itemId === 'revival_scroll')
@@ -1157,7 +1157,7 @@ export const useGameStore = create<GameStore>()(
           }))
           
           get().addCombatLog('combat', `✨ 부활 스크롤 사용! HP가 완전히 회복되었습니다!`)
-          get().addCombatLog('combat', `⚔️ 전투를 계속합니다!`)
+          get().addCombatLog('combat', `⚔️ 현재 층(${tower.currentFloor}층)에서 전투를 계속합니다!`)
           
           return // 전투 계속
         }
