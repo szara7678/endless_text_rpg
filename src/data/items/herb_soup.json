@@ -25,7 +25,7 @@
     "healing_herb": 3,
     "green_herb": 2,
     "blue_herb": 1,
-    "milk": 1
+    "wheat": 1
   },
   "requiredSkill": "cooking",
   "requiredSkillLevel": 5

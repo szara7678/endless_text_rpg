@@ -16,6 +16,7 @@ import * as EquipmentSystem from '../utils/equipmentSystem'
 import { generateInitialItems } from '../utils/itemGenerator'
 import { calculateItemSellPrice, getItemName } from '../utils/itemSystem'
 import { updatePotionUsage } from '../utils/potionSystem'
+import { openPackage, applyScrollEffect } from '../utils/packageSystem'
 
 // 스킬 이름 가져오기 함수
 const getSkillName = async (skillId: string): Promise<string> => {
@@ -87,6 +88,8 @@ interface GameStore {
   endMinigame: (result: any) => void
   startCrafting: (recipeId: string) => void
   completeCrafting: () => void
+  saveLifeSkills: () => void
+  loadLifeSkills: () => void
 
   // 환생 시스템
   canRebirth: () => { canRebirth: boolean, currentFloor: number, apGain: number }
@@ -94,6 +97,7 @@ interface GameStore {
 
   // 상점 시스템
   purchaseItem: (item: any) => void
+  purchasePackage: (packageId: string) => Promise<void>
 
   // 자동 전투 시스템
   getCombatDelay: (speed: number) => number
@@ -1012,8 +1016,13 @@ export const useGameStore = create<GameStore>()(
             // 아이템 드롭 처리
             for (const item of dropResults.items) {
               const quantity = item.quantity || 1
-              get().addItem(item.itemId, quantity, item.level, item.quality)
-              const qualityText = item.quality !== 'Common' ? ` (${item.quality})` : ''
+              // 소비 아이템은 품질을 무시하고 Common으로 고정
+              const isConsumable = item.itemId.includes('potion') || item.itemId.includes('food') || 
+                                 item.itemId.includes('bread') || item.itemId.includes('stew') || 
+                                 item.itemId.includes('soup') || item.itemId.includes('feast')
+              const quality = isConsumable ? 'Common' : item.quality
+              get().addItem(item.itemId, quantity, item.level, quality)
+              const qualityText = quality !== 'Common' ? ` (${quality})` : ''
               // 한글 이름 가져오기
               getItemName(item.itemId).then(itemName => {
                 get().addCombatLog('loot', `🎁 ${itemName} (Lv${item.level})${qualityText} x${quantity} 획득!`)
@@ -1337,8 +1346,13 @@ export const useGameStore = create<GameStore>()(
             tower: data.tower,
             inventory: data.inventory,
             skills: data.skills,
+            life: data.life || state.life,
+            settings: data.settings || state.settings,
             gameState: 'playing'
           }))
+          
+          // 생활 스킬 로드
+          get().loadLifeSkills()
           
           // 자동 저장 시작
           get().startAutoSave()
@@ -1364,9 +1378,12 @@ export const useGameStore = create<GameStore>()(
             tower: state.tower,
             inventory: state.inventory,
             skills: state.skills,
+            life: state.life,
+            settings: state.settings,
             timestamp: Date.now()
           }
           localStorage.setItem('endless_rpg_save', JSON.stringify(saveData))
+          get().saveLifeSkills() // 생활 스킬 별도 저장
           console.log('💾 수동 저장 완료!')
         } catch (error) {
           console.error('❌ 게임 저장 실패:', error)
@@ -1425,18 +1442,22 @@ export const useGameStore = create<GameStore>()(
               })
             }
           } else {
-            // 소모품은 레벨별로 관리
-            const existingIndex = newItems.findIndex(item => item.itemId === itemId && item.level === level && !item.uniqueId)
+            // 소모품은 레벨별로만 관리 (품질은 항상 Common으로 고정)
+            const existingIndex = newItems.findIndex(item => 
+              item.itemId === itemId && 
+              item.level === level && 
+              !item.uniqueId
+            )
             if (existingIndex >= 0) {
               // 같은 레벨의 소모품이 있으면 수량만 추가
               newItems[existingIndex].quantity += quantity
             } else {
-              // 다른 레벨이거나 없는 경우 새로 추가
+              // 다른 레벨이거나 없는 경우 새로 추가 (품질은 Common으로 고정)
               newItems.push({ 
                 itemId, 
                 quantity, 
                 level: level,
-                quality: quality // 물약에도 품질 적용
+                quality: 'Common' // 소모품은 항상 Common 품질로 고정
               })
             }
           }
@@ -1656,8 +1677,8 @@ export const useGameStore = create<GameStore>()(
         }
 
         // 비용 체크
-        if (player.ascensionPoints < apCost) {
-          get().addCombatLog('skill', `❌ AP가 부족합니다. (보유: ${player.ascensionPoints}, 필요: ${apCost})`)
+        if (player.rebirthLevel < apCost) {
+          get().addCombatLog('skill', `❌ AP가 부족합니다. (보유: ${player.rebirthLevel}, 필요: ${apCost})`)
           return
         }
 
@@ -1703,7 +1724,7 @@ export const useGameStore = create<GameStore>()(
           ...state,
           player: {
             ...state.player,
-            ascensionPoints: state.player.ascensionPoints - apCost
+            rebirthLevel: state.player.rebirthLevel - apCost
           },
           skills: {
             ...state.skills,
@@ -2268,16 +2289,107 @@ export const useGameStore = create<GameStore>()(
         } else {
           // 일반 아이템
           if (item.category === 'consumable') {
-            // 소모품은 consumables에 추가
-            get().addItem(item.itemData.itemId, item.itemData.quantity)
+            // 소모품은 consumables에 추가 (품질은 Common으로 고정)
+            get().addItem(item.itemData.itemId, item.itemData.quantity, item.itemData.level || 1, 'Common')
           } else if (item.category === 'material') {
             // 재료는 materials에 추가
             get().addMaterial(item.itemData.itemId, item.itemData.quantity)
           } else {
             // 장비는 items에 추가
-            get().addItem(item.itemData.itemId, item.itemData.quantity)
+            get().addItem(item.itemData.itemId, item.itemData.quantity, item.itemData.level || 1, item.itemData.quality || 'Common')
           }
           get().addCombatLog('loot', `✅ ${item.name} 구매 완료!`)
+        }
+      },
+
+      // 패키지 구매
+      purchasePackage: async (packageId) => {
+        const { player } = get()
+        
+        try {
+          const packageData = openPackage(packageId)
+          
+          if (!packageData) {
+            get().addCombatLog('loot', `❌ 패키지를 찾을 수 없습니다`)
+            return
+          }
+
+          // 패키지 데이터에서 가격 정보 가져오기
+          const packagesData = await import('../data/shop/packages.json')
+          const packageInfo = packagesData.default[packageId]
+          
+          if (!packageInfo) {
+            get().addCombatLog('loot', `❌ 패키지 정보를 찾을 수 없습니다`)
+            return
+          }
+
+          // 비용 확인
+          const canAfford = packageInfo.currency === 'gold' 
+            ? player.gold >= packageInfo.price 
+            : (player.gem || 0) >= packageInfo.price
+
+          if (!canAfford) {
+            get().addCombatLog('loot', `❌ ${packageInfo.currency === 'gold' ? '골드' : '젬'}가 부족합니다`)
+            return
+          }
+
+          // 비용 차감
+          set((state: any) => ({
+            ...state,
+            player: {
+              ...state.player,
+              gold: packageInfo.currency === 'gold' ? state.player.gold - packageInfo.price : state.player.gold,
+              gem: packageInfo.currency === 'gem' ? (state.player.gem || 0) - packageInfo.price : (state.player.gem || 0)
+            }
+          }))
+
+          // 아이템 추가
+          for (const item of packageData.items) {
+            if (item.type === 'item') {
+              get().addItem(item.id, item.count)
+            } else if (item.type === 'material') {
+              get().addMaterial(item.id, item.count)
+            } else if (item.type === 'skill') {
+              get().addSkillPage(item.id)
+            }
+
+            // 스크롤 아이템인 경우 효과 적용
+            if (item.id.startsWith('scroll_') || item.id.endsWith('_scroll')) {
+              applyScrollEffect(item.id, get().player)
+            }
+          }
+
+          get().addCombatLog('loot', `✅ ${packageData.packageName} 구매 완료! ${packageData.items.length}개 아이템 획득`)
+        } catch (error) {
+          console.error('패키지 구매 오류:', error)
+          get().addCombatLog('loot', `❌ 패키지 구매 중 오류가 발생했습니다`)
+        }
+      },
+
+      // 생활 스킬 저장/로드
+      saveLifeSkills: () => {
+        const { life } = get()
+        try {
+          localStorage.setItem('lifeSkills', JSON.stringify(life))
+          console.log('생활 스킬 저장 완료')
+        } catch (error) {
+          console.error('생활 스킬 저장 실패:', error)
+        }
+      },
+
+      loadLifeSkills: () => {
+        try {
+          const savedLifeSkills = localStorage.getItem('lifeSkills')
+          if (savedLifeSkills) {
+            const lifeSkills = JSON.parse(savedLifeSkills)
+            set((state) => ({
+              ...state,
+              life: lifeSkills
+            }))
+            console.log('생활 스킬 로드 완료')
+          }
+        } catch (error) {
+          console.error('생활 스킬 로드 실패:', error)
         }
       },
 

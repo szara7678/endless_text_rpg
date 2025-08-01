@@ -1,0 +1,217 @@
+{
+  "materialBox": {
+    "id": "material_box",
+    "name": "재료 랜덤박스",
+    "description": "다양한 재료들을 랜덤으로 획득합니다.",
+    "category": "package",
+    "currency": "gold",
+    "price": 500,
+    "rarity": "Fine",
+    "icon": "📦",
+    "contents": {
+      "guaranteed": [
+        { "materialId": "iron_ore", "count": 5, "level": 1 }
+      ],
+      "random": [
+        { "materialId": "wood", "count": { "min": 3, "max": 8 }, "level": 1, "weight": 30 },
+        { "materialId": "red_herb", "count": { "min": 2, "max": 5 }, "level": 1, "weight": 25 },
+        { "materialId": "green_herb", "count": { "min": 2, "max": 5 }, "level": 1, "weight": 25 },
+        { "materialId": "blue_herb", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 15 },
+        { "materialId": "healing_herb", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 10 },
+        { "materialId": "flame_crystal", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 8 },
+        { "materialId": "frost_ore", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 12 },
+        { "materialId": "toxic_shard", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 8 },
+        { "materialId": "shadow_crystal", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 8 },
+        { "materialId": "thunder_gem", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 8 },
+        { "materialId": "nature_essence", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 8 },
+        { "materialId": "common_metal", "count": { "min": 3, "max": 6 }, "level": 1, "weight": 20 },
+        { "materialId": "refined_metal", "count": { "min": 1, "max": 3 }, "level": 2, "weight": 12 },
+        { "materialId": "wheat", "count": { "min": 2, "max": 5 }, "level": 1, "weight": 15 },
+
+        { "materialId": "leather", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 12 }
+      ],
+      "randomCount": { "min": 3, "max": 6 }
+    }
+  },
+  "skillPack": {
+    "id": "skill_pack",
+    "name": "스킬 페이지 랜덤팩",
+    "description": "랜덤 스킬 페이지를 획득합니다.",
+    "category": "package",
+    "currency": "gem",
+    "price": 10,
+    "rarity": "Epic",
+    "icon": "📜",
+    "contents": {
+      "guaranteed": [],
+      "random": [
+        { "skillId": "basic_attack", "weight": 40 },
+        { "skillId": "fireball", "weight": 15 },
+        { "skillId": "ice_shard", "weight": 15 },
+        { "skillId": "thunder_shock", "weight": 15 },
+        { "skillId": "toxic_spit", "weight": 15 },
+        { "skillId": "verdant_charge", "weight": 15 },
+        { "skillId": "shadow_bite", "weight": 12 },
+        { "skillId": "ember_toss", "weight": 12 },
+        { "skillId": "frost_bite", "weight": 12 },
+        { "skillId": "thunder_roar", "weight": 10 },
+        { "skillId": "venom_burst", "weight": 10 },
+        { "skillId": "flame_aura", "weight": 8 },
+        { "skillId": "dark_howl", "weight": 8 },
+        { "skillId": "nature_blessing", "weight": 8 }
+      ],
+      "randomCount": { "min": 1, "max": 3 }
+    }
+  },
+  "orePack": {
+    "id": "ore_pack",
+    "name": "광석 팩",
+    "description": "다양한 광석들을 획득합니다.",
+    "category": "package",
+    "currency": "gold",
+    "price": 300,
+    "rarity": "Fine",
+    "icon": "⛏️",
+    "contents": {
+      "guaranteed": [
+        { "materialId": "iron_ore", "count": 10, "level": 1 }
+      ],
+      "random": [
+        { "materialId": "steel_ore", "count": { "min": 3, "max": 6 }, "level": 2, "weight": 25 },
+        { "materialId": "mithril_ore", "count": { "min": 2, "max": 4 }, "level": 3, "weight": 15 },
+        { "materialId": "dragon_ore", "count": { "min": 1, "max": 2 }, "level": 4, "weight": 8 },
+        { "materialId": "flame_ore", "count": { "min": 2, "max": 4 }, "level": 2, "weight": 20 },
+        { "materialId": "frost_ore", "count": { "min": 2, "max": 4 }, "level": 2, "weight": 20 },
+        { "materialId": "toxic_ore", "count": { "min": 2, "max": 4 }, "level": 2, "weight": 20 },
+        { "materialId": "shadow_ore", "count": { "min": 2, "max": 4 }, "level": 2, "weight": 20 },
+        { "materialId": "thunder_ore", "count": { "min": 2, "max": 4 }, "level": 2, "weight": 20 },
+        { "materialId": "verdant_ore", "count": { "min": 2, "max": 4 }, "level": 2, "weight": 20 }
+      ],
+      "randomCount": { "min": 2, "max": 4 }
+    }
+  },
+  "cookingPack": {
+    "id": "cooking_pack",
+    "name": "요리 팩",
+    "description": "다양한 요리 재료와 완성된 요리를 획득합니다.",
+    "category": "package",
+    "currency": "gold",
+    "price": 400,
+    "rarity": "Superior",
+    "icon": "🍳",
+    "contents": {
+      "guaranteed": [
+        { "materialId": "wheat", "count": 5, "level": 1 },
+
+        { "materialId": "raw_meat", "count": 2, "level": 1 }
+      ],
+      "random": [
+        { "itemId": "bread", "count": { "min": 2, "max": 4 }, "level": 1, "weight": 30 },
+        { "itemId": "meat_stew", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 20 },
+        { "itemId": "fish_stew", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 20 },
+        { "itemId": "herb_soup", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 15 },
+        { "itemId": "divine_feast", "count": { "min": 1, "max": 1 }, "level": 3, "weight": 5 },
+        { "materialId": "flour", "count": { "min": 2, "max": 4 }, "level": 1, "weight": 25 },
+        { "materialId": "vegetable", "count": { "min": 2, "max": 4 }, "level": 1, "weight": 20 },
+        { "materialId": "small_fish", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 15 },
+        { "materialId": "medium_fish", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 10 },
+        { "materialId": "large_fish", "count": { "min": 1, "max": 1 }, "level": 3, "weight": 5 },
+        { "materialId": "rare_fish", "count": { "min": 1, "max": 1 }, "level": 4, "weight": 3 }
+      ],
+      "randomCount": { "min": 3, "max": 5 }
+    }
+  },
+  "scrollPack": {
+    "id": "scroll_pack",
+    "name": "스크롤 팩",
+    "description": "다양한 효과의 스크롤들을 획득합니다.",
+    "category": "package",
+    "currency": "gem",
+    "price": 15,
+    "rarity": "Epic",
+    "icon": "📜",
+    "contents": {
+      "guaranteed": [],
+      "random": [
+        { "itemId": "exp_scroll", "count": { "min": 1, "max": 2 }, "level": 1, "weight": 30 },
+        { "itemId": "gold_scroll", "count": { "min": 1, "max": 2 }, "level": 1, "weight": 25 },
+        { "itemId": "drop_scroll", "count": { "min": 1, "max": 1 }, "level": 2, "weight": 20 },
+        { "itemId": "enhancement_scroll", "count": { "min": 1, "max": 1 }, "level": 3, "weight": 15 },
+        { "itemId": "rebirth_scroll", "count": { "min": 1, "max": 1 }, "level": 4, "weight": 10 }
+      ],
+      "randomCount": { "min": 2, "max": 4 }
+    }
+  },
+  "potionPack": {
+    "id": "potion_pack",
+    "name": "물약 팩",
+    "description": "다양한 물약들을 획득합니다.",
+    "category": "package",
+    "currency": "gold",
+    "price": 250,
+    "rarity": "Fine",
+    "icon": "🧪",
+    "contents": {
+      "guaranteed": [
+        { "itemId": "health_potion", "count": 3, "level": 1 },
+        { "itemId": "mana_potion", "count": 2, "level": 1 }
+      ],
+      "random": [
+        { "itemId": "health_potion", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 40 },
+        { "itemId": "mana_potion", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 35 },
+        { "itemId": "health_potion", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 15 },
+        { "itemId": "mana_potion", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 15 },
+        { "itemId": "health_potion", "count": { "min": 1, "max": 1 }, "level": 3, "weight": 8 },
+        { "itemId": "mana_potion", "count": { "min": 1, "max": 1 }, "level": 3, "weight": 8 }
+      ],
+      "randomCount": { "min": 2, "max": 4 }
+    }
+  },
+  "fishPack": {
+    "id": "fish_pack",
+    "name": "물고기 팩",
+    "description": "다양한 물고기들을 획득합니다.",
+    "category": "package",
+    "currency": "gold",
+    "price": 200,
+    "rarity": "Fine",
+    "icon": "🐟",
+    "contents": {
+      "guaranteed": [
+        { "materialId": "small_fish", "count": 5, "level": 1 }
+      ],
+      "random": [
+        { "materialId": "small_fish", "count": { "min": 2, "max": 5 }, "level": 1, "weight": 40 },
+        { "materialId": "medium_fish", "count": { "min": 1, "max": 3 }, "level": 2, "weight": 30 },
+        { "materialId": "large_fish", "count": { "min": 1, "max": 2 }, "level": 3, "weight": 20 },
+        { "materialId": "rare_fish", "count": { "min": 1, "max": 1 }, "level": 4, "weight": 10 }
+      ],
+      "randomCount": { "min": 2, "max": 4 }
+    }
+  },
+  "herbPack": {
+    "id": "herb_pack",
+    "name": "약초 팩",
+    "description": "다양한 약초들을 획득합니다.",
+    "category": "package",
+    "currency": "gold",
+    "price": 180,
+    "rarity": "Fine",
+    "icon": "🌿",
+    "contents": {
+      "guaranteed": [
+        { "materialId": "red_herb", "count": 3, "level": 1 },
+        { "materialId": "green_herb", "count": 3, "level": 1 }
+      ],
+      "random": [
+        { "materialId": "red_herb", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 30 },
+        { "materialId": "green_herb", "count": { "min": 1, "max": 3 }, "level": 1, "weight": 30 },
+        { "materialId": "blue_herb", "count": { "min": 1, "max": 2 }, "level": 1, "weight": 20 },
+        { "materialId": "healing_herb", "count": { "min": 1, "max": 2 }, "level": 1, "weight": 15 },
+        { "materialId": "mana_flower", "count": { "min": 1, "max": 2 }, "level": 2, "weight": 10 },
+        { "materialId": "life_essence", "count": { "min": 1, "max": 1 }, "level": 3, "weight": 5 }
+      ],
+      "randomCount": { "min": 2, "max": 4 }
+    }
+  }
+} 

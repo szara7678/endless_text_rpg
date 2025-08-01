@@ -51,7 +51,7 @@
     "life_essence": 1,
     "nature_essence": 2,
     "healing_herb": 3,
-    "milk": 2
+    "wheat": 2
   },
   "requiredSkill": "cooking",
   "requiredSkillLevel": 8

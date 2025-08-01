@@ -77,14 +77,14 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
         const skillData = await import(`../../data/skills/${skillId}.json`)
         const apCost = calculateLevelUpCost(skillData.default, learnedSkill.level)
         
-        if (player.ascensionPoints >= apCost) {
+        if (player.rebirthLevel >= apCost) {
           // 스킬 레벨업 실행 (AP 차감은 levelUpSkill 함수 내에서 처리)
           const currentState = useGameStore.getState()
           currentState.levelUpSkill(skillId)
           
           console.log(`✅ ${skillId} 레벨업 완료! AP ${apCost} 소모`)
         } else {
-          console.log('AP 부족:', player.ascensionPoints, '필요:', apCost)
+          console.log('AP 부족:', player.rebirthLevel, '필요:', apCost)
         }
       } catch (error) {
         console.error('스킬 레벨업 실패:', error)
@@ -737,7 +737,7 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ isOpen, onClose }) => {
                       
                       const canLevel = learnedSkill && levelUpCost ? { 
                         canLevel: (learnedSkill.currentXp || 0) >= (learnedSkill.maxXp || 0) && 
-                                 player.ascensionPoints >= levelUpCost.apCost &&
+                                 player.rebirthLevel >= levelUpCost.apCost &&
                                  skill.skillId !== 'basic_attack'
                       } : { canLevel: false }
                       

@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { X, Coins, Gem, ShoppingCart, Package, Zap, Star, Crown } from 'lucide-react'
 import { useGameStore } from '../../stores'
+import PackageDetailModal from './PackageDetailModal'
+import PurchaseResultModal from './PurchaseResultModal'
 
 interface ShopPanelProps {
   isOpen: boolean
@@ -11,7 +13,7 @@ interface ShopItem {
   id: string
   name: string
   description: string
-  category: 'equipment' | 'consumable' | 'material' | 'premium'
+  category: 'equipment' | 'consumable' | 'material' | 'premium' | 'package'
   currency: 'gold' | 'gem'
   price: number
   itemData: {
@@ -26,6 +28,9 @@ interface ShopItem {
     rebirthLevel?: number
   }
 }
+
+// 패키지 데이터 가져오기
+import packagesData from '../../data/shop/packages.json'
 
 const SHOP_ITEMS: ShopItem[] = [
   // 골드 상점
@@ -142,13 +147,107 @@ const SHOP_ITEMS: ShopItem[] = [
     rarity: 'Legendary',
     icon: '🌟',
     requirements: { rebirthLevel: 1 }
+  },
+  
+  // 패키지 아이템들
+  {
+    id: 'material_box',
+    name: '재료 랜덤박스',
+    description: '다양한 재료들을 랜덤으로 획득합니다.',
+    category: 'package',
+    currency: 'gold',
+    price: 500,
+    itemData: { itemId: 'material_box', level: 1, quantity: 1 },
+    rarity: 'Fine',
+    icon: '📦'
+  },
+  {
+    id: 'skill_pack',
+    name: '스킬 페이지 랜덤팩',
+    description: '랜덤 스킬 페이지를 획득합니다.',
+    category: 'package',
+    currency: 'gem',
+    price: 10,
+    itemData: { itemId: 'skill_pack', level: 1, quantity: 1 },
+    rarity: 'Epic',
+    icon: '📜'
+  },
+  {
+    id: 'ore_pack',
+    name: '광석 팩',
+    description: '다양한 광석들을 획득합니다.',
+    category: 'package',
+    currency: 'gold',
+    price: 300,
+    itemData: { itemId: 'ore_pack', level: 1, quantity: 1 },
+    rarity: 'Fine',
+    icon: '⛏️'
+  },
+  {
+    id: 'cooking_pack',
+    name: '요리 팩',
+    description: '다양한 요리 재료와 완성된 요리를 획득합니다.',
+    category: 'package',
+    currency: 'gold',
+    price: 400,
+    itemData: { itemId: 'cooking_pack', level: 1, quantity: 1 },
+    rarity: 'Superior',
+    icon: '🍳'
+  },
+  {
+    id: 'scroll_pack',
+    name: '스크롤 팩',
+    description: '다양한 효과의 스크롤들을 획득합니다.',
+    category: 'package',
+    currency: 'gem',
+    price: 15,
+    itemData: { itemId: 'scroll_pack', level: 1, quantity: 1 },
+    rarity: 'Epic',
+    icon: '📜'
+  },
+  {
+    id: 'potion_pack',
+    name: '물약 팩',
+    description: '다양한 물약들을 획득합니다.',
+    category: 'package',
+    currency: 'gold',
+    price: 250,
+    itemData: { itemId: 'potion_pack', level: 1, quantity: 1 },
+    rarity: 'Fine',
+    icon: '🧪'
+  },
+  {
+    id: 'fish_pack',
+    name: '물고기 팩',
+    description: '다양한 물고기들을 획득합니다.',
+    category: 'package',
+    currency: 'gold',
+    price: 200,
+    itemData: { itemId: 'fish_pack', level: 1, quantity: 1 },
+    rarity: 'Fine',
+    icon: '🐟'
+  },
+  {
+    id: 'herb_pack',
+    name: '약초 팩',
+    description: '다양한 약초들을 획득합니다.',
+    category: 'package',
+    currency: 'gold',
+    price: 180,
+    itemData: { itemId: 'herb_pack', level: 1, quantity: 1 },
+    rarity: 'Fine',
+    icon: '🌿'
   }
 ]
 
 const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
-  const { player, purchaseItem } = useGameStore()
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'equipment' | 'consumable' | 'material' | 'premium'>('all')
+  const { player, purchaseItem, purchasePackage } = useGameStore()
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'equipment' | 'consumable' | 'material' | 'premium' | 'package'>('all')
   const [selectedCurrency, setSelectedCurrency] = useState<'all' | 'gold' | 'gem'>('all')
+  const [selectedPackage, setSelectedPackage] = useState<any>(null)
+  const [showPackageDetail, setShowPackageDetail] = useState(false)
+  const [purchaseResult, setPurchaseResult] = useState<any>(null)
+  const [showPurchaseResult, setShowPurchaseResult] = useState(false)
 
   // 아이템 필터링
   const filteredItems = SHOP_ITEMS.filter(item => {
@@ -164,6 +263,16 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
 
   // 구매 처리
   const handlePurchase = (item: ShopItem) => {
+    if (item.category === 'package') {
+      // 패키지 아이템인 경우 상세 모달 표시
+      const packageData = packagesData[item.id]
+      if (packageData) {
+        setSelectedPackage(packageData)
+        setShowPackageDetail(true)
+      }
+      return
+    }
+
     const canAfford = item.currency === 'gold' 
       ? player.gold >= item.price 
                        : (player.gem || 0) >= item.price
@@ -175,6 +284,25 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
 
     // 구매 실행
     purchaseItem(item)
+  }
+
+  // 패키지 구매 처리
+  const handlePackagePurchase = async (packageId: string) => {
+    try {
+      const { openPackage } = await import('../../utils/packageSystem')
+      const result = openPackage(packageId)
+      
+      // 패키지 구매 실행
+      await purchasePackage(packageId)
+      
+      // 결과 모달 표시
+      setPurchaseResult(result)
+      setShowPurchaseResult(true)
+      setShowPackageDetail(false)
+    } catch (error) {
+      console.error('패키지 구매 오류:', error)
+      alert('패키지 구매 중 오류가 발생했습니다.')
+    }
   }
 
   // 희귀도별 색상
@@ -232,7 +360,7 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
       <div className="px-4 py-3 border-b border-gray-700">
         <div className="flex flex-wrap gap-2 mb-3">
           <span className="text-sm text-gray-400 mr-2">카테고리:</span>
-          {['all', 'equipment', 'consumable', 'material', 'premium'].map((category) => (
+          {['all', 'equipment', 'consumable', 'material', 'premium', 'package'].map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category as any)}
@@ -245,7 +373,8 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
               {category === 'all' ? '전체' : 
                category === 'equipment' ? '장비' :
                category === 'consumable' ? '소모품' :
-               category === 'material' ? '재료' : '프리미엄'}
+               category === 'material' ? '재료' : 
+               category === 'premium' ? '프리미엄' : '패키지'}
             </button>
           ))}
         </div>
@@ -345,7 +474,8 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
                     }`}
                   >
                     {!meetsRequirements ? '조건 미달' : 
-                     !canAfford ? '자금 부족' : '구매'}
+                     !canAfford ? '자금 부족' : 
+                     item.category === 'package' ? '상세보기' : '구매'}
                   </button>
                 </div>
               </div>
@@ -375,6 +505,21 @@ const ShopPanel: React.FC<ShopPanelProps> = ({ isOpen, onClose }) => {
           </ul>
         </div>
       </div>
+
+      {/* 패키지 상세 모달 */}
+      <PackageDetailModal
+        isOpen={showPackageDetail}
+        onClose={() => setShowPackageDetail(false)}
+        packageData={selectedPackage}
+        onPurchase={handlePackagePurchase}
+      />
+
+      {/* 구매 결과 모달 */}
+      <PurchaseResultModal
+        isOpen={showPurchaseResult}
+        onClose={() => setShowPurchaseResult(false)}
+        result={purchaseResult}
+      />
     </div>
   )
 }

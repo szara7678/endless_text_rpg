@@ -24,7 +24,7 @@
   "craftingMaterials": {
     "medium_fish": 2,
     "vegetable": 2,
-    "milk": 1
+    "wheat": 1
   },
   "requiredSkill": "cooking",
   "requiredSkillLevel": 4

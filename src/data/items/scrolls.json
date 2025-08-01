@@ -1,0 +1,91 @@
+{
+  "exp_scroll": {
+    "id": "exp_scroll",
+    "name": "경험치 스크롤",
+    "description": "사용하면 1시간 동안 모든 경험치를 2배로 받습니다.",
+    "type": "consumable",
+    "category": "scroll",
+    "level": 1,
+    "quality": "Fine",
+    "icon": "📜",
+    "rarity": "Fine",
+    "effects": {
+      "expBoost": {
+        "duration": 3600000,
+        "multiplier": 2
+      }
+    },
+    "sellPrice": 50
+  },
+  "gold_scroll": {
+    "id": "gold_scroll",
+    "name": "골드 스크롤",
+    "description": "사용하면 1시간 동안 모든 골드 획득량을 2배로 받습니다.",
+    "type": "consumable",
+    "category": "scroll",
+    "level": 1,
+    "quality": "Fine",
+    "icon": "📜",
+    "rarity": "Fine",
+    "effects": {
+      "goldBoost": {
+        "duration": 3600000,
+        "multiplier": 2
+      }
+    },
+    "sellPrice": 50
+  },
+  "drop_scroll": {
+    "id": "drop_scroll",
+    "name": "드롭 스크롤",
+    "description": "사용하면 30분 동안 아이템 드롭률을 50% 증가시킵니다.",
+    "type": "consumable",
+    "category": "scroll",
+    "level": 2,
+    "quality": "Superior",
+    "icon": "📜",
+    "rarity": "Superior",
+    "effects": {
+      "dropBoost": {
+        "duration": 1800000,
+        "multiplier": 1.5
+      }
+    },
+    "sellPrice": 100
+  },
+  "enhancement_scroll": {
+    "id": "enhancement_scroll",
+    "name": "강화 스크롤",
+    "description": "사용하면 다음 장비 강화 시 100% 성공률을 보장합니다.",
+    "type": "consumable",
+    "category": "scroll",
+    "level": 3,
+    "quality": "Epic",
+    "icon": "📜",
+    "rarity": "Epic",
+    "effects": {
+      "enhancementGuarantee": {
+        "duration": 300000,
+        "guaranteed": true
+      }
+    },
+    "sellPrice": 200
+  },
+  "rebirth_scroll": {
+    "id": "rebirth_scroll",
+    "name": "환생 스크롤",
+    "description": "사용하면 즉시 +10 AP를 획득합니다.",
+    "type": "consumable",
+    "category": "scroll",
+    "level": 4,
+    "quality": "Legendary",
+    "icon": "📜",
+    "rarity": "Legendary",
+    "effects": {
+      "rebirthBonus": {
+        "apBonus": 10
+      }
+    },
+    "sellPrice": 500
+  }
+} 

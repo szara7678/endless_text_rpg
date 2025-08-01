@@ -30,7 +30,7 @@ const Layout: React.FC = () => {
       <HUD />
       
       {/* 메인 게임 영역 - TabBar 공간 확보 */}
-      <div className="flex-1 pb-16 overflow-hidden">
+      <div className="flex-1 pb-20 overflow-hidden">
         <MainView />
       </div>
       

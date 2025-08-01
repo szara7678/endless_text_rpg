@@ -2,6 +2,221 @@
 
 ## 최신 업데이트 내역
 
+### 🔧 **소비 아이템 품질 시스템 개선 - 2024년 12월 23일**
+
+**목표**:
+- 소비 아이템에서 품질 표시 제거
+- 요리/연금술 제작 시 소비 아이템 품질을 Common으로 고정
+- 레벨만 변경하고 품질은 변경하지 않도록 수정
+
+**주요 변경사항**:
+
+1. **소비 아이템 품질 표시 제거**:
+   - `src/components/inventory/InventoryPanel.tsx` 수정
+   - 소비 아이템에서는 품질 표시를 제거
+   - 장비에서만 품질 표시 유지
+
+2. **제작 시스템 품질 고정**:
+   - `src/stores/index.ts`의 `addItem` 함수 수정
+   - 소비 아이템은 항상 Common 품질로 고정
+   - 레벨별로만 분리하여 관리
+
+3. **드롭 시스템 품질 고정**:
+   - `src/stores/index.ts`의 드롭 처리 로직 수정
+   - 소비 아이템 드롭 시 품질을 Common으로 고정
+   - 장비만 품질 차별화 유지
+
+4. **상점 시스템 품질 고정**:
+   - `src/stores/index.ts`의 `purchaseItem` 함수 수정
+   - 소비 아이템 구매 시 품질을 Common으로 고정
+   - 장비는 기존 품질 시스템 유지
+
+**수정된 파일**:
+- `src/components/inventory/InventoryPanel.tsx`: 소비 아이템 품질 표시 제거
+- `src/stores/index.ts`: 제작/드롭/상점 시스템에서 소비 아이템 품질 고정
+
+### 🔧 **스킬 레벨업 및 인벤토리 시스템 버그 수정 - 2024년 12월 23일**
+
+**목표**:
+- 스킬 레벨업시 AP 소모 로그와 실제 AP 감소 불일치 문제 해결
+- 인벤토리 키 중복 오류 해결
+- 소비 아이템 품질 표시 추가
+- 소비 아이템이 장비 패널에 표시되는 문제 해결
+
+**주요 변경사항**:
+
+1. **스킬 레벨업 AP 소모 문제 해결**:
+   - `src/stores/index.ts`의 `levelUpSkill` 함수 수정
+   - `player.ascensionPoints` → `player.rebirthLevel`로 변경
+   - AP 소모 로그와 실제 AP 감소가 일치하도록 수정
+   - 정보 패널의 AP 표시가 정상적으로 업데이트됨
+
+2. **인벤토리 키 중복 오류 해결**:
+   - `src/components/inventory/InventoryPanel.tsx` 수정
+   - 키 생성 로직에 타임스탬프와 랜덤 문자열 추가
+   - `health_potion_1` 같은 중복 키 문제 해결
+
+3. **소비 아이템 품질 표시 추가**:
+   - `src/components/inventory/InventoryPanel.tsx` 수정
+   - 소비 아이템에도 품질 표시 기능 추가
+   - 장비와 동일한 품질 색상 시스템 적용
+
+4. **소비 아이템 분류 개선**:
+   - 장비 필터링 로직 확인 및 개선
+   - 소비 아이템이 장비 패널에 표시되지 않도록 필터링 강화
+
+**수정된 파일**:
+- `src/stores/index.ts`: 스킬 레벨업 AP 소모 로직 수정
+- `src/components/inventory/InventoryPanel.tsx`: 키 중복 해결 및 품질 표시 추가
+
+### 🔧 **모바일 UI 개선 및 시스템 버그 수정 - 2024년 12월 23일**
+
+**목표**:
+- 모바일에서 생활탭과 상점의 하단 잘림 문제 해결
+- 생활 관련 수련치 저장/로드 시스템 구현
+- 스킬 레벨업 버튼 활성/비활성 조건 수정
+- 소비템 품질별 분리 문제 해결
+- 우유 관련 코드 제거 (획득처 없음)
+- 장비/물약 드롭 제거 (상점에서만 구매 가능)
+
+**주요 변경사항**:
+
+1. **모바일 UI 개선**:
+   - `src/components/layout/Layout.tsx` 수정
+   - 메인 게임 영역 하단 여백 증가 (pb-16 → pb-20)
+   - 모바일에서 패널 하단 잘림 문제 해결
+
+2. **생활 스킬 저장/로드 시스템 구현**:
+   - `src/stores/index.ts`에 `saveLifeSkills`, `loadLifeSkills` 함수 추가
+   - `saveGame` 함수에 생활 스킬 저장 로직 추가
+   - `continueGame` 함수에 생활 스킬 로드 로직 추가
+   - localStorage를 통한 생활 스킬 데이터 영구 저장
+
+3. **스킬 레벨업 버튼 수정**:
+   - `src/components/character/CharacterPanel.tsx` 수정
+   - `player.ascensionPoints` → `player.rebirthLevel`로 변경
+   - AP 기반 레벨업 시스템 정상 작동
+
+4. **소비템 품질별 분리 시스템 개선**:
+   - `src/stores/index.ts`의 `addItem` 함수 수정
+   - 소비템을 레벨과 품질별로 분리하여 관리
+   - 같은 레벨/품질의 아이템만 수량 합산
+
+5. **우유 관련 코드 제거**:
+   - `src/data/materials/milk.json` 파일 삭제
+   - `src/data/initial/inventory.json`에서 우유 제거
+   - `src/data/shop/packages.json`에서 우유 관련 항목 제거
+   - 요리 아이템들의 재료에서 우유를 밀로 변경
+   - `src/utils/packageSystem.ts`에서 우유 관련 매핑 제거
+
+6. **드롭 시스템 개선**:
+   - `src/data/drops/flame_normal.json`에서 장비/물약 드롭 제거
+   - 몬스터에서 장비나 물약이 드롭되지 않도록 수정
+   - 상점에서만 장비와 물약 구매 가능
+
+**수정된 파일**:
+- `src/components/layout/Layout.tsx`: 모바일 UI 개선
+- `src/stores/index.ts`: 생활 스킬 저장/로드 시스템 추가
+- `src/components/character/CharacterPanel.tsx`: 스킬 레벨업 버튼 수정
+- `src/data/materials/milk.json`: 우유 아이템 삭제
+- `src/data/initial/inventory.json`: 우유 제거
+- `src/data/shop/packages.json`: 우유 관련 항목 제거
+- `src/data/items/bread.json`: 우유 → 밀 변경
+- `src/data/items/fish_stew.json`: 우유 → 밀 변경
+- `src/data/items/herb_soup.json`: 우유 → 밀 변경
+- `src/data/items/divine_feast.json`: 우유 → 밀 변경
+- `src/utils/packageSystem.ts`: 우유 관련 매핑 제거
+- `src/data/drops/flame_normal.json`: 장비/물약 드롭 제거
+
+### 🛍️ **상점 시스템 대폭 개선 - 랜덤박스 및 패키지 시스템 구현 - 2024년 12월 23일**
+
+**목표**:
+- 상점에 다양한 랜덤박스와 패키지 아이템 추가
+- 패키지 상세 정보 모달 구현
+- 구매 결과 표시 모달 구현
+- 가중치 기반 랜덤 아이템 획득 시스템 구현
+- 스크롤 아이템 및 효과 시스템 구현
+
+**주요 변경사항**:
+
+1. **패키지 데이터 시스템 구현**:
+   - `src/data/shop/packages.json` 생성
+   - 재료 랜덤박스, 스킬 팩, 광석 팩, 요리 팩, 스크롤 팩, 물약 팩, 물고기 팩, 약초 팩 등 8가지 패키지 정의
+   - 각 패키지별 보장 아이템과 랜덤 아이템 구성
+   - 가중치 기반 확률 시스템 적용
+
+2. **스크롤 아이템 시스템 구현**:
+   - `src/data/items/scrolls.json` 생성
+   - 경험치 스크롤, 골드 스크롤, 드롭 스크롤, 강화 스크롤, 환생 스크롤 등 5가지 스크롤 정의
+   - 각 스크롤별 지속시간과 효과 정의
+
+3. **패키지 시스템 유틸리티 구현**:
+   - `src/utils/packageSystem.ts` 생성
+   - 가중치 기반 랜덤 선택 함수 `weightedRandom`
+   - 패키지 열기 함수 `openPackage`
+   - 스크롤 효과 적용 함수 `applyScrollEffect`
+   - 아이템 이름, 아이콘, 희귀도 매핑 함수들
+
+4. **패키지 상세 모달 구현**:
+   - `src/components/shop/PackageDetailModal.tsx` 생성
+   - 패키지 구성품 상세 정보 표시
+   - 보장 아이템과 랜덤 아이템 구분 표시
+   - 확률 정보 및 수량 범위 표시
+   - 패키지 구매 기능
+
+5. **구매 결과 모달 구현**:
+   - `src/components/shop/PurchaseResultModal.tsx` 생성
+   - 획득한 아이템 목록 표시
+   - 아이템별 아이콘, 이름, 수량, 희귀도 표시
+   - 총 아이템 수와 총 수량 요약 정보
+
+6. **상점 패널 대폭 개선**:
+   - `src/components/shop/ShopPanel.tsx` 수정
+   - 패키지 카테고리 추가
+   - 패키지 아이템들 상점에 추가
+   - 패키지 구매 시 상세 모달 표시
+   - 구매 결과 모달 연동
+
+7. **스토어에 패키지 구매 기능 추가**:
+   - `src/stores/index.ts` 수정
+   - `purchasePackage` 함수 구현
+   - 패키지 열기 및 아이템 획득 로직
+   - 스크롤 효과 적용 시스템
+
+**패키지 시스템 특징**:
+- **재료 랜덤박스**: 다양한 재료들을 확률에 따라 획득 (500 골드)
+- **스킬 페이지 랜덤팩**: 랜덤 스킬 페이지 1-3개 획득 (10 젬)
+- **광석 팩**: 다양한 광석들을 확률에 따라 획득 (300 골드)
+- **요리 팩**: 요리 재료와 완성된 요리 획득 (400 골드)
+- **스크롤 팩**: 다양한 효과의 스크롤들 획득 (15 젬)
+- **물약 팩**: 다양한 물약들 획득 (250 골드)
+- **물고기 팩**: 다양한 물고기들 획득 (200 골드)
+- **약초 팩**: 다양한 약초들 획득 (180 골드)
+
+**스크롤 효과 시스템**:
+- **경험치 스크롤**: 1시간 동안 경험치 2배 획득
+- **골드 스크롤**: 1시간 동안 골드 2배 획득
+- **드롭 스크롤**: 30분 동안 아이템 드롭률 50% 증가
+- **강화 스크롤**: 다음 장비 강화 시 100% 성공률 보장
+- **환생 스크롤**: 즉시 +10 AP 획득
+
+**랜덤 시스템 특징**:
+- **가중치 기반**: 각 아이템별 확률 가중치 적용
+- **수량 범위**: 최소-최대 수량 범위에서 랜덤 선택
+- **보장 아이템**: 패키지별 반드시 획득하는 아이템들
+- **랜덤 아이템**: 확률에 따라 선택되는 아이템들
+
+**수정된 파일**:
+- `src/data/shop/packages.json`: 패키지 데이터 정의 (신규)
+- `src/data/items/scrolls.json`: 스크롤 아이템 데이터 (신규)
+- `src/utils/packageSystem.ts`: 패키지 시스템 유틸리티 (신규)
+- `src/components/shop/PackageDetailModal.tsx`: 패키지 상세 모달 (신규)
+- `src/components/shop/PurchaseResultModal.tsx`: 구매 결과 모달 (신규)
+- `src/components/shop/ShopPanel.tsx`: 상점 패널 개선
+- `src/stores/index.ts`: 패키지 구매 기능 추가
+
+### 🧪 **물약 시스템 고도화 및 설정 탭 추가 - 2024년 12월 23일**
+
 ### 🧪 **물약 시스템 고도화 및 설정 탭 추가 - 2024년 12월 23일**
 
 **목표**:
