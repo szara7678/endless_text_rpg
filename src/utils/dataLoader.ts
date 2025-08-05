@@ -69,22 +69,34 @@ export async function loadThemes(): Promise<any[]> {
 // 아이템 데이터 로딩
 export async function loadItem(itemId: string): Promise<any | null> {
   try {
+    // 잘못된 형식의 uniqueId에서 실제 itemId 추출
+    let actualItemId = itemId
+    if (itemId.includes('_') && itemId.includes('.')) {
+      // uniqueId 형식인 경우 (예: toxic_ring_0.17890369830190878)
+      const parts = itemId.split('_')
+      if (parts.length >= 2) {
+        // 첫 번째 두 부분을 조합하여 실제 itemId 생성
+        actualItemId = `${parts[0]}_${parts[1]}`
+        console.warn(`잘못된 아이템 ID 감지: ${itemId} -> ${actualItemId}로 변환`)
+      }
+    }
+    
     // 동적으로 아이템 파일 로드 시도
     try {
-      const itemData = (await import(`../data/items/${itemId}.json`)).default
+      const itemData = (await import(`../data/items/${actualItemId}.json`)).default
       return itemData
     } catch (importError) {
       // 개별 파일이 없으면 materials 폴더에서 시도
       try {
-        const materialData = (await import(`../data/materials/${itemId}.json`)).default
+        const materialData = (await import(`../data/materials/${actualItemId}.json`)).default
         return materialData
       } catch (materialError) {
         // materials에도 없으면 스킬 폴더에서 시도
         try {
-          const skillData = (await import(`../data/skills/${itemId}.json`)).default
+          const skillData = (await import(`../data/skills/${actualItemId}.json`)).default
           return skillData
         } catch (skillError) {
-          console.warn(`알 수 없는 아이템: ${itemId}`)
+          console.warn(`알 수 없는 아이템: ${itemId} (변환된 ID: ${actualItemId})`)
           return null
         }
       }

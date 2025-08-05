@@ -105,6 +105,95 @@
 
 ---
 
+### 🔧 **장비 uniqueId 생성 오류 수정 - 2024년 12월 23일**
+
+**문제**:
+- 장비 아이템의 uniqueId에 `Math.random()` 값이 포함되어 잘못된 형식 생성
+- 예: `toxic_ring_0.17890369830190878` (소수점 포함)
+- 잘못된 uniqueId로 인해 아이템을 찾을 수 없는 오류 발생
+
+**해결 방법**:
+
+1. **generateUniqueId 함수 사용**:
+   - `itemGenerator.ts`의 `generateUniqueId` 함수 import 추가
+   - 기존의 `Math.random()` 기반 uniqueId 생성 방식 제거
+   - 안전하고 일관된 uniqueId 생성 방식 적용
+
+2. **uniqueId 생성 방식 개선**:
+   - `generateUniqueId()` 함수는 타임스탬프와 랜덤 문자열을 조합
+   - 소수점이 포함되지 않는 안전한 형식으로 생성
+   - 예: `lq1x2y3z_abc123` (정상적인 형식)
+
+**수정된 파일**:
+- `src/stores/index.ts`: uniqueId 생성 방식을 `generateUniqueId()` 함수 사용으로 변경
+
+**결과**: 
+- 장비 아이템의 uniqueId가 올바른 형식으로 생성됨
+- 아이템 검색 및 상세 모달 표시 오류 해결
+- 안정적인 장비 시스템 작동
+
+---
+
+### 🔧 **장신구 능력치 변환 오류 수정 - 2024년 12월 23일**
+
+**문제**:
+- 장신구(accessory) 아이템에서만 오류가 발생
+- 장신구 JSON 파일에 `flameAttack`, `toxicAttack` 등의 속성 공격력이 정의되어 있음
+- `equipmentSystem.ts`에서 이러한 속성 스탯을 처리하지 못하여 오류 발생
+
+**해결 방법**:
+
+1. **속성 공격력 변환 로직 추가**:
+   - `flameAttack`, `frostAttack`, `thunderAttack`, `toxicAttack`, `shadowAttack`, `verdantAttack`을 `magicalAttack`으로 변환
+   - 모든 속성 공격력을 합산하여 마법 공격력에 추가
+
+2. **속성 저항력 변환 로직 추가**:
+   - `flameResistance`, `frostResistance`, `thunderResistance`, `toxicResistance`, `shadowResistance`, `verdantResistance`를 `magicalDefense`로 변환
+   - 모든 속성 저항력을 합산하여 마법 방어력에 추가
+
+3. **기존 스탯 처리 개선**:
+   - 변환 후 원본 속성 스탯은 제거하여 중복 방지
+   - 기존 `magicalAttack`과 `magicalDefense` 값과 합산
+
+**수정된 파일**:
+- `src/utils/equipmentSystem.ts`: 장신구 속성 스탯 변환 로직 추가
+
+**결과**: 
+- 장신구 아이템의 능력치가 정상적으로 계산되고 표시됨
+- 속성 공격력과 저항력이 올바르게 마법 공격력/방어력으로 변환
+- 모든 장비 타입(무기, 방어구, 장신구)에서 일관된 스탯 시스템 작동
+
+---
+
+### 🔧 **잘못된 uniqueId 형식 처리 개선 - 2024년 12월 23일**
+
+**문제**:
+- 기존에 생성된 잘못된 형식의 uniqueId를 가진 아이템이 저장되어 있음
+- 예: `toxic_ring_0.17890369830190878` (소수점 포함)
+- 이러한 아이템 ID로 인해 아이템 데이터를 찾을 수 없는 오류 발생
+
+**해결 방법**:
+
+1. **loadItem 함수 개선**:
+   - 잘못된 형식의 uniqueId를 감지하고 실제 itemId로 변환하는 로직 추가
+   - `itemId.includes('_') && itemId.includes('.')` 조건으로 uniqueId 형식 감지
+   - `toxic_ring_0.17890369830190878` → `toxic_ring`으로 변환
+
+2. **자동 변환 로직**:
+   - uniqueId에서 첫 번째 두 부분을 조합하여 실제 itemId 생성
+   - 변환 과정을 콘솔에 로그로 기록하여 디버깅 지원
+   - 기존 저장된 잘못된 형식의 아이템도 정상적으로 처리
+
+**수정된 파일**:
+- `src/utils/dataLoader.ts`: 잘못된 uniqueId 형식 처리 로직 추가
+
+**결과**: 
+- 기존에 저장된 잘못된 형식의 아이템도 정상적으로 로드됨
+- 장신구 아이템의 상세 모달이 정상적으로 표시됨
+- 향후 잘못된 형식의 아이템 ID에 대한 안전한 처리
+
+---
+
 ### 🔄 **환생 시스템 설정 패널 통합 및 부활 스크롤 개선 - 2024년 12월 23일**
 
 **목표**:

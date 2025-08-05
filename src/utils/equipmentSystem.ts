@@ -284,6 +284,36 @@ export async function getBaseEquipmentStats(itemId: string): Promise<any> {
         // elementalAttack 제거
         delete stats.elementalAttack
       }
+      
+      // 속성 공격력을 magicalAttack으로 변환
+      const elementalAttacks = ['flameAttack', 'frostAttack', 'thunderAttack', 'toxicAttack', 'shadowAttack', 'verdantAttack']
+      let totalElementalAttack = 0
+      
+      elementalAttacks.forEach(attackType => {
+        if (stats[attackType]) {
+          totalElementalAttack += stats[attackType]
+          delete stats[attackType]
+        }
+      })
+      
+      if (totalElementalAttack > 0) {
+        stats.magicalAttack = (stats.magicalAttack || 0) + totalElementalAttack
+      }
+      
+      // 속성 저항력을 magicalDefense로 변환
+      const elementalResistances = ['flameResistance', 'frostResistance', 'thunderResistance', 'toxicResistance', 'shadowResistance', 'verdantResistance']
+      let totalElementalResistance = 0
+      
+      elementalResistances.forEach(resistanceType => {
+        if (stats[resistanceType]) {
+          totalElementalResistance += stats[resistanceType]
+          delete stats[resistanceType]
+        }
+      })
+      
+      if (totalElementalResistance > 0) {
+        stats.magicalDefense = (stats.magicalDefense || 0) + totalElementalResistance
+      }
     }
     // stats가 있는 경우 (기존 형식)
     else if (itemData.stats) {

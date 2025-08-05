@@ -13,7 +13,7 @@ import { settingsSlice } from './settingsSlice'
 import { processAutoCombatTurn, generateNextMonster, processPlayerTurn, processMonsterTurn, determineFirstAttacker } from '../utils/combatEngine'
 import { processItemDrops, processSkillPageDrops } from '../utils/dropSystem'
 import * as EquipmentSystem from '../utils/equipmentSystem'
-import { generateInitialItems } from '../utils/itemGenerator'
+import { generateInitialItems, generateUniqueId } from '../utils/itemGenerator'
 import { calculateItemSellPrice, getItemName } from '../utils/itemSystem'
 import { updatePotionUsage } from '../utils/potionSystem'
 import { openPackage, applyScrollEffect } from '../utils/packageSystem'
@@ -1495,7 +1495,7 @@ export const useGameStore = create<GameStore>()(
             for (let i = 0; i < quantity; i++) {
               newItems.push({
                 itemId,
-                uniqueId: `${itemId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                uniqueId: generateUniqueId(),
                 level: level,
                 quantity: 1,
                 quality: quality as any,
