@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Leaf, Bomb, Eye } from 'lucide-react'
 import { useGameStore } from '../../stores'
+import { loadDropTable } from '../../utils/dataLoader'
 
 interface HerbalismMinigameProps {
   isOpen: boolean
@@ -50,11 +51,14 @@ const HerbalismMinigame: React.FC<HerbalismMinigameProps> = ({ isOpen, onClose, 
 
   // 드롭 테이블 로드
   useEffect(() => {
-    const loadDropTable = async () => {
+    const loadDropTableData = async () => {
       try {
-        const response = await fetch('/src/data/drops/herbalism_rewards.json')
-        const data = await response.json()
-        setDropTable(data.drops)
+        const dropData = await loadDropTable('herbalism_rewards')
+        if (dropData && dropData.drops) {
+          setDropTable(dropData.drops)
+        } else {
+          throw new Error('드롭 테이블 데이터가 없습니다.')
+        }
       } catch (error) {
         console.error('채집 보상 테이블 로드 실패:', error)
         // 기본 드롭 테이블 설정
@@ -69,7 +73,7 @@ const HerbalismMinigame: React.FC<HerbalismMinigameProps> = ({ isOpen, onClose, 
     }
 
     if (isOpen) {
-      loadDropTable()
+      loadDropTableData()
     }
   }, [isOpen])
 

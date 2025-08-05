@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Mountain, Gem, Zap } from 'lucide-react'
 import { useGameStore } from '../../stores'
+import { loadDropTable } from '../../utils/dataLoader'
 
 interface MiningMinigameProps {
   isOpen: boolean
@@ -51,12 +52,15 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
 
   // 드랍 테이블 로드
   useEffect(() => {
-    fetch('/src/data/drops/mining_rewards.json')
-      .then(response => response.json())
-      .then(data => {
-        setDropTable(data.drops || [])
-      })
-      .catch(error => {
+    const loadDropTableData = async () => {
+      try {
+        const dropData = await loadDropTable('mining_rewards')
+        if (dropData && dropData.drops) {
+          setDropTable(dropData.drops)
+        } else {
+          throw new Error('드롭 테이블 데이터가 없습니다.')
+        }
+      } catch (error) {
         console.error('광산 보상 테이블 로드 실패:', error)
         // 기본 드랍 테이블 설정
         setDropTable([
@@ -67,7 +71,10 @@ const MiningMinigame: React.FC<MiningMinigameProps> = ({ isOpen, onClose, onComp
           { itemId: "common_metal", chance: 0.35, min: 1, max: 1 },
           { itemId: "refined_metal", chance: 0.25, min: 1, max: 1 }
         ])
-      })
+      }
+    }
+
+    loadDropTableData()
   }, [])
 
   // 그리드 초기화

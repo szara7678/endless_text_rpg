@@ -2,6 +2,109 @@
 
 ## 최신 업데이트 내역
 
+### 🔧 **미니게임 JSON 로딩 오류 수정 - 2024년 12월 23일**
+
+**문제**:
+- 광산 게임에서 `mining_rewards.json` 파일을 찾을 수 없는 404 에러 발생
+- 채집 게임에서도 동일한 문제 발생
+- `fetch('/src/data/drops/...')` 방식이 프로덕션 환경에서 올바르게 작동하지 않음
+
+**해결 방법**:
+
+1. **dataLoader.ts의 loadDropTable 함수 활용**:
+   - 기존의 `fetch` 방식 대신 `dataLoader.ts`의 `loadDropTable` 함수 사용
+   - 동적 import를 통한 안전한 파일 로딩
+   - 프로덕션 환경에서도 올바르게 작동하는 방식으로 변경
+
+2. **MiningMinigame.tsx 수정**:
+   - `loadDropTable` import 추가
+   - `fetch('/src/data/drops/mining_rewards.json')` → `loadDropTable('mining_rewards')` 변경
+   - 에러 처리 로직 개선
+
+3. **HerbalismMinigame.tsx 수정**:
+   - `loadDropTable` import 추가
+   - `fetch('/src/data/drops/herbalism_rewards.json')` → `loadDropTable('herbalism_rewards')` 변경
+   - 에러 처리 로직 개선
+
+4. **FishingMinigame.tsx 확인**:
+   - 이미 올바르게 `loadDropTable` 함수를 사용하고 있음을 확인
+
+**수정된 파일**:
+- `src/components/life/MiningMinigame.tsx`: JSON 로딩 방식 변경 및 에러 처리 개선
+- `src/components/life/HerbalismMinigame.tsx`: JSON 로딩 방식 변경 및 에러 처리 개선
+
+**결과**: 
+- 404 에러 해결로 미니게임 보상 시스템 정상 작동
+- 프로덕션 환경에서도 안정적으로 JSON 파일 로딩
+- 일관된 데이터 로딩 방식으로 코드 통일성 향상
+
+---
+
+### 🔧 **몬스터 드랍 장비 능력치 계산 및 equipmentSystem 개선 - 2024년 12월 23일**
+
+**문제**:
+- 몬스터가 드랍하는 장비 아이템에 능력치가 표시되지 않음
+- `equipmentSystem.ts`에서 장비 기본 능력치가 하드코딩되어 있음
+- JSON 파일의 아이템 데이터가 활용되지 않음
+
+**해결 방법**:
+
+1. **equipmentSystem.ts 개선**:
+   - `getBaseEquipmentStats` 함수를 비동기로 변경하여 JSON 파일에서 데이터 로드
+   - `loadItem` 함수를 사용하여 `@/items` 폴더의 JSON 파일에서 스탯 정보 가져오기
+   - `elementalAttack`을 `magicalAttack`으로 변환하는 로직 추가
+   - 모든 관련 함수를 비동기로 변경 (`getEquipmentStats`, `recalculatePlayerStats`, `equipItem`, `unequipItem`)
+
+2. **드랍 시스템 개선**:
+   - `dropSystem.ts`에 `calculateEquipmentStats` 함수 추가
+   - 장비 아이템 드랍 시 능력치를 계산하여 표시
+   - 드랍 로그에 능력치 정보 포함
+
+3. **스토어 시스템 수정**:
+   - `stores/index.ts`의 장비 관련 함수들을 비동기로 변경
+   - 몬스터 사망 처리에서 장비 아이템 드랍 시 능력치 계산 및 표시
+   - 장비 착용/해제/강화 함수들을 비동기로 수정
+
+**수정된 파일**:
+- `src/utils/equipmentSystem.ts`: JSON 파일에서 장비 스탯 로드하도록 개선
+- `src/utils/dropSystem.ts`: 장비 능력치 계산 함수 추가
+- `src/stores/index.ts`: 장비 관련 함수들을 비동기로 수정 및 드랍 로그 개선
+
+**결과**: 
+- 몬스터 드랍 장비에 능력치가 표시됨 (예: "화염 검 (Lv5) (Fine) [공격력 +25, 마법공격력 +18] x1 획득!")
+- JSON 파일의 아이템 데이터가 실제로 활용됨
+- 장비 시스템이 더욱 정확하고 일관성 있게 작동
+
+---
+
+### 🔧 **장비 상세 모달 능력치 표시 수정 - 2024년 12월 23일**
+
+**문제**:
+- 장비 상세 모달에서 능력치가 표시되지 않음
+- `getEquipmentStats` 함수가 비동기로 변경되었지만 모달에서는 동기적으로 호출
+- 장비 정보를 볼 때 능력치가 "계산 중..." 상태로 멈춤
+
+**해결 방법**:
+
+1. **EquipmentStatsDisplay 컴포넌트 추가**:
+   - 비동기 `getEquipmentStats` 함수를 올바르게 호출하는 전용 컴포넌트 생성
+   - 로딩 상태와 에러 처리를 포함한 완전한 비동기 처리
+   - 장비 능력치를 실시간으로 계산하여 표시
+
+2. **기존 동기 코드 제거**:
+   - 기존의 동기적 `getEquipmentStats` 호출 부분 제거
+   - 새로운 `EquipmentStatsDisplay` 컴포넌트로 교체
+
+**수정된 파일**:
+- `src/components/common/ItemDetailModal.tsx`: 장비 능력치 표시 컴포넌트 추가 및 비동기 처리 구현
+
+**결과**: 
+- 장비 상세 모달에서 능력치가 정상적으로 표시됨
+- 레벨, 품질, 강화 수치에 따른 정확한 능력치 계산
+- 로딩 상태와 에러 처리로 안정적인 UI 제공
+
+---
+
 ### 🔄 **환생 시스템 설정 패널 통합 및 부활 스크롤 개선 - 2024년 12월 23일**
 
 **목표**:

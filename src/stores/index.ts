@@ -1024,13 +1024,44 @@ export const useGameStore = create<GameStore>()(
               const quality = isConsumable ? 'Common' : item.quality
               get().addItem(item.itemId, quantity, item.level, quality)
               const qualityText = quality !== 'Common' ? ` (${quality})` : ''
-              // 한글 이름 가져오기
-              getItemName(item.itemId).then(itemName => {
-                get().addCombatLog('loot', `🎁 ${itemName} (Lv${item.level})${qualityText} x${quantity} 획득!`)
-              }).catch(() => {
-                // 실패 시 기본 이름 사용
-                get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText} x${quantity} 획득!`)
-              })
+              
+              // 장비 아이템인 경우 능력치 계산
+              const isEquipment = item.itemId.includes('sword') || item.itemId.includes('armor') || 
+                                item.itemId.includes('staff') || item.itemId.includes('ring')
+              
+              if (isEquipment) {
+                // 장비 능력치 계산
+                const { calculateEquipmentStats } = await import('../utils/dropSystem')
+                const stats = await calculateEquipmentStats(item.itemId, item.level, quality)
+                
+                // 능력치 텍스트 생성
+                const statTexts = []
+                if (stats.physicalAttack) statTexts.push(`공격력 +${stats.physicalAttack}`)
+                if (stats.magicalAttack) statTexts.push(`마법공격력 +${stats.magicalAttack}`)
+                if (stats.physicalDefense) statTexts.push(`방어력 +${stats.physicalDefense}`)
+                if (stats.magicalDefense) statTexts.push(`마법방어력 +${stats.magicalDefense}`)
+                if (stats.speed) statTexts.push(`속도 +${stats.speed}`)
+                if (stats.hp) statTexts.push(`체력 +${stats.hp}`)
+                if (stats.mp) statTexts.push(`마나 +${stats.mp}`)
+                
+                const statsText = statTexts.length > 0 ? ` [${statTexts.join(', ')}]` : ''
+                
+                // 한글 이름 가져오기
+                getItemName(item.itemId).then(itemName => {
+                  get().addCombatLog('loot', `🎁 ${itemName} (Lv${item.level})${qualityText}${statsText} x${quantity} 획득!`)
+                }).catch(() => {
+                  // 실패 시 기본 이름 사용
+                  get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText}${statsText} x${quantity} 획득!`)
+                })
+              } else {
+                // 일반 아이템
+                getItemName(item.itemId).then(itemName => {
+                  get().addCombatLog('loot', `🎁 ${itemName} (Lv${item.level})${qualityText} x${quantity} 획득!`)
+                }).catch(() => {
+                  // 실패 시 기본 이름 사용
+                  get().addCombatLog('loot', `🎁 ${item.itemId.replace('_', ' ')} (Lv${item.level})${qualityText} x${quantity} 획득!`)
+                })
+              }
             }
             
             // 스킬 페이지 드롭 처리
@@ -1869,7 +1900,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       // 장비 착용
-      equipItem: (itemIdOrUniqueId: string) => {
+      equipItem: async (itemIdOrUniqueId: string) => {
         const { player, inventory } = get()
         
         // 인벤토리에서 아이템 찾기 (uniqueId 또는 itemId로 검색)
@@ -1881,7 +1912,7 @@ export const useGameStore = create<GameStore>()(
           return
         }
 
-        const result = equipItem(player, item)
+        const result = await equipItem(player, item)
         
         if (result.success) {
           set((state: any) => ({
@@ -1895,10 +1926,10 @@ export const useGameStore = create<GameStore>()(
       },
 
       // 장비 해제
-      unequipItem: (slot: 'weapon' | 'armor' | 'accessory') => {
+      unequipItem: async (slot: 'weapon' | 'armor' | 'accessory') => {
         const { player, inventory } = get()
         
-        const result = unequipItem(player, slot)
+        const result = await unequipItem(player, slot)
         
         if (result.success) {
           // 인벤토리에 해제된 장비 추가
@@ -1926,7 +1957,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       // 장비 강화 (장착된 장비)
-      enhanceEquipment: (slot: 'weapon' | 'armor' | 'accessory') => {
+      enhanceEquipment: async (slot: 'weapon' | 'armor' | 'accessory') => {
         const { player } = get()
         
         const equipment = player.equipment[slot]
@@ -1943,7 +1974,7 @@ export const useGameStore = create<GameStore>()(
           newPlayer.gold -= result.goldCost
           
           // 스탯 재계산
-          const updatedPlayer = recalculatePlayerStats(newPlayer)
+          const updatedPlayer = await recalculatePlayerStats(newPlayer)
           
           set((state: any) => ({
             ...state,

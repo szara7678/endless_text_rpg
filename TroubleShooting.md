@@ -83,4 +83,52 @@ const initialTower = await loadInitialTower()
 - dataLoader 유틸리티를 통해 중앙화된 데이터 로딩 관리
 - 정적 import보다는 동적 import가 더 안정적
 
+---
+
+### 🔧 **미니게임 JSON 파일 404 에러 - 2024년 12월 23일**
+
+**문제 상황**:
+- 광산 게임에서 `GET https://szara7678.github.io/src/data/drops/mining_rewards.json 404 (Not Found)` 오류 발생
+- 채집 게임에서도 동일한 문제 발생
+- `SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON` 오류 발생
+- 미니게임 보상 시스템이 작동하지 않음
+
+**원인 분석**:
+- `fetch('/src/data/drops/mining_rewards.json')` 방식 사용
+- 프로덕션 환경에서 상대 경로가 올바르게 해석되지 않음
+- 빌드된 파일에서 JSON 파일 경로가 달라짐
+- 404 에러로 인해 HTML 페이지가 반환되어 JSON 파싱 실패
+
+**해결 방법**:
+```typescript
+// 수정 전
+fetch('/src/data/drops/mining_rewards.json')
+  .then(response => response.json())
+  .then(data => {
+    setDropTable(data.drops || [])
+  })
+
+// 수정 후
+import { loadDropTable } from '../../utils/dataLoader'
+
+const dropData = await loadDropTable('mining_rewards')
+if (dropData && dropData.drops) {
+  setDropTable(dropData.drops)
+}
+```
+
+**수정된 파일**:
+- `src/components/life/MiningMinigame.tsx`: fetch 방식에서 loadDropTable 함수 사용으로 변경
+- `src/components/life/HerbalismMinigame.tsx`: fetch 방식에서 loadDropTable 함수 사용으로 변경
+
+**결과**:
+- 404 에러 해결
+- 미니게임 보상 시스템 정상 작동
+- 프로덕션 환경에서도 안정적으로 JSON 파일 로딩
+
+**교훈**:
+- 프로덕션 환경에서는 `fetch` 방식보다 동적 import가 안전
+- dataLoader 유틸리티를 통한 일관된 데이터 로딩 방식 사용
+- 빌드 환경에서의 파일 경로 차이를 고려한 로딩 방식 선택
+
 --- 

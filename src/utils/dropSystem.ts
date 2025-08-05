@@ -1,6 +1,7 @@
 import { Monster, InventoryState } from '../types'
 import { loadDropTable } from './dataLoader'
 import { calculateDropLevel } from './towerSystem'
+import { getEquipmentStats } from './equipmentSystem'
 
 // 몬스터 처치 시 아이템 드롭 처리
 export async function processItemDrops(
@@ -104,4 +105,29 @@ export function processSkillPageDrops(monster: Monster): string[] {
   }
   
   return drops
+}
+
+// 장비 아이템의 능력치를 계산하는 함수
+export async function calculateEquipmentStats(
+  itemId: string, 
+  level: number, 
+  quality: string
+): Promise<any> {
+  // 임시 EquipmentInstance 생성
+  const tempEquipment = {
+    itemId,
+    uniqueId: `temp_${Date.now()}`,
+    level,
+    quality: quality as 'Common' | 'Fine' | 'Superior' | 'Epic' | 'Legendary',
+    enhancement: 0,
+    traits: []
+  }
+  
+  try {
+    const stats = await getEquipmentStats(tempEquipment)
+    return stats
+  } catch (error) {
+    console.error(`장비 능력치 계산 실패: ${itemId}`, error)
+    return {}
+  }
 } 

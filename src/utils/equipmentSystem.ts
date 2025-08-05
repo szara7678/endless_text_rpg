@@ -1,4 +1,5 @@
 import { PlayerState, EquipmentInstance, ItemInstance } from '../types'
+import { loadItem } from './dataLoader'
 
 // 기획안: 강화 시스템 (+1당 4% 스탯 상승)
 export const ENHANCEMENT_MULTIPLIER = 0.04
@@ -21,14 +22,14 @@ export const ENHANCEMENT_COSTS = {
 /**
  * 장비를 착용합니다
  */
-export function equipItem(
+export async function equipItem(
   player: PlayerState, 
   item: ItemInstance
-): {
+): Promise<{
   success: boolean
   newPlayer: PlayerState
   message: string
-} {
+}> {
   const equipmentSlot = getEquipmentSlot(item.itemId)
   
   if (!equipmentSlot) {
@@ -56,7 +57,7 @@ export function equipItem(
   newPlayer.equipment[equipmentSlot] = newEquipment
   
   // 스탯 재계산
-  const updatedPlayer = recalculatePlayerStats(newPlayer)
+  const updatedPlayer = await recalculatePlayerStats(newPlayer)
   
   return {
     success: true,
@@ -68,15 +69,15 @@ export function equipItem(
 /**
  * 장비를 해제합니다
  */
-export function unequipItem(
+export async function unequipItem(
   player: PlayerState, 
   slot: 'weapon' | 'armor' | 'accessory'
-): {
+): Promise<{
   success: boolean
   newPlayer: PlayerState
   unequippedItem: EquipmentInstance | null
   message: string
-} {
+}> {
   const equipment = player.equipment[slot]
   
   if (!equipment) {
@@ -92,7 +93,7 @@ export function unequipItem(
   newPlayer.equipment[slot] = null
   
   // 스탯 재계산
-  const updatedPlayer = recalculatePlayerStats(newPlayer)
+  const updatedPlayer = await recalculatePlayerStats(newPlayer)
   
   return {
     success: true,
@@ -176,7 +177,7 @@ export function calculateEnhancementCost(equipment: EquipmentInstance): number {
 /**
  * 플레이어 스탯을 재계산합니다
  */
-export function recalculatePlayerStats(player: PlayerState): PlayerState {
+export async function recalculatePlayerStats(player: PlayerState): Promise<PlayerState> {
   const newPlayer = { ...player }
   
   // 음식 스탯 초기화 (없으면 생성)
@@ -201,10 +202,10 @@ export function recalculatePlayerStats(player: PlayerState): PlayerState {
   newPlayer.maxHp = newPlayer.baseMaxHp + newPlayer.foodStats.maxHp
   newPlayer.maxMp = newPlayer.baseMaxMp + newPlayer.foodStats.maxMp
   
-  // 각 장비의 스탯 적용
-  Object.values(newPlayer.equipment).forEach(equipment => {
+  // 각 장비의 스탯 적용 (비동기 처리)
+  for (const equipment of Object.values(newPlayer.equipment)) {
     if (equipment) {
-      const itemStats = getEquipmentStats(equipment)
+      const itemStats = await getEquipmentStats(equipment)
       
       newPlayer.physicalAttack += itemStats.physicalAttack || 0
       newPlayer.magicalAttack += itemStats.magicalAttack || 0
@@ -214,7 +215,7 @@ export function recalculatePlayerStats(player: PlayerState): PlayerState {
       newPlayer.maxHp += itemStats.hp || 0
       newPlayer.maxMp += itemStats.mp || 0
     }
-  })
+  }
   
   // HP/MP가 최대치를 초과하지 않도록 조정
   newPlayer.hp = Math.min(newPlayer.hp, newPlayer.maxHp)
@@ -226,8 +227,8 @@ export function recalculatePlayerStats(player: PlayerState): PlayerState {
 /**
  * 장비의 스탯을 계산합니다 (레벨, 품질, 강화 보너스 포함)
  */
-export function getEquipmentStats(equipment: EquipmentInstance): any {
-  const baseStats = getBaseEquipmentStats(equipment.itemId)
+export async function getEquipmentStats(equipment: EquipmentInstance): Promise<any> {
+  const baseStats = await getBaseEquipmentStats(equipment.itemId)
   
   // 품질별 배수
   const qualityMultipliers: Record<string, number> = {
@@ -255,76 +256,45 @@ export function getEquipmentStats(equipment: EquipmentInstance): any {
 /**
  * 아이템의 기본 스탯을 가져옵니다
  */
-export function getBaseEquipmentStats(itemId: string): any {
-  const equipmentStats: Record<string, any> = {
-    // 무기
-    'wooden_sword': {
-      physicalAttack: 8,
-      speed: 2
-    },
-    'iron_sword': {
-      physicalAttack: 15,
-      speed: 1
-    },
-    'flame_sword': {
-      physicalAttack: 20,
-      magicalAttack: 15, // elementalAttack.flame을 magicalAttack으로 변환
-      speed: 2
-    },
-    'frost_sword': {
-      physicalAttack: 18,
-      magicalAttack: 17, // elementalAttack.frost를 magicalAttack으로 변환
-      speed: 3
-    },
-    'shadow_sword': {
-      physicalAttack: 30,
-      speed: 5
-    },
-    'flame_staff': {
-      magicalAttack: 25,
-      mp: 30
-    },
-    'toxic_staff': {
-      magicalAttack: 23,
-      mp: 25
-    },
-    'thunder_staff': {
-      magicalAttack: 40,
-      mp: 40,
-      speed: 5
-    },
-    
-    // 방어구
-    'leather_armor': {
-      physicalDefense: 5,
-      magicalDefense: 3,
-      hp: 10
-    },
-    'flame_armor': {
-      physicalDefense: 15,
-      magicalDefense: 10,
-      hp: 50
-    },
-    'toxic_armor': {
-      physicalDefense: 12,
-      magicalDefense: 18,
-      speed: 5
-    },
-    'verdant_armor': {
-      physicalDefense: 25,
-      magicalDefense: 30,
-      hp: 80
-    },
-    
-    // 액세서리
-    'basic_ring': {
-      physicalAttack: 2,
-      magicalAttack: 2,
-      mp: 5
+export async function getBaseEquipmentStats(itemId: string): Promise<any> {
+  try {
+    const itemData = await loadItem(itemId)
+    if (!itemData) {
+      console.warn(`아이템 데이터를 찾을 수 없습니다: ${itemId}`)
+      return {}
     }
+
+    // JSON 파일의 구조에 따라 스탯 추출
+    let stats: any = {}
+    
+    // baseStats가 있는 경우 (새로운 형식)
+    if (itemData.baseStats) {
+      stats = { ...itemData.baseStats }
+      
+      // elementalAttack을 magicalAttack으로 변환
+      if (itemData.baseStats.elementalAttack) {
+        const elementalAttack = itemData.baseStats.elementalAttack
+        if (typeof elementalAttack === 'object') {
+          // 모든 elementalAttack 값을 합산
+          const totalElementalAttack = Object.values(elementalAttack).reduce((sum: number, value: any) => sum + (value || 0), 0)
+          stats.magicalAttack = (stats.magicalAttack || 0) + totalElementalAttack
+        } else {
+          stats.magicalAttack = (stats.magicalAttack || 0) + (elementalAttack || 0)
+        }
+        // elementalAttack 제거
+        delete stats.elementalAttack
+      }
+    }
+    // stats가 있는 경우 (기존 형식)
+    else if (itemData.stats) {
+      stats = { ...itemData.stats }
+    }
+    
+    return stats
+  } catch (error) {
+    console.error(`아이템 스탯 로드 실패: ${itemId}`, error)
+    return {}
   }
-  
-  return equipmentStats[itemId] || {}
 }
 
 /**

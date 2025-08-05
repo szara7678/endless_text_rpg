@@ -49,6 +49,93 @@ const PotionHealDisplay: React.FC<{ item: any }> = ({ item }) => {
   )
 }
 
+// 장비 능력치 표시 컴포넌트
+const EquipmentStatsDisplay: React.FC<{ item: any }> = ({ item }) => {
+  const [stats, setStats] = useState<any>({})
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const finalStats = await getEquipmentStats(item)
+        setStats(finalStats)
+      } catch (error) {
+        console.error('장비 능력치 계산 실패:', error)
+        setStats({})
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadStats()
+  }, [item])
+
+  if (isLoading) {
+    return (
+      <div>
+        <h4 className="text-white font-medium mb-2">
+          {item.enhancement > 0 ? `능력치 (강화 +${item.enhancement})` : '능력치'}
+        </h4>
+        <div className="space-y-1 text-sm">
+          <div className="text-gray-400">계산 중...</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <h4 className="text-white font-medium mb-2">
+        {item.enhancement > 0 ? `능력치 (강화 +${item.enhancement})` : '능력치'}
+      </h4>
+      <div className="space-y-1 text-sm">
+        {stats.physicalAttack && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">물리 공격력</span>
+            <span className="text-red-400">+{stats.physicalAttack}</span>
+          </div>
+        )}
+        {stats.magicalAttack && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">마법 공격력</span>
+            <span className="text-blue-400">+{stats.magicalAttack}</span>
+          </div>
+        )}
+        {stats.physicalDefense && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">물리 방어력</span>
+            <span className="text-green-400">+{stats.physicalDefense}</span>
+          </div>
+        )}
+        {stats.magicalDefense && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">마법 방어력</span>
+            <span className="text-purple-400">+{stats.magicalDefense}</span>
+          </div>
+        )}
+        {stats.hp && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">HP</span>
+            <span className="text-red-300">+{stats.hp}</span>
+          </div>
+        )}
+        {stats.mp && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">MP</span>
+            <span className="text-blue-300">+{stats.mp}</span>
+          </div>
+        )}
+        {stats.speed && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">속도</span>
+            <span className="text-yellow-400">+{stats.speed}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // 음식 효과 표시 컴포넌트
 const FoodEffectDisplay: React.FC<{ item: any }> = ({ item }) => {
   const [effects, setEffects] = useState<any[]>([])
@@ -730,63 +817,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ isOpen, item, onClose
 
           {/* 최종 능력치 (품질, 레벨, 강화 포함) */}
           {isEquipment && (
-            <div>
-              <h4 className="text-white font-medium mb-2">
-                {item.enhancement > 0 ? `능력치 (강화 +${item.enhancement})` : '능력치'}
-              </h4>
-              <div className="space-y-1 text-sm">
-                {(() => {
-                  const finalStats = getEquipmentStats(item)
-                  
-                  return (
-                    <>
-                      {finalStats.physicalAttack && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">물리 공격력</span>
-                          <span className="text-red-400">+{finalStats.physicalAttack}</span>
-                        </div>
-                      )}
-                      {finalStats.magicalAttack && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">마법 공격력</span>
-                          <span className="text-blue-400">+{finalStats.magicalAttack}</span>
-                        </div>
-                      )}
-                      {finalStats.physicalDefense && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">물리 방어력</span>
-                          <span className="text-green-400">+{finalStats.physicalDefense}</span>
-                        </div>
-                      )}
-                      {finalStats.magicalDefense && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">마법 방어력</span>
-                          <span className="text-purple-400">+{finalStats.magicalDefense}</span>
-                        </div>
-                      )}
-                      {finalStats.hp && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">HP</span>
-                          <span className="text-red-300">+{finalStats.hp}</span>
-                        </div>
-                      )}
-                      {finalStats.mp && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">MP</span>
-                          <span className="text-blue-300">+{finalStats.mp}</span>
-                        </div>
-                      )}
-                      {finalStats.speed && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">속도</span>
-                          <span className="text-yellow-400">+{finalStats.speed}</span>
-                        </div>
-                      )}
-                    </>
-                  )
-                })()}
-              </div>
-            </div>
+            <EquipmentStatsDisplay item={item} />
           )}
 
           {/* 물약 회복량 정보 */}
